@@ -16,10 +16,28 @@ export const Home = () => {
             link: "/link1"
         },
         {
-            imageSrc: "https://images.pexels.com/photos/157879/gift-jeans-fashion-pack-157879.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'",
+            imageSrc: "https://images.pexels.com/photos/5872364/pexels-photo-5872364.jpeg?auto=compress&cs=tinysrgb&w=600'",
             title: "Card 2",
             text: "Description for card 2",
             link: "/link2"
+        },
+        {
+            imageSrc: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            title: "Card 3",
+            text: "Description for card 3",
+            link: "/link3"
+        },
+        {
+            imageSrc: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            title: "Card 3",
+            text: "Description for card 3",
+            link: "/link3"
+        },
+        {
+            imageSrc: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            title: "Card 3",
+            text: "Description for card 3",
+            link: "/link3"
         },
         {
             imageSrc: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
