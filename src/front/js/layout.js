@@ -1,40 +1,78 @@
 import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Switch } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
-import { BackendURL } from "./component/backendURL";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
-import { Home } from "./pages/home";
-import { Demo } from "./pages/demo";
-import { Single } from "./pages/single";
-import injectContext from "./store/appContext";
+
+// Imports para las vistas de cliente
+import { Home } from "./pages/Home";
+import SignUp from "./pages/SignUp";
+import Login from "./pages/Login";
+import Private from "./pages/Private";
+import Cart from "./pages/Cart"
+import ContactUs from "./pages/ContactUs"
+import PayingForm from "./pages/PayingForm"
+import Profile from "./pages/Profile"
+import ShopDetail from "./pages/ShopDetail"
+import Shops from "./pages/Shops"
+import ShopsSearch from "./pages/ShopsSearch"
+
+// Vistas para Admins
+import AdminHome from "./pages/Admins/AdminHome"
+
+// Vistas para Tiendas
+import ShopHome from "./pages/Shops/ShopHome"
+import ShopSignUp from "./pages/Shops/ShopSignUp"
+import CreateBox from "./pages/Shops/CreateBox";
 
 import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
 
-//create your first component
+import injectContext from "./store/appContext"; // Asegúrate de importar correctamente
+
 const Layout = () => {
-    //the basename is used when your project is published in a subdirectory and not in the root of the domain
-    // you can set the basename on the .env file located at the root of this project, E.g: BASENAME=/react-hello-webapp/
-    const basename = process.env.BASENAME || "";
+  const basename = process.env.BASENAME || "";
 
-    if(!process.env.BACKEND_URL || process.env.BACKEND_URL == "") return <BackendURL/ >;
 
-    return (
-        <div>
-            <BrowserRouter basename={basename}>
-                <ScrollToTop>
-                    <Navbar />
-                    <Routes>
-                        <Route element={<Home />} path="/" />
-                        <Route element={<Demo />} path="/demo" />
-                        <Route element={<Single />} path="/single/:theid" />
-                        <Route element={<h1>Not found!</h1>} />
-                    </Routes>
-                    <Footer />
-                </ScrollToTop>
-            </BrowserRouter>
-        </div>
-    );
+
+  return (
+    <div>
+      <GoogleOAuthProvider clientId={process.env.REACT_APP_ID_CLIENTE_GOOGLE}>
+        <BrowserRouter basename={basename}>
+          <ScrollToTop>
+            <Navbar />
+            <Routes>
+
+              {/* Vistas de cliente */}
+              <Route element={<Home />} path="/home" />
+              <Route element={<SignUp />} path="/signup" />
+              <Route element={<Login />} path="/" />
+              <Route element={<Private />} path="/private" />
+              <Route element={<Cart />} path="/cart" />
+              <Route element={<ContactUs />} path="/contactus" />
+              <Route element={<PayingForm />} path="/payingform" />
+              <Route element={<Profile />} path="/profile" />
+              <Route element={<Shops />} path="/shops" />
+              <Route element={<ShopDetail />} path="/shops/:id" />
+              <Route element={<ShopsSearch />} path="/shopssearch" />
+
+              {/* Vistas de Admin */}
+              <Route element={<AdminHome />} path="/adminhome" />
+
+              {/* Vistas de Tienda */}
+              <Route element={<ShopHome />} path="/shophome" />
+              <Route element={<ShopSignUp />} path="/shopsignup" />
+              <Route element={<CreateBox />} path="/createbox" />
+
+              <Route element={<h1>Not found!</h1>} path="*" />
+            </Routes>
+            <Footer />
+          </ScrollToTop>
+        </BrowserRouter>
+      </GoogleOAuthProvider>
+    </div>
+  );
 };
 
+// Aplica injectContext al Layout
 export default injectContext(Layout);

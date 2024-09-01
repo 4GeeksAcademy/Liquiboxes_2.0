@@ -1,0 +1,37 @@
+/* Profile.css */
+.profile-container {
+    max-width: 800px;
+    margin: 2rem auto;
+  }
+  
+  .profile-container h1 {
+    color: var(--bs-primary);
+    margin-bottom: 2rem;
+  }
+  
+  .profile-content {
+    display: grid;
+    gap: 1.5rem;
+  }
+  
+  .card {
+    transition: all 0.3s ease;
+  }
+  
+  .card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-title {
+    color: var(--bs-gray-700);
+  }
+  
+  .field-icon {
+    font-size: 1.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .profile-container {
+      padding: 1rem;
+    }
+  }
