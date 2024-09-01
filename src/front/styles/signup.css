@@ -174,3 +174,26 @@ button:disabled {
     display: none;
   }
 }
+
+.field-description {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+textarea {
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  resize: vertical;
+}
+
+textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  outline: none;
+}
