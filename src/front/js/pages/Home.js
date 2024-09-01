@@ -3,6 +3,7 @@ import { Context } from "../store/appContext";
 import "../../styles/home.css";
 import SearchBar from "../component/Home/SearchBar";
 import ScrollHorizontal from "../component/Home/ScrollHorizantal";
+import CarruselTopSellers from "../component/Home/CarruselTopSellers";
 
 export const Home = () => {
     const { store, actions } = useContext(Context);
@@ -33,6 +34,7 @@ export const Home = () => {
             <h1>LiquiBoxes</h1>
             <div>
                 <SearchBar />
+                <CarruselTopSellers />
 
                 {/* Contenedor de desplazamiento horizontal */}
                 <div className="d-flex">
