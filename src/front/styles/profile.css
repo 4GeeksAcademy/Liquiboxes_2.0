@@ -1,11 +1,12 @@
 /* Profile.css */
+
 .profile-container {
     max-width: 800px;
     margin: 2rem auto;
   }
   
   .profile-container h1 {
-    color: var(--bs-primary);
+    color: var(--text-color);
     margin-bottom: 2rem;
   }
   
@@ -23,7 +24,7 @@
   }
   
   .card-title {
-    color: var(--bs-gray-700);
+    color: var(--text-color);
   }
   
   .field-icon {
