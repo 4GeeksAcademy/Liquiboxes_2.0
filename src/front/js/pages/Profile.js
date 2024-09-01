@@ -182,7 +182,7 @@ function Profile() {
               {value.map((item, index) => (
                 <span key={index} className="tag">
                   {item}
-                  <button onClick={() => handleRemoveItem(field, item)}>x</button>
+                  <button className='btn mx-1' onClick={() => handleRemoveItem(field, item)}>x</button>
                 </span>
               ))}
               {value.length < maxItems && (
@@ -215,17 +215,20 @@ function Profile() {
     };
 
     return (
-      <ProfileField
-        icon={icon}
-        label={label}
-        value={isListField ? value.join(', ') : value}
-        onEdit={() => handleEdit(field)}
-        onSave={() => handleSave(field)}
-        isEditing={editMode[field]}
-      >
-        {renderInput()}
-      </ProfileField>
+      <div className='col-4 mx-auto'>
+        <ProfileField
+          icon={icon}
+          label={label}
+          value={isListField ? value.join(', ') : value}
+          onEdit={() => handleEdit(field)}
+          onSave={() => handleSave(field)}
+          isEditing={editMode[field]}
+        >
+          {renderInput()}
+        </ProfileField>
+      </div>
     );
+
   };
 
   const handleAddItem = (field, item) => {
@@ -248,9 +251,9 @@ function Profile() {
   if (!userData) return <div className="loading-message">Cargando...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-center text-indigo-700 mb-8">Mi Perfil</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="mx-auto p-6">
+      <h1 className="text-center mb-8">Mi Perfil</h1>
+      <div className="row mx-3">
         {renderField('name', faUser, 'Nombre')}
         {renderField('surname', faUser, 'Apellido')}
         {renderField('email', faEnvelope, 'Email')}
