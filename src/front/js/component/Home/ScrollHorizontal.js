@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css"; // Asegúrate de importar el tema de slick-carousel
+import "slick-carousel/slick/slick-theme.css"; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import "../../../styles/slide.css";
-import ScrollHorizontal from "../Home/ScrollHorizantal";  // Importa ScrollHorizontal
+import CardTienda from "./CardTienda";
 
 // Componentes de flecha personalizados utilizando FontAwesome
 const PreviousArrow = ({ className, style, onClick }) => {
@@ -32,7 +32,7 @@ const NextArrow = ({ className, style, onClick }) => {
   );
 };
 
-function CardScroll({ cardsData }) {
+function ScrollHorizontal({ cardsData }) {
   const [slides, setSlides] = useState(cardsData);
 
   const settings = {
@@ -50,8 +50,8 @@ function CardScroll({ cardsData }) {
       <Slider {...settings}>
         {slides.map((card) => (
           <div key={card.id}>
-            {/* Renderiza ScrollHorizontal con los datos de la tarjeta */}
-            <ScrollHorizontal
+            {/* Renderiza CardTienda con los datos de la tienda */}
+            <CardTienda
               imageSrc={card.image_shop_url}
               title={card.shop_name}
               text={card.shop_summary}
@@ -64,4 +64,4 @@ function CardScroll({ cardsData }) {
   );
 }
 
-export default CardScroll;
+export default ScrollHorizontal;

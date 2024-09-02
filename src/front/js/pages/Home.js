@@ -2,8 +2,7 @@ import React, { useContext } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/home.css";
 import SearchBar from "../component/Home/SearchBar";
-import CardScroll from "../component/Home/CardScroll";
-
+import ScrollHorizontal from "../component/Home/ScrollHorizontal";
 export const Home = () => {
     const { store, actions } = useContext(Context);
 
@@ -62,8 +61,8 @@ export const Home = () => {
             <div>
                 <SearchBar />
             </div>
-            {/* Renderiza CardScroll y pasa los datos de las tarjetas */}
-            <CardScroll cardsData={cardsData} />
+            {/* Renderiza ScrollHorizontal y pasa los datos de CardTienda */}
+            <ScrollHorizontal cardsData={cardsData} />
         </div>
     );
 };

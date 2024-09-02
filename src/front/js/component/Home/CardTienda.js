@@ -1,7 +1,7 @@
-import React from 'react'; // Este componente muestra solo UN CARD TIENDA
+import React from 'react'; // Muestra los datos de la tienda
 import { useNavigate } from 'react-router-dom';
 
-const ScrollHorizontal = ({ imageSrc, title, text, link }) => { //Recibe los props de Home para rellenar los campos//
+const CardTienda = ({ imageSrc, title, text, link }) => { //Recibe los props de Home para rellenar los campos//
     const navigate = useNavigate()
 
     return (
@@ -16,4 +16,4 @@ const ScrollHorizontal = ({ imageSrc, title, text, link }) => { //Recibe los pro
     );
 };
 
-export default ScrollHorizontal;
+export default CardTienda;
