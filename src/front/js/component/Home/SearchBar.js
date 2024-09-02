@@ -11,7 +11,7 @@ export default function SearchBar() {
     // Función para manejar el submit del formulario
     const handleSubmitSearch = async (event) => {
         event.preventDefault();
-        console.log("Valor del input al hacer submit:", search);
+        console.log("Valor del input:", search);
 
         // Aquí puede ir el fetch 
     };

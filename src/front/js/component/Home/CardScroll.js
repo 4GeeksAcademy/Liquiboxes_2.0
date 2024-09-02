@@ -1,24 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; //Cambiarle el nombre por SCROLLHORIZAONTAL
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "../../../styles/slide.css";
 import ScrollHorizontal from "../Home/ScrollHorizantal";  // Importa ScrollHorizontal
 
-function CardScroll({ cardsData }) {  // Acepta cardsData como prop
+function CardScroll({ cardsData }) {  // Recibe cardsData desde Home como prop
   const [slides, setSlides] = useState(cardsData);
-
-  const handleClick = () => {
-    setSlides(
-      slides.length === cardsData.length ? cardsData.slice(0, 3) : cardsData
-    );
-  };
 
   const settings = {
     dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 3,
-    slidesToScroll: 3
+    slidesToShow: 4,
+    slidesToScroll: 4
   };
 
   return (
@@ -26,14 +20,15 @@ function CardScroll({ cardsData }) {  // Acepta cardsData como prop
     <div>
       <div className="slider-container">
         <Slider {...settings}>
-          {slides.map((card, index) => (
-            <div key={index}>
+
+          {slides.map((card) => (
+            <div key={card.id}>
               {/* Renderiza ScrollHorizontal con los datos de la tarjeta */}
               <ScrollHorizontal
-                imageSrc={card.imageSrc}
-                title={card.title}
-                text={card.text}
-                link={card.link}
+                imageSrc={card.image_shop_url}
+                title={card.shop_name}
+                text={card.shop_summary}
+                link={card.id}
               />
             </div>
           ))}

@@ -10,39 +10,47 @@ export const Home = () => {
     // Ejemplo de datos para las tarjetas
     const cardsData = [
         {
-            imageSrc: "https://images.pexels.com/photos/5872364/pexels-photo-5872364.jpeg?auto=compress&cs=tinysrgb&w=600",
-            title: "Card 1",
-            text: "Description for card 1",
+            image_shop_url: "https://images.pexels.com/photos/5872364/pexels-photo-5872364.jpeg?auto=compress&cs=tinysrgb&w=600",
+            id: 1,
+            shop_name: "Card 1",
+            shop_summary: "Description for card 1",
             link: "/link1"
         },
         {
-            imageSrc: "https://images.pexels.com/photos/5872364/pexels-photo-5872364.jpeg?auto=compress&cs=tinysrgb&w=600'",
-            title: "Card 2",
-            text: "Description for card 2",
+            image_shop_url: "https://images.pexels.com/photos/5872364/pexels-photo-5872364.jpeg?auto=compress&cs=tinysrgb&w=600'",
+            id: 2,
+
+            shop_name: "Card 2",
+            shop_summary: "Description for card 2",
             link: "/link2"
         },
         {
-            imageSrc: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-            title: "Card 3",
-            text: "Description for card 3",
+            image_shop_url: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            id: 3,
+
+            shop_name: "Card 3",
+            shop_summary: "Description for card 3",
             link: "/link3"
         },
         {
-            imageSrc: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-            title: "Card 3",
-            text: "Description for card 3",
+            image_shop_url: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            id: 4,
+            shop_name: "Card 3",
+            shop_summary: "Description for card 3",
             link: "/link3"
         },
         {
-            imageSrc: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-            title: "Card 3",
-            text: "Description for card 3",
+            image_shop_url: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            id: 5,
+            shop_name: "Card 3",
+            shop_summary: "Description for card 3",
             link: "/link3"
         },
         {
-            imageSrc: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-            title: "Card 3",
-            text: "Description for card 3",
+            image_shop_url: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            id: 6,
+            shop_name: "Card 3",
+            shop_summary: "Description for card 3",
             link: "/link3"
         }
         // Agrega más tarjetas según sea necesario
