@@ -27,7 +27,7 @@ export default function SearchBar() {
                 value={search} // Valor del input vinculado al estado
                 onChange={handleInputSearch} // Maneja el cambio de texto en el input
             />
-            <button className="btn btn-primary ms-2 px-4" type="submit">
+            <button className="ms-2 px-4" type="submit">
                 Search
             </button>
         </form>

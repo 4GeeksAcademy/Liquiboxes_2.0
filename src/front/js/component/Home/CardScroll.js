@@ -1,10 +1,38 @@
-import React, { useState } from 'react'; //Cambiarle el nombre por SCROLLHORIZAONTAL
+import React, { useState } from 'react';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css"; // Asegúrate de importar el tema de slick-carousel
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import "../../../styles/slide.css";
 import ScrollHorizontal from "../Home/ScrollHorizantal";  // Importa ScrollHorizontal
 
-function CardScroll({ cardsData }) {  // Recibe cardsData desde Home como prop
+// Componentes de flecha personalizados utilizando FontAwesome
+const PreviousArrow = ({ className, style, onClick }) => {
+  return (
+    <div
+      className={`rounded-2 ${className}`}
+      style={{ ...style, display: "block", background: "#6a8e7fff"}}
+      onClick={onClick}
+    >
+      <FontAwesomeIcon icon={faChevronLeft} size="2x" style={{ color: '#333'}}  />
+    </div>
+  );
+};
+
+const NextArrow = ({ className, style, onClick }) => {
+  return (
+    <div
+    className={`rounded-2 ${className}`}
+    style={{ ...style, display: "block", background: "#6a8e7fff"}}
+    onClick={onClick}
+    >
+      <FontAwesomeIcon icon={faChevronRight} size="2x" style={{ color: '#333' }} />
+    </div>
+  );
+};
+
+function CardScroll({ cardsData }) {
   const [slides, setSlides] = useState(cardsData);
 
   const settings = {
@@ -12,83 +40,28 @@ function CardScroll({ cardsData }) {  // Recibe cardsData desde Home como prop
     infinite: true,
     speed: 500,
     slidesToShow: 4,
-    slidesToScroll: 4
+    slidesToScroll: 4,
+    prevArrow: <PreviousArrow />, // Usa el componente de flecha personalizado
+    nextArrow: <NextArrow />,     // Usa el componente de flecha personalizado
   };
 
   return (
-
-    <div>
-      <div className="slider-container">
-        <Slider {...settings}>
-
-          {slides.map((card) => (
-            <div key={card.id}>
-              {/* Renderiza ScrollHorizontal con los datos de la tarjeta */}
-              <ScrollHorizontal
-                imageSrc={card.image_shop_url}
-                title={card.shop_name}
-                text={card.shop_summary}
-                link={card.id}
-              />
-            </div>
-          ))}
-        </Slider>
-      </div>
+    <div className="slider-container">
+      <Slider {...settings}>
+        {slides.map((card) => (
+          <div key={card.id}>
+            {/* Renderiza ScrollHorizontal con los datos de la tarjeta */}
+            <ScrollHorizontal
+              imageSrc={card.image_shop_url}
+              title={card.shop_name}
+              text={card.shop_summary}
+              link={card.id}
+            />
+          </div>
+        ))}
+      </Slider>
     </div>
-
   );
 }
 
 export default CardScroll;
-
-
-
-
-// export default function CardScroll() {
-//   const settings = {
-//     dots: true,
-//     infinite: true,
-//     speed: 500,
-//     slidesToShow: 3,
-//     slidesToScroll: 3,
-
-//   };
-//   return (
-//     <div>
-
-//       <div className="slider-container">
-//         <Slider {...settings} className='d-flex '>
-//           <div>
-//             <h3>Caja 1</h3>
-//             <img className="img-fluid" style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-//               src='https://images.pexels.com/photos/5872364/pexels-photo-5872364.jpeg?auto=compress&cs=tinysrgb&w=600' />
-//           </div>
-//           <div>
-//             <h3>Caja 2</h3>
-//             <img className="img-fluid" style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-//               src='https://images.pexels.com/photos/157879/gift-jeans-fashion-pack-157879.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1' />
-//           </div>
-//           <div>
-//             <h3>Caja 3</h3>
-//             <img className="img-fluid" style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-//               src='https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1' />
-//           </div>
-//           <div>
-//             <h3>Caja 4</h3>
-//             <img className="img-fluid" style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-//               src='https://images.pexels.com/photos/4397835/pexels-photo-4397835.jpeg?auto=compress&cs=tinysrgb&w=600' />
-//           </div>
-//           <div>
-//             <h3>Caja 5</h3>
-//             <img className="img-fluid" style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-//               src='https://images.pexels.com/photos/4397835/pexels-photo-4397835.jpeg?auto=compress&cs=tinysrgb&w=600' />
-//           </div>
-
-//         </Slider>
-//       </div>
-//     </div>
-
-//   )
-// }
-
-
