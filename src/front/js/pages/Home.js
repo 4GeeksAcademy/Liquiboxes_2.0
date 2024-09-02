@@ -2,7 +2,9 @@ import React, { useContext } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/home.css";
 import SearchBar from "../component/Home/SearchBar";
-import ScrollHorizontal from "../component/Home/ScrollHorizontal";
+import ScrollHorizontal from "../component/Home/ScrollHorizantal";
+import CarruselTopSellers from "../component/Home/CarruselTopSellers";
+
 export const Home = () => {
     const { store, actions } = useContext(Context);
 
@@ -60,7 +62,24 @@ export const Home = () => {
             <h1>LiquiBoxes</h1>
             <div>
                 <SearchBar />
+                <CarruselTopSellers />
+
+                {/* Contenedor de desplazamiento horizontal */}
+                <div className="d-flex">
+                    {cardData.map((card, index) => (
+                        <ScrollHorizontal
+                            key={index}
+                            imageSrc={card.imageSrc}
+                            title={card.title}
+                            text={card.text}
+                            link={card.link}
+                        />
+                    ))}
+                </div>
+                {/* Fin del contenedor de desplazamiento horizontal */}
+
             </div>
+
             {/* Renderiza ScrollHorizontal y pasa los datos de CardTienda */}
             <ScrollHorizontal cardsData={cardsData} />
         </div>
