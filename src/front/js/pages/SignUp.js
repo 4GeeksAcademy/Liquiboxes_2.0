@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faLock, faTshirt, faShoePrints, faPalette, faTextHeight, faBriefcase } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/signup.css";
+import { Context } from "../store/appContext";
 
 const STEPS = [
   { icon: faUser, title: "Datos Personales", description: "Cuéntanos un poco sobre ti" },
@@ -14,188 +15,182 @@ const STEPS = [
   { icon: faBriefcase, title: "Finalizar", description: "Últimos detalles para completar tu perfil" }
 ];
 
+const SIZES = {
+  upper: ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'],
+  lower: Array.from({ length: 35 }, (_, i) => i + 26),
+  shoe: Array.from({ length: 27 }, (_, i) => i + 28)
+};
+
+const COLORS = ['Rojo', 'Azul', 'Verde', 'Amarillo', 'Naranja', 'Morado', 'Rosa', 'Marrón', 'Negro', 'Blanco'];
+const CLOTHES = ['Camisetas', 'Pantalones', 'Faldas', 'Vestidos', 'Chaquetas', 'Abrigos', 'Zapatos', 'Accesorios', 'Ropa Interior', 'Trajes'];
+const PROFESSIONS = ['Salud', 'Informática', 'Educación', 'Ingeniería', 'Artes', 'Finanzas', 'Ventas', 'Administración', 'Construcción', 'Hostelería', 'Estudiante', 'Otro'];
+
 export default function SignUp() {
   const [step, setStep] = useState(1);
-  const [isStepValid, setIsStepValid] = useState(false);
   const [signupData, setSignUpData] = useState({
     name: "", surname: "", gender: "", address: "", postalCode: "",
     email: "", password: "", upperSize: "", lowerSize: "", cupSize: "", shoeSize: "",
     notColors: [], stamps: "", fit: "", notClothes: [], categories: [], profession: "",
   });
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { store } = useContext(Context);
+  const CATEGORIES = store.categories;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === 'checkbox') {
-      if (checked) {
-        setSignUpData(prev => ({
-          ...prev,
-          [name]: [...prev[name], value].slice(0, name === 'categories' ? 5 : 3)
-        }));
-      } else {
-        setSignUpData(prev => ({
-          ...prev,
-          [name]: prev[name].filter(item => item !== value)
-        }));
-      }
+      const maxItems = name === 'categories' ? 5 : 3;
+      setSignUpData(prev => ({
+        ...prev,
+        [name]: checked
+          ? [...prev[name], value].slice(0, maxItems)
+          : prev[name].filter(item => item !== value)
+      }));
     } else {
       setSignUpData(prev => ({ ...prev, [name]: value }));
     }
+    setErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const validateStep = () => {
+    const newErrors = {};
+    switch (step) {
+      case 1:
+        if (!signupData.name) newErrors.name = "El nombre es requerido";
+        if (!signupData.surname) newErrors.surname = "El apellido es requerido";
+        if (!signupData.gender) newErrors.gender = "El género es requerido";
+        if (!signupData.address) newErrors.address = "La dirección es requerida";
+        if (!signupData.postalCode) newErrors.postalCode = "El código postal es requerido";
+        else if (!/^\d{5}$/.test(signupData.postalCode)) newErrors.postalCode = "El código postal debe tener 5 dígitos";
+        break;
+      case 2:
+        if (!signupData.email) newErrors.email = "El email es requerido";
+        else if (!/\S+@\S+\.\S+/.test(signupData.email)) newErrors.email = "El email no es válido";
+        if (!signupData.password) newErrors.password = "La contraseña es requerida";
+        else if (signupData.password.length < 8) newErrors.password = "La contraseña debe tener al menos 8 caracteres";
+        break;
+      case 3:
+        if (!signupData.upperSize) newErrors.upperSize = "La talla superior es requerida";
+        if (!signupData.lowerSize) newErrors.lowerSize = "La talla inferior es requerida";
+        if (!signupData.shoeSize) newErrors.shoeSize = "La talla de zapato es requerida";
+        break;
+      case 4:
+        if (!signupData.stamps) newErrors.stamps = "La preferencia de estampado es requerida";
+        if (!signupData.fit) newErrors.fit = "La preferencia de ajuste es requerida";
+        break;
+      case 6:
+        if (signupData.categories.length === 0) newErrors.categories = "Selecciona al menos una categoría";
+        if (!signupData.profession) newErrors.profession = "La profesión es requerida";
+        break;
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (signupData.categories.length === 0) {
-      alert(`Por favor selecciona al menos una categoria`);
-      return;
-    }
+    if (!validateStep()) return;
 
     try {
       const response = await axios.post(
         `${process.env.BACKEND_URL}/users/register`,
         signupData,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
       console.log("Usuario registrado:", response.data);
       navigate("/");
     } catch (error) {
       console.error("Ha habido un error:", error);
+      setErrors({ submit: "Hubo un error al registrar. Por favor, inténtalo de nuevo." });
     }
   };
 
-  const validateStep = () => {
-    switch (step) {
-      case 1:
-        return signupData.name && signupData.surname && signupData.gender && signupData.address && signupData.postalCode;
-      case 2:
-        return signupData.email && signupData.password;
-      case 3:
-        return signupData.upperSize && signupData.lowerSize && signupData.shoeSize;
-      case 4:
-        return signupData.stamps && signupData.fit;
-      case 5:
-        return true; 
-      case 6:
-        return signupData.categories.length > 0 && signupData.profession;
-      default:
-        return false;
-    }
-  };
+  const renderCheckboxGroup = (name, options, maxItems) => (
+    <div className="checkbox-group">
+      <p>{name === 'notColors' ? 'Colores que menos te gustan' : 'Prendas que menos te gustan'} (máximo {maxItems}):</p>
+      {options.map(option => (
+        <label key={option}>
+          <input
+            type="checkbox"
+            name={name}
+            value={option}
+            checked={signupData[name].includes(option)}
+            onChange={handleChange}
+            disabled={signupData[name].length >= maxItems && !signupData[name].includes(option)}
+          /> {option}
+        </label>
+      ))}
+    </div>
+  );
 
-  useEffect(() => {
-    setIsStepValid(validateStep());
-  }, [signupData, step]);
+  const renderSelect = (name, options, placeholder) => (
+    <select name={name} value={signupData[name]} onChange={handleChange} required>
+      <option value="">{placeholder}</option>
+      {options.map(option => (
+        <option key={option} value={typeof option === 'number' ? option : option.toLowerCase()}>
+          {option}
+        </option>
+      ))}
+    </select>
+  );
 
   const renderStep = () => {
     switch (step) {
       case 1:
         return (
           <>
-            <input type="text" name="name" value={signupData.name} onChange={handleChange} placeholder="Nombre" required />
-            <input type="text" name="surname" value={signupData.surname} onChange={handleChange} placeholder="Apellido" required />
-            <select name="gender" value={signupData.gender} onChange={handleChange} required>
-              <option value="">Selecciona género</option>
-              <option value="masculino">Masculino</option>
-              <option value="femenino">Femenino</option>
-              <option value="no_especificado">Prefiero no decirlo</option>
-            </select>
-            <input type="text" name="address" value={signupData.address} onChange={handleChange} placeholder="Dirección" required />
-            <input type="text" name="postalCode" value={signupData.postalCode} onChange={handleChange} placeholder="Código Postal" required />
+            <input type="text" name="name" value={signupData.name} onChange={handleChange} placeholder="Nombre" required aria-label="Nombre" />
+            {errors.name && <span className="error">{errors.name}</span>}
+            <input type="text" name="surname" value={signupData.surname} onChange={handleChange} placeholder="Apellido" required aria-label="Apellido" />
+            {errors.surname && <span className="error">{errors.surname}</span>}
+            {renderSelect("gender", ["Masculino", "Femenino", "No especificado"], "Selecciona género")}
+            {errors.gender && <span className="error">{errors.gender}</span>}
+            <input type="text" name="address" value={signupData.address} onChange={handleChange} placeholder="Dirección" required aria-label="Dirección" />
+            {errors.address && <span className="error">{errors.address}</span>}
+            <input type="text" name="postalCode" value={signupData.postalCode} onChange={handleChange} placeholder="Código Postal" required aria-label="Código Postal" maxLength="5" pattern="\d{5}" />
+            {errors.postalCode && <span className="error">{errors.postalCode}</span>}
           </>
         );
       case 2:
         return (
           <>
-            <input type="email" name="email" value={signupData.email} onChange={handleChange} placeholder="Email" required />
-            <input type="password" name="password" value={signupData.password} onChange={handleChange} placeholder="Contraseña" required />
+            <input type="email" name="email" value={signupData.email} onChange={handleChange} placeholder="Email" required aria-label="Email" />
+            {errors.email && <span className="error">{errors.email}</span>}
+            <input type="password" name="password" value={signupData.password} onChange={handleChange} placeholder="Contraseña" required aria-label="Contraseña" minLength="8" />
+            {errors.password && <span className="error">{errors.password}</span>}
           </>
         );
       case 3:
         return (
           <>
-            <select name="upperSize" value={signupData.upperSize} onChange={handleChange} required>
-              <option value="">Talla Superior</option>
-              {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map(size => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
-            <select name="lowerSize" value={signupData.lowerSize} onChange={handleChange} required>
-              <option value="">Talla Inferior</option>
-              {Array.from({ length: 35 }, (_, i) => i + 26).map(size => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
-            <select name="cupSize" value={signupData.cupSize} onChange={handleChange}>
-              <option value="">Talla de Gorra o Sombrero (opcional)</option>
-              {['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map(size => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
-            <select name="shoeSize" value={signupData.shoeSize} onChange={handleChange} required>
-              <option value="">Talla de Zapato (EU)</option>
-              {Array.from({ length: 27 }, (_, i) => i + 28).map(size => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
+            {renderSelect("upperSize", SIZES.upper, "Talla Superior")}
+            {errors.upperSize && <span className="error">{errors.upperSize}</span>}
+            {renderSelect("lowerSize", SIZES.lower, "Talla Inferior")}
+            {errors.lowerSize && <span className="error">{errors.lowerSize}</span>}
+            {renderSelect("cupSize", SIZES.upper, "Talla de Gorra o Sombrero (opcional)")}
+            {renderSelect("shoeSize", SIZES.shoe, "Talla de Zapato (EU)")}
+            {errors.shoeSize && <span className="error">{errors.shoeSize}</span>}
           </>
         );
       case 4:
         return (
           <>
-            <div className="checkbox-group">
-              <p>Colores que menos te gustan (máximo 3):</p>
-              {['Rojo', 'Azul', 'Verde', 'Amarillo', 'Naranja', 'Morado', 'Rosa', 'Marrón', 'Negro', 'Blanco'].map(color => (
-                <label key={color}>
-                  <input
-                    type="checkbox"
-                    name="notColors"
-                    value={color}
-                    checked={signupData.notColors.includes(color)}
-                    onChange={handleChange}
-                    disabled={signupData.notColors.length >= 3 && !signupData.notColors.includes(color)}
-                  /> {color}
-                </label>
-              ))}
-            </div>
-            <select name="stamps" value={signupData.stamps} onChange={handleChange} required>
-              <option value="">Preferencia de Estampado</option>
-              <option value="estampados">Estampados</option>
-              <option value="lisos">Lisos</option>
-            </select>
-            <select name="fit" value={signupData.fit} onChange={handleChange} required>
-              <option value="">Preferencia de Ajuste</option>
-              <option value="ajustado">Ajustado</option>
-              <option value="holgado">Holgado</option>
-            </select>
+            {renderCheckboxGroup("notColors", COLORS, 3)}
+            {renderSelect("stamps", ["Estampados", "Lisos"], "Preferencia de Estampado")}
+            {errors.stamps && <span className="error">{errors.stamps}</span>}
+            {renderSelect("fit", ["Ajustado", "Holgado"], "Preferencia de Ajuste")}
+            {errors.fit && <span className="error">{errors.fit}</span>}
           </>
         );
       case 5:
-        return (
-          <div className="checkbox-group">
-            <p>Prendas que menos te gustan (máximo 3):</p>
-            {['Camisetas', 'Pantalones', 'Faldas', 'Vestidos', 'Chaquetas', 'Abrigos', 'Zapatos', 'Accesorios', 'Ropa Interior', 'Trajes'].map(item => (
-              <label key={item}>
-                <input
-                  type="checkbox"
-                  name="notClothes"
-                  value={item}
-                  checked={signupData.notClothes.includes(item)}
-                  onChange={handleChange}
-                  disabled={signupData.notClothes.length >= 3 && !signupData.notClothes.includes(item)}
-                /> {item}
-              </label>
-            ))}
-          </div>
-        );
+        return renderCheckboxGroup("notClothes", CLOTHES, 3);
       case 6:
         return (
           <>
             <div className="checkbox-group">
               <p>Categorías con las que te identificas (máximo 5):</p>
-              {['Moda', 'Ropa de Trabajo', 'Tecnología', 'Carpintería', 'Outdoor', 'Deporte', 'Arte', 'Cocina', 'Jardinería', 'Música', 'Viajes', 'Lectura', 'Cine', 'Fotografía', 'Yoga'].map(category => (
+              {CATEGORIES.map(category => (
                 <label key={category}>
                   <input
                     type="checkbox"
@@ -208,12 +203,9 @@ export default function SignUp() {
                 </label>
               ))}
             </div>
-            <select name="profession" value={signupData.profession} onChange={handleChange} required>
-              <option value="">Selecciona tu profesión</option>
-              {['Salud', 'Informática', 'Educación', 'Ingeniería', 'Artes', 'Finanzas', 'Ventas', 'Administración', 'Construcción', 'Hostelería', 'Estudiante', 'Otro'].map(prof => (
-                <option key={prof} value={prof}>{prof}</option>
-              ))}
-            </select>
+            {errors.categories && <span className="error">{errors.categories}</span>}
+            {renderSelect("profession", PROFESSIONS, "Selecciona tu profesión")}
+            {errors.profession && <span className="error">{errors.profession}</span>}
           </>
         );
       default:
@@ -223,17 +215,17 @@ export default function SignUp() {
 
   return (
     <div className="signup-container">
-      <div className="signup-progress">
+      <div className="signup-progress" role="progressbar" aria-valuenow={step} aria-valuemin="1" aria-valuemax="6">
         {STEPS.map((s, index) => (
           <div key={index} className={`step ${index + 1 === step ? 'active' : ''} ${index + 1 < step ? 'completed' : ''}`}>
             <div className="step-icon">
-              <FontAwesomeIcon icon={s.icon} />
+              <FontAwesomeIcon icon={s.icon} aria-hidden="true" />
             </div>
             <div className="step-label">{s.title}</div>
           </div>
         ))}
       </div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div className="signup-content">
           <div className="step-info">
             <h2>{STEPS[step - 1].title}</h2>
@@ -243,25 +235,20 @@ export default function SignUp() {
             {renderStep()}
           </div>
         </div>
+        {errors.submit && <div className="error-message">{errors.submit}</div>}
         <div className="navigation-buttons">
           {step > 1 && <button type="button" onClick={() => setStep(prev => prev - 1)}>Anterior</button>}
           {step < 6 ? (
             <button 
               type="button" 
-              onClick={() => setStep(prev => prev + 1)} 
-              disabled={!isStepValid}
-              className={isStepValid ? "button-enabled" : "button-disabled"}
+              onClick={() => {
+                if (validateStep()) setStep(prev => prev + 1);
+              }}
             >
               Siguiente
             </button>
           ) : (
-            <button 
-              type="submit" 
-              disabled={!isStepValid}
-              className={isStepValid ? "button-enabled" : "button-disabled"}
-            >
-              Registrarse
-            </button>
+            <button type="submit">Registrarse</button>
           )}
         </div>
       </form>

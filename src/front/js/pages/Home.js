@@ -2,7 +2,9 @@ import React, { useContext } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/home.css";
 import SearchBar from "../component/Home/SearchBar";
-import CardScroll from "../component/Home/CardScroll";
+import ScrollHorizontalShops from "../component/Home/ScrollHorizontalShops";
+import CarruselTopSellers from "../component/Home/CarruselTopSellers";
+import CardTienda from "../component/Home/CardTienda";
 
 export const Home = () => {
     const { store, actions } = useContext(Context);
@@ -60,10 +62,18 @@ export const Home = () => {
         <div className="text-center mt-5 mx-5">
             <h1>LiquiBoxes</h1>
             <div>
+            {/* Renderiza la barra de búsqueda */}
                 <SearchBar />
+
             </div>
-            {/* Renderiza CardScroll y pasa los datos de las tarjetas */}
-            <CardScroll cardsData={cardsData} />
+            <div>
+            {/* Renderiza el Carrusel de una sola imagen que va cambiando */}
+                <CarruselTopSellers />
+
+            </div>
+            {/* Renderiza ScrollHorizontal y pasa los datos de CardTienda */}
+            <ScrollHorizontalShops cardsData={cardsData} />
+            
         </div>
     );
 };

@@ -1,7 +1,30 @@
-/*
-    home.css: This website contains selectors only used in home.css
-
-    All pages share the styles on index.css but you should create 
-    one more css for each page that will contain the selected used 
-    on that page only (the ones not reused in other pages).
-*/
+.carousel-container {
+    max-width: 100%; /* Asegura que el carrusel no exceda el ancho del contenedor */
+    margin: 0 auto; /* Centra el carrusel en la página */
+    padding: 20px; /* Añade algo de espacio alrededor */
+  }
+  
+  .carousel-image {
+    max-height: 500px; /* Ajusta esta altura según tus necesidades */
+    object-fit: cover; /* Hace que la imagen se ajuste al contenedor sin distorsionarse */
+    border-radius: 15px; /* Bordes redondeados para un look más moderno */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Añade una sombra sutil */
+  }
+  
+  .carousel-caption {
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semi-transparente para mejorar la legibilidad del texto */
+    padding: 10px;
+    border-radius: 10px;
+  }
+  
+  @media (max-width: 768px) {
+    .carousel-image {
+      max-height: 300px; /* Reduce la altura en dispositivos móviles */
+    }
+  
+    .carousel-caption h3,
+    .carousel-caption p {
+      font-size: 1rem; /* Ajusta el tamaño del texto en móviles */
+    }
+  }
+  

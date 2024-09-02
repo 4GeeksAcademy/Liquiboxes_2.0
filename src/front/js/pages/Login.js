@@ -5,9 +5,9 @@ import { GoogleLogin } from "@react-oauth/google";
 import { Context } from "../store/appContext";
 
 export default function Login() {
-    const {store, actions} = useContext(Context)
-    const [showError, setShowError] = useState(false)
-
+    const { store, actions } = useContext(Context);
+    const [showError, setShowError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
     const [loginData, setLoginData] = useState({
         email: "",
         password: ""
@@ -21,25 +21,91 @@ export default function Login() {
         });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const attemptLogin = async (endpoint, loginData) => {
         try {
-            const response = await axios.post(process.env.BACKEND_URL + "/users/login", loginData, {
+            const baseUrl = process.env.BACKEND_URL.replace(/\/$/, '');
+            const response = await axios.post(`${baseUrl}/${endpoint}`, loginData, {
                 headers: { "Content-Type": "application/json" },
             });
-            console.log("Usuario autenticado:", response.data);
-            if (response.data.access_token) {
-                sessionStorage.setItem("token", response.data.access_token);
-                navigate("/profile");
-            } else {
-                throw new Error("No se recibió el token de acceso");
-            }
+            return response.data;
         } catch (error) {
-            console.log("Error de autenticación:", error);
-            setShowError(true);
+            console.log(`Error en ${endpoint}:`, error);
+            if (error.response) {
+                console.log("Response data:", error.response.data);
+                console.log("Response status:", error.response.status);
+                throw new Error(error.response.data.error || "Error de autenticación");
+            } else if (error.request) {
+                throw new Error("No se pudo conectar con el servidor");
+            } else {
+                throw new Error("Error al procesar la solicitud");
+            }
         }
     };
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setShowError(false);
+        setErrorMessage("");
+
+        try {
+            // Intenta iniciar sesión como usuario normal
+            try {
+                const userLoginResult = await attemptLogin("users/login", loginData);
+                if (userLoginResult && userLoginResult.access_token) {
+                    sessionStorage.setItem("token", userLoginResult.access_token);
+                    sessionStorage.setItem("userType", "normal");
+                    console.log("Ha entrado como usuario")
+                    navigate("/profile");
+                    return;
+                }
+            } catch (userError) {
+                console.log("Error en inicio de sesión de usuario:", userError);
+            }
+
+            // Si falla, intenta iniciar sesión como tienda
+            try {
+                const shopLoginResult = await attemptLogin("shops/login", loginData);
+                if (shopLoginResult && shopLoginResult.access_token) {
+                    sessionStorage.setItem('token', shopLoginResult.access_token);
+                    sessionStorage.setItem('shopId', shopLoginResult.shop.id);
+                    sessionStorage.setItem("userType", "shop");
+                    console.log("Ha entrado como tienda")
+                    navigate("/shophome");
+                    return;
+                }
+            } catch (shopError) {
+                console.log("Error en inicio de sesión de tienda:", shopError);
+            }
+
+            // Si ambos fallan, lanza un error
+            throw new Error("Credenciales inválidas para usuario y tienda");
+        } catch (error) {
+            console.log("Error de autenticación:", error);
+            setShowError(true);
+            setErrorMessage(error.message);
+        }
+    };
+
+    const handleGoogleLogin = async (credentialResponse) => {
+        try {
+            // Aquí deberías enviar el token de Google al backend para verificación
+            const response = await axios.post(`${process.env.BACKEND_URL}/google-login`, {
+                token: credentialResponse.credential
+            });
+
+            if (response.data.access_token) {
+                sessionStorage.setItem("token", response.data.access_token);
+                sessionStorage.setItem("userType", response.data.user_type);
+                navigate(response.data.user_type === "normal" ? "/profile" : "/shophome");
+            } else {
+                throw new Error("Error en la autenticación con Google");
+            }
+        } catch (error) {
+            console.log("Error en la autenticación con Google:", error);
+            setShowError(true);
+            setErrorMessage("Error en la autenticación con Google");
+        }
+    };
 
     return (
         <div className="container mt-5">
@@ -69,27 +135,28 @@ export default function Login() {
                         required
                     />
                 </div>
-                {showError && ( // Esto se muestra solo y exclusivamente si showError === true
-                    <div>
-                        <p className="text-danger">Tu email o tu contraseña no coinciden</p>
+                {showError && (
+                    <div className="alert alert-danger" role="alert">
+                        {errorMessage}
                     </div>
                 )}
                 <button type="submit" className="btn btn-primary">Iniciar Sesión</button>
-                <GoogleLogin
-                    onSuccess={credentialResponse => {
-                        console.log(credentialResponse);
-                        // Aquí deberías manejar la respuesta exitosa, por ejemplo, enviando el token al backend
-                    }}
-                    onError={() => {
-                        console.log('Login Failed');
-                    }}
-                />
             </form>
 
-            <div className="alert alert-info">
-		 		{store.message || "Loading message from the backend (make sure your python backend is running)..."}
-		 	</div>
+            <div className="mt-3">
+                <GoogleLogin
+                    onSuccess={handleGoogleLogin}
+                    onError={() => {
+                        console.log('Login Failed');
+                        setShowError(true);
+                        setErrorMessage("Error en la autenticación con Google");
+                    }}
+                />
+            </div>
+
+            <div className="alert alert-info mt-3">
+                {store.message || "Cargando mensaje del backend..."}
+            </div>
         </div>
     );
-
 }
