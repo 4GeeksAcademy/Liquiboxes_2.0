@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faStore, faEnvelope, faLock, faShoppingBag, faBriefcase, faComments } from '@fortawesome/free-solid-svg-icons';
 import "../../../styles/signup.css";
+import { Context } from "../../store/appContext";
 
 const STEPS = [
   { icon: faUser, title: "Datos del Propietario", description: "Información sobre el dueño de la tienda" },
@@ -14,7 +15,6 @@ const STEPS = [
   { icon: faComments, title: "Descripción de la Tienda", description: "Comparte la historia y valores de tu tienda" }
 ];
 
-const CATEGORIES = ['Moda', 'Ropa de Trabajo', 'Tecnología', 'Carpintería', 'Outdoor', 'Deporte', 'Arte', 'Cocina', 'Jardinería', 'Música', 'Viajes', 'Lectura', 'Cine', 'Fotografía', 'Yoga'];
 
 export default function ShopSignUp() {
   const [step, setStep] = useState(1);
@@ -32,6 +32,9 @@ export default function ShopSignUp() {
     shop_description: ""
   });
   const navigate = useNavigate();
+  const {store, actions} = useContext(Context)
+  const CATEGORIES = store.categories
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

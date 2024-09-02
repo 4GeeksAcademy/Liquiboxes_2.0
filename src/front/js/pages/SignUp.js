@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faLock, faTshirt, faShoePrints, faPalette, faTextHeight, faBriefcase } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/signup.css";
+import { Context } from "../store/appContext";
 
 const STEPS = [
   { icon: faUser, title: "Datos Personales", description: "Cuéntanos un poco sobre ti" },
@@ -23,6 +24,8 @@ export default function SignUp() {
     notColors: [], stamps: "", fit: "", notClothes: [], categories: [], profession: "",
   });
   const navigate = useNavigate();
+  const {store, actions} = useContext(Context)
+  const CATEGORIES = store.categories
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -195,7 +198,7 @@ export default function SignUp() {
           <>
             <div className="checkbox-group">
               <p>Categorías con las que te identificas (máximo 5):</p>
-              {['Moda', 'Ropa de Trabajo', 'Tecnología', 'Carpintería', 'Outdoor', 'Deporte', 'Arte', 'Cocina', 'Jardinería', 'Música', 'Viajes', 'Lectura', 'Cine', 'Fotografía', 'Yoga'].map(category => (
+              {CATEGORIES.map(category => (
                 <label key={category}>
                   <input
                     type="checkbox"

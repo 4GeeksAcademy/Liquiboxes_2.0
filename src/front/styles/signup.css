@@ -134,6 +134,11 @@ select:focus {
   cursor: pointer;
 }
 
+input[type="checkbox"] {
+  accent-color: var(--secondary-color);
+}
+
+
 .navigation-buttons {
   display: flex;
   justify-content: space-between;
@@ -197,3 +202,4 @@ textarea:focus {
   box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
   outline: none;
 }
+
