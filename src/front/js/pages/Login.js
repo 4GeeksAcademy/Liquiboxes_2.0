@@ -66,7 +66,8 @@ export default function Login() {
             try {
                 const shopLoginResult = await attemptLogin("shops/login", loginData);
                 if (shopLoginResult && shopLoginResult.access_token) {
-                    sessionStorage.setItem("token", shopLoginResult.access_token);
+                    sessionStorage.setItem('token', shopLoginResult.access_token);
+                    sessionStorage.setItem('shopId', shopLoginResult.shop.id);
                     sessionStorage.setItem("userType", "shop");
                     console.log("Ha entrado como tienda")
                     navigate("/shophome");
@@ -91,7 +92,7 @@ export default function Login() {
             const response = await axios.post(`${process.env.BACKEND_URL}/google-login`, {
                 token: credentialResponse.credential
             });
-            
+
             if (response.data.access_token) {
                 sessionStorage.setItem("token", response.data.access_token);
                 sessionStorage.setItem("userType", response.data.user_type);
