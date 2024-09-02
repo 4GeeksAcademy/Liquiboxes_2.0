@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faStore, faEnvelope, faLock, faShoppingBag, faBriefcase, faComments } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faStore, faEnvelope, faLock, faShoppingBag, faBriefcase, faComments, faList , faImage } from '@fortawesome/free-solid-svg-icons';
 import "../../../styles/signup.css";
 import { Context } from "../../store/appContext";
 
@@ -12,9 +12,10 @@ const STEPS = [
   { icon: faEnvelope, title: "Cuenta", description: "Crea tu cuenta segura" },
   { icon: faShoppingBag, title: "Categorías", description: "Selecciona las categorías de tus productos" },
   { icon: faBriefcase, title: "Core del Negocio", description: "Cuéntanos sobre la esencia de tu negocio" },
-  { icon: faComments, title: "Descripción de la Tienda", description: "Comparte la historia y valores de tu tienda" }
+  { icon: faComments, title: "Descripción de la Tienda", description: "Comparte la historia y valores de tu tienda" },
+  { icon: faList , title: "Resumen de la Tienda", description: "Breve descripción de tu tienda en 10 palabras" },
+  { icon: faImage, title: "Imagen de la Tienda", description: "Sube una imagen representativa de tu tienda" }
 ];
-
 
 export default function ShopSignUp() {
   const [step, setStep] = useState(1);
@@ -29,15 +30,16 @@ export default function ShopSignUp() {
     password: "", 
     categories: [], 
     business_core: "", 
-    shop_description: ""
+    shop_description: "",
+    shop_summary: "",
+    image_shop_url: ""
   });
   const navigate = useNavigate();
   const {store, actions} = useContext(Context)
   const CATEGORIES = store.categories
 
-
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked, files } = e.target;
     if (type === 'checkbox') {
       if (checked) {
         setSignUpData(prev => ({
@@ -50,6 +52,8 @@ export default function ShopSignUp() {
           [name]: prev[name].filter(item => item !== value)
         }));
       }
+    } else if (type === 'file') {
+      setSignUpData(prev => ({ ...prev, [name]: files[0] }));
     } else {
       setSignUpData(prev => ({ ...prev, [name]: value }));
     }
@@ -63,12 +67,21 @@ export default function ShopSignUp() {
       return;
     }
 
+    const formData = new FormData();
+    for (const key in signupData) {
+      if (key === 'image_shop_url') {
+        formData.append(key, signupData[key], signupData[key].name);
+      } else {
+        formData.append(key, signupData[key]);
+      }
+    }
+
     try {
       const response = await axios.post(
         `${process.env.BACKEND_URL}/shops/register`,
-        signupData,
+        formData,
         {
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
       console.log("Tienda registrada:", response.data);
@@ -89,9 +102,13 @@ export default function ShopSignUp() {
       case 4:
         return signupData.categories.length > 0;
       case 5:
-        return signupData.business_core.length >= 10; // Asegurarse de que haya una descripción mínima
+        return signupData.business_core.length >= 10;
       case 6:
-        return signupData.shop_description.length >= 50; // Asegurarse de que haya una descripción sustancial
+        return signupData.shop_description.length >= 50;
+      case 7:
+        return signupData.shop_summary && signupData.shop_summary.split(' ').length <= 10;
+      case 8:
+        return signupData.image_shop_url;
       default:
         return false;
     }
@@ -179,6 +196,48 @@ export default function ShopSignUp() {
             />
           </>
         );
+      case 7:
+        return (
+          <>
+            <p className="field-description">
+              Proporciona un breve resumen de tu tienda en no más de 10 palabras.
+              Este resumen aparecerá en los resultados de búsqueda y en las vistas previas de tu tienda.
+            </p>
+            <input
+              type="text"
+              name="shop_summary"
+              value={signupData.shop_summary}
+              onChange={handleChange}
+              placeholder="Resumen de la tienda (máximo 10 palabras)"
+              required
+            />
+            <p className="word-count">
+              Palabras: {signupData.shop_summary.split(' ').filter(word => word !== '').length}/10
+            </p>
+          </>
+        );
+      case 8:
+        return (
+          <>
+            <p className="field-description">
+              Sube una imagen representativa de tu tienda. Esta imagen se mostrará en tu perfil y en los resultados de búsqueda.
+            </p>
+            <input
+              type="file"
+              name="image_shop_url"
+              onChange={handleChange}
+              accept="image/*"
+              required
+            />
+            {signupData.image_shop_url && (
+              <img
+                src={URL.createObjectURL(signupData.image_shop_url)}
+                alt="Vista previa de la imagen de la tienda"
+                style={{ maxWidth: '200px', marginTop: '10px' }}
+              />
+            )}
+          </>
+        );
       default:
         return null;
     }
@@ -208,7 +267,7 @@ export default function ShopSignUp() {
         </div>
         <div className="navigation-buttons">
           {step > 1 && <button type="button" onClick={() => setStep(prev => prev - 1)}>Anterior</button>}
-          {step < 6 ? (
+          {step < 8 ? (
             <button 
               type="button" 
               onClick={() => setStep(prev => prev + 1)} 
