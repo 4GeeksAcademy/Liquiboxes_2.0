@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.exceptions import BadRequest
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from api.models import db, Shop
+from api.models import db, Shop, MysteryBox
 from flask_cors import CORS
 import cloudinary
 import cloudinary.uploader
@@ -104,7 +104,7 @@ def shop_login():
 
     shop = Shop.query.filter_by(email=email).first()
     if shop and shop.check_password(password):
-        access_token = create_access_token(identity=email)
+        access_token = create_access_token(identity=shop.id)
         return jsonify({
             'access_token': access_token,
             'shop': shop.serialize()
@@ -114,22 +114,28 @@ def shop_login():
 @jwt_required()
 def create_mystery_box():
     current_shop_id = get_jwt_identity()
-    data = request.form  # Cambiado de request.json a request.form
+    data = request.form
     
     try:
+        # Cambiamos la consulta para buscar por ID en lugar de email
         shop = Shop.query.get(current_shop_id)
         if not shop:
             return jsonify({'error': 'Shop not found'}), 404
 
         image_file = request.files.get('image')
-        image_url = upload_image_to_cloudinary(image_file) if image_file else None
-        
+        if not image_file:
+            return jsonify({'error': 'No image file provided'}), 400
+
+        image_url = upload_image_to_cloudinary(image_file)
+        if not image_url:
+            return jsonify({'error': 'Failed to upload image to Cloudinary'}), 500
+
         new_box = MysteryBox(
             name=data['name'],
             description=data['description'],
             price=float(data['price']),
             size=data['size'],
-            possible_items=data['possibleItems'].split(','),  # Asumiendo que los items posibles vienen como una cadena separada por comas
+            possible_items=data['possibleItems'].split(','),
             image_url=image_url,
             number_of_items=int(data['numberOfItems']),
             shop_id=shop.id
