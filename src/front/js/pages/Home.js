@@ -2,52 +2,68 @@ import React, { useContext } from "react";
 import { Context } from "../store/appContext";
 import "../../styles/home.css";
 import SearchBar from "../component/Home/SearchBar";
-import ScrollHorizontal from "../component/Home/ScrollHorizantal";
+import CardScroll from "../component/Home/CardScroll";
 
 export const Home = () => {
     const { store, actions } = useContext(Context);
-    const cardData = [
+
+    // Ejemplo de datos para las tarjetas
+    const cardsData = [
         {
-            imageSrc: 'https://via.placeholder.com/150',
-            title: 'Card 1',
-            text: 'This is the first card.',
-            link: '#',
+            image_shop_url: "https://images.pexels.com/photos/5872364/pexels-photo-5872364.jpeg?auto=compress&cs=tinysrgb&w=600",
+            id: 1,
+            shop_name: "Card 1",
+            shop_summary: "Description for card 1",
+            link: "/link1"
         },
         {
-            imageSrc: 'https://via.placeholder.com/150',
-            title: 'Card 2',
-            text: 'This is the second card.',
-            link: '#',
+            image_shop_url: "https://images.pexels.com/photos/5872364/pexels-photo-5872364.jpeg?auto=compress&cs=tinysrgb&w=600'",
+            id: 2,
+
+            shop_name: "Card 2",
+            shop_summary: "Description for card 2",
+            link: "/link2"
         },
         {
-            imageSrc: 'https://via.placeholder.com/150',
-            title: 'Card 3',
-            text: 'This is the third card.',
-            link: '#',
+            image_shop_url: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            id: 3,
+
+            shop_name: "Card 3",
+            shop_summary: "Description for card 3",
+            link: "/link3"
         },
-        // Puedes agregar más objetos aquí para más tarjetas
+        {
+            image_shop_url: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            id: 4,
+            shop_name: "Card 3",
+            shop_summary: "Description for card 3",
+            link: "/link3"
+        },
+        {
+            image_shop_url: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            id: 5,
+            shop_name: "Card 3",
+            shop_summary: "Description for card 3",
+            link: "/link3"
+        },
+        {
+            image_shop_url: "https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            id: 6,
+            shop_name: "Card 3",
+            shop_summary: "Description for card 3",
+            link: "/link3"
+        }
+        // Agrega más tarjetas según sea necesario
     ];
 
     return (
-        <div className="text-center mt-5">
+        <div className="text-center mt-5 mx-5">
             <h1>LiquiBoxes</h1>
             <div>
                 <SearchBar />
-
-                {/* Contenedor de desplazamiento horizontal */}
-                <div className="d-flex">
-                    {cardData.map((card, index) => (
-                        <ScrollHorizontal
-                            key={index}
-                            imageSrc={card.imageSrc}
-                            title={card.title}
-                            text={card.text}
-                            link={card.link}
-                        />
-                    ))}
-                </div>
-                {/* Fin del contenedor de desplazamiento horizontal */}
             </div>
+            {/* Renderiza CardScroll y pasa los datos de las tarjetas */}
+            <CardScroll cardsData={cardsData} />
         </div>
     );
 };
