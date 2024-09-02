@@ -43,6 +43,36 @@ function CardScroll({ cardsData }) {
     slidesToScroll: 4,
     prevArrow: <PreviousArrow />, // Usa el componente de flecha personalizado
     nextArrow: <NextArrow />,     // Usa el componente de flecha personalizado
+        responsive: [
+      {
+        breakpoint: 1200, // dispositivos grandes
+        settings: {
+          slidesToShow: 4,
+          slidesToScroll: 4,
+        }
+      },
+      {
+        breakpoint: 992, // dispositivos medianos
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 3,
+        }
+      },
+      {
+        breakpoint: 768, // dispositivos pequeños
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 2,
+        }
+      },
+      {
+        breakpoint: 576, // dispositivos extra pequeños
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        }
+      }
+    ]
   };
 
   return (
