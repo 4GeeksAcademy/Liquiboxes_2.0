@@ -75,16 +75,43 @@ class Shop(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    postal_code = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(300), nullable=False)
+    categories = db.Column(ARRAY(db.String), nullable=False)
+    business_core = db.Column(db.Text, nullable=False)
+    shop_description = db.Column(db.Text, nullable=False)
+    shop_summary = db.Column(db.String(200), nullable=False)
+    image_shop_url = db.Column(db.String(200), nullable=False)
+    owner_name = db.Column(db.String(120), nullable=False)
+    owner_surname = db.Column(db.String(120), nullable=False)
     
-    user = db.relationship('User', backref=db.backref('shops', lazy=True))
     mystery_boxes = db.relationship('MysteryBox', backref='shop', lazy=True)
+
+    def __repr__(self):
+        return f'<Shop {self.name}>'
+    
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     def serialize(self):
         return {
             "id": self.id,
             "name": self.name,
-            "user_id": self.user_id
+            "address": self.address,
+            "postal_code": self.postal_code,
+            "email": self.email,
+            "categories": self.categories,
+            "business_core": self.business_core,
+            "shop_description": self.shop_description,
+            "shop_summary": self.shop_summary,
+            "image_shop_url": self.image_shop_url,
+            "owner_name": self.owner_name,
+            "owner_surname": self.owner_surname
         }
 
 class MysteryBox(db.Model):

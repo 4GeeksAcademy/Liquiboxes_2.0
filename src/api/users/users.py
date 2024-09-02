@@ -61,7 +61,7 @@ def create_user():
         return jsonify({'error': 'Error al crear el usuario: ' + str(e)}), 500
 
 @users.route('/login', methods=['POST'])
-def login():
+def user_login():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
@@ -69,7 +69,10 @@ def login():
     user = User.query.filter_by(email=email).first()
     if user and user.check_password(password):
         access_token = create_access_token(identity=email)
-        return jsonify(access_token=access_token), 200
+        return jsonify({
+            'access_token': access_token,
+            'user': user.serialize()
+        }), 200
     return jsonify({'error': 'Credenciales inválidas'}), 401
 
 @users.route('/private', methods=['GET'])

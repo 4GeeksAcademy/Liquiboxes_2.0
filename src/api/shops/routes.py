@@ -1,86 +1,156 @@
 from flask import Blueprint, request, jsonify
-from api.models import db, MysteryBox, Shop
-from flask_jwt_extended import jwt_required
-from werkzeug.utils import secure_filename
+from werkzeug.exceptions import BadRequest
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from api.models import db, Shop
+from flask_cors import CORS
+import cloudinary
+import cloudinary.uploader
+from cloudinary.exceptions import Error as CloudinaryError
 import os
-import base64
-import imghdr
+
 
 shops = Blueprint('shops', __name__)
 
-UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
+CORS(shops)
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+cloudinary.config(
+    cloud_name = os.getenv("cloud_name"),
+    api_key = os.getenv("api_key"),
+    api_secret = os.getenv("api_secret")
+)
 
-def validate_image(image_data):
-    if len(image_data) > MAX_IMAGE_SIZE:
-        raise ValueError(f"El tamaño de la imagen excede el límite de {MAX_IMAGE_SIZE / (1024 * 1024)} MB")
-    
-    image_type = imghdr.what(None, h=image_data)
-    if image_type not in ALLOWED_EXTENSIONS:
-        raise ValueError("Tipo de archivo no permitido. Use PNG, JPG, JPEG o GIF.")
 
-def save_base64_image(base64_string):
+def upload_image_to_cloudinary(image_file):
+    if image_file:
+        try:
+            upload_result = cloudinary.uploader.upload(image_file)
+            return upload_result['secure_url']
+        except CloudinaryError as e:
+            print(f"Cloudinary Error: {str(e)}")
+            return None
+        except Exception as e:
+            print(f"Unexpected error during image upload: {str(e)}")
+            return None
+    return None
+
+@shops.route('/register', methods=['POST'])
+def register_shop():
     try:
-        if ',' in base64_string:
-            base64_string = base64_string.split(',')[1]
+        data = request.form
+        required_fields = ['shop_name', 'shop_address', 'postal_code', 'email', 'password', 
+                           'categories', 'business_core', 'shop_description', 'shop_summary', 
+                           'owner_name', 'owner_surname']
         
-        image_data = base64.b64decode(base64_string)
+        for field in required_fields:
+            if field not in data:
+                raise BadRequest(f"Missing required field: {field}")
+
+        existing_shop = Shop.query.filter_by(email=data['email']).first()
+        if existing_shop:
+            return jsonify({'error': 'Email already registered'}), 400
+
+        image_file = request.files.get('image_shop_url')
+        if not image_file:
+            return jsonify({'error': 'No image file provided'}), 400
+
+        image_url = upload_image_to_cloudinary(image_file)
+        if not image_url:
+            return jsonify({'error': 'Failed to upload image to Cloudinary'}), 500
+
+        if not image_url:
+            return jsonify({'error': 'Failed to upload image'}), 500
+
+        categories = data.get('categories', '').split(',')
+        if not categories:
+            return jsonify({'error': 'At least one category is required'}), 400
+
+        new_shop = Shop(
+            name=data['shop_name'],
+            address=data['shop_address'],
+            postal_code=data['postal_code'],
+            email=data['email'],
+            categories=categories,
+            business_core=data['business_core'],
+            shop_description=data['shop_description'],
+            shop_summary=data['shop_summary'],
+            image_shop_url=image_url,
+            owner_name=data['owner_name'],
+            owner_surname=data['owner_surname']
+        )
+        new_shop.set_password(data['password'])
+
+        db.session.add(new_shop)
+        db.session.commit()
         
-        validate_image(image_data)
+        access_token = create_access_token(identity=new_shop.id)
         
-        filename = secure_filename(f"image_{os.urandom(8).hex()}.png")
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        
-        with open(filepath, "wb") as f:
-            f.write(image_data)
-        
-        return f"/uploads/{filename}"
+        return jsonify({
+            'message': 'Shop registered successfully',
+            'access_token': access_token,
+            'shop': new_shop.serialize()
+        }), 201
+    except BadRequest as e:
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
-        raise ValueError(str(e))
+        db.session.rollback()
+        print(f"Error in shop registration: {str(e)}")
+        return jsonify({'error': f'An unexpected error occurred: {str(e)}'}), 500
+    
+@shops.route('/login', methods=['POST'])
+def shop_login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    shop = Shop.query.filter_by(email=email).first()
+    if shop and shop.check_password(password):
+        access_token = create_access_token(identity=email)
+        return jsonify({
+            'access_token': access_token,
+            'shop': shop.serialize()
+        }), 200
 
 @shops.route('/mystery-box', methods=['POST'])
 @jwt_required()
 def create_mystery_box():
-    current_user_id = get_jwt_identity()
-    data = request.json
+    current_shop_id = get_jwt_identity()
+    data = request.form  # Cambiado de request.json a request.form
     
     try:
-        # Verificar si el usuario tiene una tienda
-        shop = Shop.query.filter_by(user_id=current_user_id).first()
+        shop = Shop.query.get(current_shop_id)
         if not shop:
-            return jsonify({'error': 'Debes tener una tienda para crear una caja misteriosa'}), 403
+            return jsonify({'error': 'Shop not found'}), 404
 
-        image = data.pop('image', None)
-        
-        if image.startswith('http://') or image.startswith('https://'):
-            image_url = image
-        else:
-            image_url = save_base64_image(image)
+        image_file = request.files.get('image')
+        image_url = upload_image_to_cloudinary(image_file) if image_file else None
         
         new_box = MysteryBox(
             name=data['name'],
             description=data['description'],
             price=float(data['price']),
             size=data['size'],
-            possible_items=data['possibleItems'],
+            possible_items=data['possibleItems'].split(','),  # Asumiendo que los items posibles vienen como una cadena separada por comas
             image_url=image_url,
             number_of_items=int(data['numberOfItems']),
-            shop_id=shop.id  # Añadimos el shop_id aquí
+            shop_id=shop.id
         )
         
         db.session.add(new_box)
         db.session.commit()
         
         return jsonify(new_box.serialize()), 201
-    except ValueError as e:
-        return jsonify({'error': str(e)}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'Error interno del servidor'}), 500
+        return jsonify({'error': str(e)}), 500
+    
+@shops.route('/', methods=['GET'])
+def get_all_users():
+    users = Shop.query.all()
+    
+    # Serializa cada objeto en la lista de usuarios
+    serialized_users = [user.serialize() for user in users]
+
+    return jsonify(serialized_users), 200
 
 @shops.errorhandler(413)
 def request_entity_too_large(error):

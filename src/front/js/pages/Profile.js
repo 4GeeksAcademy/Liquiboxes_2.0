@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faEnvelope, faTshirt, faPalette, faTextHeight, faBriefcase, faEdit, faSave } from '@fortawesome/free-solid-svg-icons';
+import {
+  faUser,
+  faEnvelope,
+  faVenusMars,
+  faMapMarkerAlt,
+  faMapPin,
+  faTshirt,
+  faHatCowboy,
+  faShoePrints,
+  faPalette,
+  faTape,
+  faBriefcase,
+  faBan,
+  faList
+} from '@fortawesome/free-solid-svg-icons';
 import "../../styles/profile.css";
 import ProfileField from '../component/Profile/ProfileField';
 
@@ -257,19 +271,19 @@ function Profile() {
         {renderField('name', faUser, 'Nombre')}
         {renderField('surname', faUser, 'Apellido')}
         {renderField('email', faEnvelope, 'Email')}
-        {renderField('gender', faUser, 'Género')}
-        {renderField('address', faUser, 'Dirección')}
-        {renderField('postal_code', faUser, 'Código Postal')}
+        {renderField('gender', faVenusMars, 'Género')}
+        {renderField('address', faMapMarkerAlt, 'Dirección')}
+        {renderField('postal_code', faMapPin, 'Código Postal')}
         {renderField('upper_size', faTshirt, 'Talla Superior')}
         {renderField('lower_size', faTshirt, 'Talla Inferior')}
-        {renderField('cup_size', faTshirt, 'Talla de Gorra o Sombrero')}
-        {renderField('shoe_size', faTshirt, 'Talla de Zapato')}
+        {renderField('cup_size', faHatCowboy, 'Talla de Gorra o Sombrero')}
+        {renderField('shoe_size', faShoePrints, 'Talla de Zapato')}
         {renderField('stamps', faPalette, 'Preferencia de Estampado')}
-        {renderField('fit', faPalette, 'Preferencia de Ajuste')}
+        {renderField('fit', faTape, 'Preferencia de Ajuste')}
         {renderField('profession', faBriefcase, 'Profesión')}
-        {renderField('not_colors', faPalette, 'Colores no preferidos')}
-        {renderField('not_clothes', faTshirt, 'Prendas no preferidas')}
-        {renderField('categories', faBriefcase, 'Categorías')}
+        {renderField('not_colors', faBan, 'Colores no preferidos')}
+        {renderField('not_clothes', faBan, 'Prendas no preferidas')}
+        {renderField('categories', faList, 'Categorías')}
       </div>
     </div>
   );
