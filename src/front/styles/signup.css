@@ -135,7 +135,7 @@ select:focus {
 }
 
 input[type="checkbox"] {
-  accent-color: var(--secondary-color);
+  accent-color: var(--primary-color);
 }
 
 
