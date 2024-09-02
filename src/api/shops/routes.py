@@ -126,7 +126,7 @@ def create_mystery_box():
         if not image_file:
             return jsonify({'error': 'No image file provided'}), 400
 
-        image_url = upload_image_to_cloudinary(image_file)
+        image_url = upload_image_to_cloudinary(image_file, folder='')
         if not image_url:
             return jsonify({'error': 'Failed to upload image to Cloudinary'}), 500
 
@@ -157,6 +157,15 @@ def get_all_users():
     serialized_users = [user.serialize() for user in users]
 
     return jsonify(serialized_users), 200
+
+@shops.route('/mystery-box', methods=['GET'])
+def get_all_mystery_boxes():
+    mysteryboxes = MysteryBox.query.all()
+    
+    # Serializa cada objeto en la lista de usuarios
+    serialized_mysteryboxes = [mysterybox.serialize() for mysterybox in mysteryboxes]
+
+    return jsonify(serialized_mysteryboxes), 200
 
 @shops.errorhandler(413)
 def request_entity_too_large(error):
