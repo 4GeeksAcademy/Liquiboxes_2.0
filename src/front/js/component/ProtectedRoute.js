@@ -10,11 +10,11 @@ const ProtectedRoute = ({ children }) => {
 
 
 // En tu componente de rutas principal
-{/* <Route 
+<Route 
   path="/create-mystery-box" 
   element={
     <ProtectedRoute>
       <CreateMysteryBox />
     </ProtectedRoute>
   } 
-/> */}
+/>
