@@ -32,7 +32,7 @@ const NextArrow = ({ className, style, onClick }) => {
   );
 };
 
-function ScrollHorizontal({ cardsData }) {
+function ScrollHorizontalShops({ cardsData }) {
   const [slides, setSlides] = useState(cardsData);
 
   const settings = {
@@ -64,4 +64,4 @@ function ScrollHorizontal({ cardsData }) {
   );
 }
 
-export default ScrollHorizontal;
+export default ScrollHorizontalShops;
