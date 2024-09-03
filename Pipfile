@@ -21,6 +21,8 @@ typing-extensions = "*"
 flask-jwt = "*"
 pyjwt = "==2.3.0"
 flask-jwt-extended = "*"
+google-auth = "*"
+requests = "*"
 
 [requires]
 python_version = "3.10"

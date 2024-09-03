@@ -158,6 +158,15 @@ def get_all_users():
 
     return jsonify(serialized_users), 200
 
+@shops.route('/mystery-box', methods=['GET'])
+def get_all_mystery_boxes():
+    mysteryboxes = MysteryBox.query.all()
+    
+    # Serializa cada objeto en la lista de usuarios
+    serialized_mysteryboxes = [mysterybox.serialize() for mysterybox in mysteryboxes]
+
+    return jsonify(serialized_mysteryboxes), 200
+
 @shops.errorhandler(413)
 def request_entity_too_large(error):
     return jsonify({'error': 'El archivo subido excede el tamaño máximo permitido'}), 413
