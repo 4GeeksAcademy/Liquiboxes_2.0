@@ -8,6 +8,7 @@ import '../styles/home.css';
 import '../styles/index.css';
 import '../styles/profile.css';
 import '../styles/signup.css';
+import '../styles/mysteryboxdetail.css';
 import '../styles/shops.css';
 import '../styles/chooseregistration.css';
 
