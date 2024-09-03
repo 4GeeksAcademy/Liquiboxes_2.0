@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faLock, faTshirt, faShoePrints, faPalette, faTextHeight, faBriefcase } from '@fortawesome/free-solid-svg-icons';
@@ -34,8 +34,22 @@ export default function SignUp() {
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const location = useLocation();
   const { store } = useContext(Context);
   const CATEGORIES = store.categories;
+
+  const { google_data, access_token } = location.state || {};
+
+  useEffect(() => {
+    if (google_data) {
+      setSignUpData(prev => ({
+        ...prev,
+        name: google_data.name || prev.name,
+        surname: google_data.surname || prev.surname,
+        email: google_data.email || prev.email,
+      }));
+    }
+  }, [google_data]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;

@@ -16,6 +16,8 @@ from api.commands import setup_commands
 
 from api.users.users import users
 from api.shops.routes import shops
+from api.google.routes import google
+
 
 # from models import Person
 
@@ -53,6 +55,8 @@ setup_commands(app)
 app.register_blueprint(api, url_prefix='/api')
 app.register_blueprint(users, url_prefix='/users')
 app.register_blueprint(shops, url_prefix='/shops')
+app.register_blueprint(google, url_prefix='/google')
+
 
 
 ######## TODO Hablar con el equipo para la organización de los archivos de las rutas (estructura del proyecto)
