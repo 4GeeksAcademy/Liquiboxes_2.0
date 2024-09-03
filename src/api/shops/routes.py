@@ -167,6 +167,22 @@ def get_all_mystery_boxes():
 
     return jsonify(serialized_mysteryboxes), 200
 
+@shops.route('/shop/<int:shop_id>', methods=['GET'])
+def get_shop(shop_id):
+    shop = Shop.query.get(shop_id)
+    if shop:
+        return jsonify(shop.serialize()), 200
+    else:
+        return jsonify({'error': 'Shop not found'}), 404
+
+@shops.route('/mystery-box/<int:box_id>', methods=['GET'])
+def get_mystery_box(box_id):
+    mystery_box = MysteryBox.query.get(box_id)
+    if mystery_box:
+        return jsonify(mystery_box.serialize()), 200
+    else:
+        return jsonify({'error': 'Mystery box not found'}), 404
+
 @shops.errorhandler(413)
 def request_entity_too_large(error):
     return jsonify({'error': 'El archivo subido excede el tamaño máximo permitido'}), 413
