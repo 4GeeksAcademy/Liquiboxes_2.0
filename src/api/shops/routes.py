@@ -126,7 +126,7 @@ def create_mystery_box():
         if not image_file:
             return jsonify({'error': 'No image file provided'}), 400
 
-        image_url = upload_image_to_cloudinary(image_file, folder='')
+        image_url = upload_image_to_cloudinary(image_file)
         if not image_url:
             return jsonify({'error': 'Failed to upload image to Cloudinary'}), 500
 
