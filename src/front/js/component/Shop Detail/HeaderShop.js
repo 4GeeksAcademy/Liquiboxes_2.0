@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
+
+
+
 function HeaderShop() {
     const [shopData, setShopData] = useState(null);
 
@@ -13,7 +16,7 @@ function HeaderShop() {
             <div className="row mb-4">
                 <div className="col-md-4 text-center">
                     <img
-                        className="img-fluid rounded-end shadow-sm"
+                        className="img-fluid rounded shadow-sm"
                         src="https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
                         alt="Tienda"
                         style={{ maxWidth: '75%' }}
@@ -38,7 +41,7 @@ export default HeaderShop;
 
 
 
-//DATOS LISTOS DEL RETURN PARA RECIBIR DATOS DEL BACKEND//
+//DATOS LISTOS A PARTIR DEL RETURN PARA RECIBIR DATOS DEL BACKEND//
 {/* <div className="container my-4">
 <div className="row mb-4">
   <div className="col-md-4 text-center">

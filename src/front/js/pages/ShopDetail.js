@@ -1,6 +1,9 @@
 import React from 'react'
-import HeaderShop from '../component/Shop Details/HeaderShop'
+import HeaderShop from '../component/Shop Detail/HeaderShop';
 import { useState } from 'react';
+
+
+
 
 export default function ShopDetail() {
   const [isArmarioVisible, setIsArmarioVisible] = useState(false);
