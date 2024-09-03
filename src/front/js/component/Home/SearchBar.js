@@ -1,36 +1,80 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function SearchBar() {
-    const [search, setSearch] = useState("");
+const categories = ['Moda', 'Ropa de Trabajo', 'Tecnología', 'Carpintería', 'Outdoor', 'Deporte', 'Arte', 'Cocina', 'Jardinería', 'Música', 'Viajes', 'Lectura', 'Cine', 'Fotografía', 'Yoga'];
 
-    // Función para manejar cambios en el input
+export default function SearchBar({ onSearch, onCategoryChange, initialSearchTerm = "" }) {
+    const [search, setSearch] = useState(initialSearchTerm);
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        setSearch(initialSearchTerm);
+    }, [initialSearchTerm]);
+
     const handleInputSearch = (event) => {
         setSearch(event.target.value);
     };
 
-    // Función para manejar el submit del formulario
-    const handleSubmitSearch = async (event) => {
+    const handleSubmitSearch = (event) => {
         event.preventDefault();
-        console.log("Valor del input:", search);
+        if (location.pathname === "/home") {
+            navigate(`/shopssearch?search=${encodeURIComponent(search)}`);
+        } else {
+            onSearch(search);
+        }
+    };
 
-        // Aquí puede ir el fetch 
+    const handleCategoryChange = (category) => {
+        const updatedCategories = selectedCategories.includes(category)
+            ? selectedCategories.filter(c => c !== category)
+            : [...selectedCategories, category];
+        setSelectedCategories(updatedCategories);
+        onCategoryChange(updatedCategories);
+    };
+
+    const toggleExpand = () => {
+        setIsExpanded(!isExpanded);
     };
 
     return (
-      <div>
-        <form className="d-flex align-items-center p-2" role="search" onSubmit={handleSubmitSearch}>
-            <input
-                className="form-control border-0 border-bottom shadow"
-                type="search"
-                placeholder="Search"
-                aria-label="Search"
-                value={search} // Valor del input vinculado al estado
-                onChange={handleInputSearch} // Maneja el cambio de texto en el input
-            />
-            <button className="ms-2 px-4" type="submit">
-                Search
-            </button>
-        </form>
-</div>
+        <div className="search-bar">
+            <div className="search-container">
+                <form className="search-form" onSubmit={handleSubmitSearch}>
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre o dirección"
+                        value={search}
+                        className="my-auto"
+                        onChange={handleInputSearch}
+                        // Aseguramos que se puedan ingresar caracteres especiales
+                        lang="es"
+                    />
+                    <button type="submit">
+                        Buscar
+                    </button>
+                </form>
+                <div className="category-filter">
+                    <button className="category-toggle" onClick={toggleExpand}>
+                        {isExpanded ? "Ocultar categorías" : "Mostrar categorías"}
+                    </button>
+                </div>
+            </div>
+            {isExpanded && (
+                <div className="category-buttons">
+                    {categories.map((category) => (
+                        <button
+                            key={category}
+                            className={selectedCategories.includes(category) ? 'active' : ''}
+                            onClick={() => handleCategoryChange(category)}
+                        >
+                            {category}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
     );
 }
