@@ -62,18 +62,19 @@ export const Home = () => {
         <div className="text-center mt-5 mx-5">
             <h1>LiquiBoxes</h1>
             <div>
-            {/* Renderiza la barra de búsqueda */}
-                <SearchBar />
-
+                {/* Renderiza la barra de búsqueda */}
+                <SearchBar onSearch={(term) => {
+                    navigate(`/shopssearch?search=${encodeURIComponent(term)}`);
+                }} />
             </div>
             <div>
-            {/* Renderiza el Carrusel de una sola imagen que va cambiando */}
+                {/* Renderiza el Carrusel de una sola imagen que va cambiando */}
                 <CarruselTopSellers />
 
             </div>
             {/* Renderiza ScrollHorizontal y pasa los datos de CardTienda */}
             <ScrollHorizontalShops cardsData={cardsData} />
-            
+
         </div>
     );
 };

@@ -8,6 +8,7 @@ import '../styles/home.css';
 import '../styles/index.css';
 import '../styles/profile.css';
 import '../styles/signup.css';
+import '../styles/shops.css';
 
 //import your own components
 import Layout from "./layout";
