@@ -16,8 +16,7 @@ function HeaderShop({ data }) {
           <h2 className="fw-bold">{data.name}</h2>
           <p className="lead text-secondary">{data.shop_summary}</p>
 
-          <hr/>
-
+          
           <div className="row">
             <div className="col-md-6 mb-2">
               <i className="fas fa-map-marker-alt me-2"></i>
