@@ -61,33 +61,6 @@ const getState = ({ getStore, getActions, setStore }) => {
                 }
             },
 
-            handleSearch: (searchTerm) => {
-                const store = getStore();
-                setStore({ searchTerm });
-                const filtered = store.allShops.filter(shop =>
-                    shop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    (shop.address && shop.address.toLowerCase().includes(searchTerm.toLowerCase()))
-                );
-                setStore({ filteredShops: filtered });
-                return filtered; // Retornamos el resultado para uso inmediato si es necesario
-            },
-
-            handleCategoryChange: (selectedCategories) => {
-                const store = getStore();
-                if (selectedCategories.length === 0) {
-                    setStore({ filteredShops: store.allShops });
-                    return store.allShops; // Retornamos todas las tiendas si no hay categorías seleccionadas
-                } else {
-                    const filtered = store.allShops.filter(shop =>
-                        shop.categories.some(category =>
-                            selectedCategories.includes(category.toLowerCase())
-                        )
-                    );
-                    setStore({ filteredShops: filtered });
-                    return filtered; // Retornamos el resultado filtrado
-                }
-            },
-
             fetchUserProfile: async () => {
                 try {
                     const token = sessionStorage.getItem('token');
