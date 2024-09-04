@@ -31,11 +31,8 @@ services:
     env: node
     plan: free  # Cambia a "starter" o cualquier otro plan si es necesario
     region: oregon  # O cambia según tu preferencia
-    buildCommand: 
-      - "npm install"
-      - "npm run build"
-    startCommand: 
-      - "npm run start"
+    buildCommand: "npm install & npm run build"
+    startCommand: "npm run start"
     autoDeploy: true
     staticPublishPath: build  # Ruta del build de la aplicación React
     envVars:
