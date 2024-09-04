@@ -1,66 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
-
-
-
-function HeaderShop() {
-    const [shopData, setShopData] = useState(null);
-
-    useEffect(() => {
-        // AQUI PUEDE IR EL FETCH//
-    }, []);
-
-
-    return (
-        <div className="container my-4">
-            <div className="row mb-4">
-                <div className="col-md-4 text-center">
-                    <img
-                        className="img-fluid rounded shadow-sm"
-                        src="https://images.pexels.com/photos/1050283/pexels-photo-1050283.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                        alt="Tienda"
-                        style={{ maxWidth: '75%' }}
-                    />
-                </div>
-                <div className="col-md-8 d-flex flex-column justify-content-center">
-                    <h3 className="fw-bold">Nombre de la tienda</h3>
-                    <p className="text-muted mb-1">Shop Summary:</p>
-                    <p className="text-muted mb-1">Address: </p>
-                    <p className="text-muted mb-1">Postal Code: </p>
-                    <p className="text-muted mb-1">Email: </p>
-                    <p className="text-muted mb-1">Owner Name: </p>
-                    <p className="text-muted mb-1">Categories: </p>
-                    <p className="text-muted mb-1">Description:</p>
-                </div>
-            </div>
+function HeaderShop({ data }) {
+  return (
+    <div className="container my-5 p-4 shadow-lg p-3 mb-5 bg-body-tertiary rounded shadow-sm bg-light">
+      <div className="row align-items-center">
+        <div className="col-lg-4 text-center mb-4 mb-lg-0">
+          <img
+            className="img-fluid rounded shadow"
+            src={data.image_shop_url}
+            alt={data.name}
+            style={{ maxWidth: '100%', height: 'auto', maxHeight: '250px', objectFit: 'cover' }}
+          />
         </div>
-    );
+        <div className="col-lg-8">
+          <h2 className="fw-bold">{data.name}</h2>
+          <p className="lead text-secondary">{data.shop_summary}</p>
+
+          <hr className="my-4" />
+
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <i className="fas fa-map-marker-alt me-2"></i>
+              <strong>Address:</strong> <span className="text-muted">{data.address}</span>
+            </div>
+            <div className="col-md-6 mb-3">
+              <i className="fas fa-envelope me-2"></i>
+              <strong>Email:</strong> <span className="text-muted">{data.email}</span>
+            </div>
+            <div className="col-md-6 mb-3">
+              <i className="fas fa-tags me-2"></i>
+              <strong>Categories:</strong> <span className="text-muted">{data.categories}</span>
+            </div>
+            <div className="col-md-6 mb-3">
+              <i className="fas fa-building me-2"></i>
+              <strong>Business Core:</strong> <span className="text-muted">{data.business_core}</span>
+            </div>
+            <div className="col-md-6 mb-3">
+              <i className="fas fa-user me-2"></i>
+              <strong>Owner:</strong> <span className="text-muted">{data.owner_name} {data.owner_surname}</span>
+            </div>
+          </div>
+
+          <hr className="my-4" />
+
+          <div className="mb-3">
+            <strong>Shop Description:</strong>
+            <p className="text-muted">{data.shop_description}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default HeaderShop;
-
-
-
-//DATOS LISTOS A PARTIR DEL RETURN PARA RECIBIR DATOS DEL BACKEND//
-{/* <div className="container my-4">
-<div className="row mb-4">
-  <div className="col-md-4 text-center">
-    <img
-      className="img-fluid rounded-end shadow-sm"
-      src={shopData.image_shop_url} // Usando los datos del backend
-      alt="Tienda"
-      style={{ maxWidth: '75%' }}
-    />
-  </div>
-  <div className="col-md-8 d-flex flex-column justify-content-center">
-    <h3 className="fw-bold">{shopData.name}</h3>
-    <p className="text-muted mb-1">{shopData.shop_summary}</p>
-    <p className="text-muted mb-1">Address: {shopData.address}</p>
-    <p className="text-muted mb-1">Postal Code: {shopData.postal_code}</p>
-    <p className="text-muted mb-1">Email: {shopData.email}</p>
-    <p className="text-muted mb-1">Categories: {shopData.categories.join(', ')}</p>
-    <p className="text-muted mb-1">Shop Description: {shopData.shop_description}</p>
-    <p className="text-muted mb-1">Owner Name: {shopData.owner_name}</p>
-  </div>
-</div>
-</div> */}

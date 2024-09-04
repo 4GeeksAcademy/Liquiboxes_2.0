@@ -1,108 +1,18 @@
+import axios from "axios";
+
 const getState = ({ getStore, getActions, setStore }) => {
     return {
         store: {
             message: null,
             cart: JSON.parse(localStorage.getItem("cart")) || [],
             categories: ['Moda', 'Ropa de Trabajo', 'Tecnología', 'Carpintería', 'Outdoor', 'Deporte', 'Arte', 'Cocina', 'Jardinería', 'Música', 'Viajes', 'Lectura', 'Cine', 'Fotografía', 'Yoga'],
-            shops: [
-                {
-                    id: 1,
-                    name: "Vintage Vogue",
-                    description: "Descubre tesoros de moda vintage en cada caja.",
-                    rating: 4.7,
-                    image: "/api/placeholder/300/200",
-                    totalSales: 1254,
-                    activeBoxes: 5
-                },
-                {
-                    id: 2,
-                    name: "Tech Treasures",
-                    description: "Gadgets y accesorios tecnológicos sorpresa.",
-                    rating: 4.5,
-                    image: "/api/placeholder/300/200",
-                    totalSales: 987,
-                    activeBoxes: 3
-                },
-                {
-                    id: 3,
-                    name: "Gourmet Delights",
-                    description: "Explora sabores gourmet de todo el mundo.",
-                    rating: 4.8,
-                    image: "/api/placeholder/300/200",
-                    totalSales: 1532,
-                    activeBoxes: 4
-                },
-                {
-                    id: 4,
-                    name: "Fitness Fanatic",
-                    description: "Equipo y accesorios sorpresa para entusiastas del fitness.",
-                    rating: 4.6,
-                    image: "/api/placeholder/300/200",
-                    totalSales: 756,
-                    activeBoxes: 2
-                },
-                {
-                    id: 5,
-                    name: "Book Worm's Paradise",
-                    description: "Libros de diversos géneros para lectores ávidos.",
-                    rating: 4.9,
-                    image: "/api/placeholder/300/200",
-                    totalSales: 2103,
-                    activeBoxes: 6
-                }
-            ],
-            mysteryBoxes: [
-                {
-                    id: 101,
-                    storeId: 1,
-                    name: "Retro Glam Box",
-                    description: "Una selección de accesorios y ropa vintage de los años 50 y 60.",
-                    price: 49.99,
-                    size: "Medium",
-                    possibleItems: ["Vestido vintage", "Gafas de sol retro", "Broche antiguo", "Pañuelo de seda"],
-                    image: "https://i.imgur.com/FGi5Wug.jpeg"
-                },
-                {
-                    id: 102,
-                    storeId: 2,
-                    name: "Gadget Surprise",
-                    description: "Accesorios tech innovadores y útiles para tu día a día.",
-                    price: 79.99,
-                    size: "Small",
-                    possibleItems: ["Auriculares inalámbricos", "Powerbank", "Soporte para smartphone", "Cable multiusos"],
-                    image: "https://i.imgur.com/OZdivIs.jpeg"
-                },
-                {
-                    id: 103,
-                    storeId: 3,
-                    name: "World Flavors Box",
-                    description: "Descubre sabores exóticos de diferentes partes del mundo.",
-                    price: 59.99,
-                    size: "Large",
-                    possibleItems: ["Salsa picante artesanal", "Mezcla de especias exóticas", "Snacks internacionales", "Té gourmet"],
-                    image: "https://i.imgur.com/P0yKQDg.jpeg"
-                },
-                {
-                    id: 104,
-                    storeId: 4,
-                    name: "Workout Wonder",
-                    description: "Equipamiento sorpresa para potenciar tus entrenamientos.",
-                    price: 69.99,
-                    size: "Medium",
-                    possibleItems: ["Bandas de resistencia", "Botella de agua inteligente", "Toalla de microfibra", "Suplementos deportivos"],
-                    image: "https://i.imgur.com/NuomJvP.jpeg"
-                },
-                {
-                    id: 105,
-                    storeId: 5,
-                    name: "Literary Adventure",
-                    description: "Una selección cuidadosa de libros de diversos géneros.",
-                    price: 39.99,
-                    size: "Large",
-                    possibleItems: ["Novela bestseller", "Libro de poesía", "Cómic o novela gráfica", "Marcapáginas artesanal"],
-                    image: "https://i.imgur.com/x0rZvRf.jpeg"
-                }
-            ]
+            isLoading: true,
+            error: null,
+            allShops: [],
+            filteredShops: [],
+            searchTerm: "",
+            userData: null,
+            shopDetail: {},
         },
         actions: {
             getMessage: async () => {
@@ -115,69 +25,80 @@ const getState = ({ getStore, getActions, setStore }) => {
                     console.error("Error loading message from backend", error);
                 }
             },
-            // Funciones originales para el backend (comentadas)
-            /*
-            fetchMysteryBoxDetails: async (id) => {
+
+
+            fetchShops: async () => {
                 try {
-                    const resp = await fetch(`${process.env.BACKEND_URL}/api/mystery_box/${id}`);
-                    if (!resp.ok) throw new Error("Failed to fetch mystery box details");
-                    const data = await resp.json();
-                    return data;
+                    setStore({ isLoading: true, error: null });
+                    const url = `${process.env.BACKEND_URL}/shops`;
+                    const response = await axios.get(url);
+                    const shopsData = response.data || [];
+
+                    const processedShops = shopsData.map(shop => ({
+                        ...shop,
+                        categories: shop.categories.map(cat => {
+                            try {
+                                // Intenta parsear la categoría si es un string JSON
+                                const parsed = JSON.parse(cat);
+                                return parsed.replace(/["\[\]]/g, '').trim().toLowerCase();
+                            } catch (e) {
+                                // Si no se puede parsear, simplemente limpia y devuelve la cadena
+                                return cat.replace(/["\[\]]/g, '').trim().toLowerCase();
+                            }
+                        })
+                    }));
+
+                    setStore({
+                        allShops: processedShops,
+                        filteredShops: processedShops,
+                        isLoading: false
+                    });
                 } catch (error) {
-                    console.error("Error fetching mystery box details:", error);
-                    return null;
+                    console.error("Error fetching shops:", error);
+                    setStore({
+                        error: "No se pudieron cargar las tiendas. Por favor, intente más tarde.",
+                        isLoading: false
+                    });
                 }
             },
 
-            getCartItemsDetails: async () => {
-                const store = getStore();
-                const actions = getActions();
-                const detailedItems = await Promise.all(
-                    store.cart.map(async (cartItem) => {
-                        const details = await actions.fetchMysteryBoxDetails(cartItem.id);
-                        return details ? { ...details, quantity: cartItem.quantity } : null;
-                    })
-                );
-                return detailedItems.filter(item => item !== null);
-            },
-
-            getCartTotal: async () => {
-                const actions = getActions();
-                const cartItems = await actions.getCartItemsDetails();
-                return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-            },
-            */
-
-            // Funciones para datos hardcodeados
-            getHardcodedMysteryBoxDetails: (id) => {
-                const store = getStore();
-                const mysteryBox = store.mysteryBoxes.find(box => box.id === id);
-                if (mysteryBox) {
-                    const shop = store.shops.find(shop => shop.id === mysteryBox.storeId);
-                    return {
-                        ...mysteryBox,
-                        storeName: shop ? shop.name : 'Unknown Shop'
-                    };
+            fetchUserProfile: async () => {
+                try {
+                    const token = sessionStorage.getItem('token');
+                    if (!token) {
+                        console.log("No token found");
+                        getActions().logout();
+                        return;
+                    }
+                    const response = await axios.get(`${process.env.BACKEND_URL}/users/home_profile`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (response.data && typeof response.data === 'object') {
+                        setStore({
+                            userData: response.data,
+                            userCategories: response.data.categories
+                        });
+                    } else {
+                        throw new Error("Invalid response format");
+                    }
+                } catch (error) {
+                    console.error("Error fetching user profile:", error);
+                    if (error.response && error.response.status === 401) {
+                        getActions().logout();
+                    } else {
+                        setStore({ error: "No se pudo cargar el perfil del usuario. Por favor, intente más tarde." });
+                    }
                 }
-                return null;
             },
 
-            getHardcodedCartItemsDetails: () => {
-                const store = getStore();
-                const actions = getActions();
-                return store.cart.map(cartItem => {
-                    const details = actions.getHardcodedMysteryBoxDetails(cartItem.id);
-                    return details ? { ...details, quantity: cartItem.quantity } : null;
-                }).filter(item => item !== null);
+            logout: () => {
+                sessionStorage.removeItem('token');
+                setStore({
+                    userData: null,
+                    error: null
+                });
             },
 
-            getHardcodedCartTotal: () => {
-                const actions = getActions();
-                const cartItems = actions.getHardcodedCartItemsDetails();
-                return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-            },
-
-            // Funciones comunes (no cambian)
             addToCart: (id) => {
                 const store = getStore();
                 const existingItem = store.cart.find(item => item.id === id);
@@ -201,6 +122,20 @@ const getState = ({ getStore, getActions, setStore }) => {
                 setStore({ cart: updatedCart });
                 localStorage.setItem("cart", JSON.stringify(updatedCart));
             },
+
+            getShopDetail: async (id) => {
+                try {
+                    const response = await axios.get(process.env.BACKEND_URL + `shops/shop/${id}`)
+                    if (response.data) {
+                        console.log(response.data)
+                        setStore({ shopDetail: response.data })
+                    }
+                } catch (error) {
+                    console.log("ha habido un error" + error)
+
+                }
+            },
+
         }
     };
 };

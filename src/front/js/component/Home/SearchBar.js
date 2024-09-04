@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const categories = ['Moda', 'Ropa de Trabajo', 'Tecnología', 'Carpintería', 'Outdoor', 'Deporte', 'Arte', 'Cocina', 'Jardinería', 'Música', 'Viajes', 'Lectura', 'Cine', 'Fotografía', 'Yoga'];
@@ -14,42 +14,58 @@ export default function SearchBar({ onSearch, onCategoryChange, initialSearchTer
         setSearch(initialSearchTerm);
     }, [initialSearchTerm]);
 
-    const handleInputSearch = (event) => {
+    const handleInputSearch = useCallback((event) => {
         setSearch(event.target.value);
-    };
+    }, []);
 
-    const handleSubmitSearch = (event) => {
+    const handleSubmitSearch = useCallback((event) => {
         event.preventDefault();
         if (location.pathname === "/home") {
             navigate(`/shopssearch?search=${encodeURIComponent(search)}`);
         } else {
             onSearch(search);
         }
-    };
+    }, [location.pathname, navigate, onSearch, search]);
 
-    const handleCategoryChange = (category) => {
-        const updatedCategories = selectedCategories.includes(category)
-            ? selectedCategories.filter(c => c !== category)
-            : [...selectedCategories, category];
-        setSelectedCategories(updatedCategories);
-        onCategoryChange(updatedCategories);
-    };
+    const handleCategoryChange = useCallback((category) => {
+        setSelectedCategories(prev => {
+            const updatedCategories = prev.includes(category)
+                ? prev.filter(c => c !== category)
+                : [...prev, category];
+            onCategoryChange(updatedCategories);
+            return updatedCategories;
+        });
+    }, [onCategoryChange]);
 
-    const toggleExpand = () => {
-        setIsExpanded(!isExpanded);
-    };
+    const toggleExpand = useCallback(() => {
+        setIsExpanded(prev => !prev);
+    }, []);
+
+    const categoryButtons = useMemo(() => (
+        categories.map((category) => (
+            <button
+                key={category}
+                className={selectedCategories.includes(category) ? 'active' : ''}
+                onClick={() => handleCategoryChange(category)}
+                aria-pressed={selectedCategories.includes(category)}
+            >
+                {category}
+            </button>
+        ))
+    ), [selectedCategories, handleCategoryChange]);
 
     return (
         <div className="search-bar">
             <div className="search-container">
                 <form className="search-form" onSubmit={handleSubmitSearch}>
+                    <label htmlFor="search-input" className="sr-only">Buscar tiendas</label>
                     <input
+                        id="search-input"
                         type="text"
                         placeholder="Buscar por nombre o dirección"
                         value={search}
                         className="my-auto"
                         onChange={handleInputSearch}
-                        // Aseguramos que se puedan ingresar caracteres especiales
                         lang="es"
                     />
                     <button type="submit">
@@ -57,22 +73,19 @@ export default function SearchBar({ onSearch, onCategoryChange, initialSearchTer
                     </button>
                 </form>
                 <div className="category-filter">
-                    <button className="category-toggle" onClick={toggleExpand}>
+                    <button 
+                        className="category-toggle" 
+                        onClick={toggleExpand}
+                        aria-expanded={isExpanded}
+                        aria-controls="category-buttons"
+                    >
                         {isExpanded ? "Ocultar categorías" : "Mostrar categorías"}
                     </button>
                 </div>
             </div>
             {isExpanded && (
-                <div className="category-buttons">
-                    {categories.map((category) => (
-                        <button
-                            key={category}
-                            className={selectedCategories.includes(category) ? 'active' : ''}
-                            onClick={() => handleCategoryChange(category)}
-                        >
-                            {category}
-                        </button>
-                    ))}
+                <div id="category-buttons" className="category-buttons">
+                    {categoryButtons}
                 </div>
             )}
         </div>
