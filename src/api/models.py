@@ -111,7 +111,8 @@ class Shop(db.Model):
             "shop_summary": self.shop_summary,
             "image_shop_url": self.image_shop_url,
             "owner_name": self.owner_name,
-            "owner_surname": self.owner_surname
+            "owner_surname": self.owner_surname,
+            "mystery_boxes": [box.serialize() for box in self.mystery_boxes]
         }
 
 class MysteryBox(db.Model):

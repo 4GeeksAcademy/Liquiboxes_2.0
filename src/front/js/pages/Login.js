@@ -88,17 +88,25 @@ export default function Login() {
 
     const handleGoogleLogin = async (credentialResponse) => {
         try {
-            // Aquí deberías enviar el token de Google al backend para verificación
-            const response = await axios.post(`${process.env.BACKEND_URL}/google-login`, {
+            const response = await axios.post(`${process.env.BACKEND_URL}/google/login`, {
                 token: credentialResponse.credential
             });
 
-            if (response.data.access_token) {
-                sessionStorage.setItem("token", response.data.access_token);
-                sessionStorage.setItem("userType", response.data.user_type);
-                navigate(response.data.user_type === "normal" ? "/profile" : "/shophome");
+            const { access_token, user_type, is_new_user, google_data } = response.data;
+
+            if (is_new_user) {
+                // Usuario nuevo, navegar a la página de elección de tipo de registro
+                navigate('/chooseregistration', { 
+                    state: { 
+                        google_data,
+                        access_token 
+                    }
+                });
             } else {
-                throw new Error("Error en la autenticación con Google");
+                // Usuario existente, guardar token y redirigir
+                sessionStorage.setItem('token', access_token);
+                sessionStorage.setItem('userType', user_type);
+                navigate(user_type === 'normal' ? "/profile" : "/shophome");
             }
         } catch (error) {
             console.log("Error en la autenticación con Google:", error);
@@ -154,9 +162,11 @@ export default function Login() {
                 />
             </div>
 
-            <div className="alert alert-info mt-3">
-                {store.message || "Cargando mensaje del backend..."}
-            </div>
+            {showError && (
+                <div className="alert alert-danger" role="alert">
+                    {errorMessage}
+                </div>
+            )}
         </div>
     );
 }

@@ -17,6 +17,7 @@ import ShopDetail from "./pages/ShopDetail"
 import Shops from "./pages/Shops"
 import ShopsSearch from "./pages/ShopsSearch"
 import MysteryBoxDetail from "./pages/MysteryBoxDetail";
+import ChooseRegistration from "./pages/ChooseRegistration";
 
 // Vistas para Admins
 import AdminHome from "./pages/Admins/AdminHome"
@@ -56,7 +57,8 @@ const Layout = () => {
               <Route element={<Shops />} path="/shops" />
               <Route element={<ShopDetail />} path="/shops/:id" />
               <Route element={<ShopsSearch />} path="/shopssearch" />
-              <Route element={<MysteryBoxDetail />} path="/mysterybox/:id"/ >
+              <Route element={<MysteryBoxDetail />} path="/mysterybox/:id" />
+              <Route element={<ChooseRegistration />} path="/chooseregistration" />
 
 
               {/* Vistas de Admin */}
