@@ -4,17 +4,14 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
-from flask_cors import cross_origin
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 
 users = Blueprint('users', __name__)
 
-# Allow CORS requests to this API
 
 
 @users.route('/', methods=['GET'])
-@cross_origin()
 def get_all_users():
     users = User.query.all()
     
@@ -24,7 +21,6 @@ def get_all_users():
     return jsonify(serialized_users), 200
 
 @users.route('/register', methods=['POST'])
-@cross_origin()
 def create_user():
     data = request.get_json()
     
@@ -62,7 +58,6 @@ def create_user():
         return jsonify({'error': 'Error al crear el usuario: ' + str(e)}), 500
 
 @users.route('/login', methods=['POST'])
-@cross_origin()
 def user_login():
     data = request.get_json()
     email = data.get('email')

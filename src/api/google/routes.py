@@ -29,8 +29,12 @@ def google_login():
         user_name = idinfo.get('given_name', 'Usuario')
         user_surname = idinfo.get('family_name', 'Google')
 
-        user = User.query.filter_by(email=user_email).first()
-        shop = Shop.query.filter_by(email=user_email).first()
+        # Revisar esta parte de abajo
+
+        user = User.query.filter(User.email.like(user_email)).first()
+        shop = Shop.query.filter(User.email.like(user_email)).first()
+
+        #####
 
         if user:
             logging.info(f"Usuario encontrado: {user.id}")
