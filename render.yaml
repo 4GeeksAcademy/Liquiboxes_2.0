@@ -25,19 +25,7 @@ services:
           fromDatabase:
               name: postgresql-trapezoidal-42170
               property: connectionString
-# Servicio React
-  - type: web
-    name: react-app
-    env: node
-    plan: free  # Cambia a "starter" o cualquier otro plan si es necesario
-    region: oregon  # O cambia según tu preferencia
-    buildCommand: "npm install"
-    startCommand: "npm run start"
-    autoDeploy: true
-    envVars:
-      - key: NODE_ENV
-        value: production
-    healthCheckPath: "/"
+
 
 
 databases: # Render PostgreSQL database
