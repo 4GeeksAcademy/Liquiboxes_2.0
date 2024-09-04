@@ -12,6 +12,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             filteredShops: [],
             searchTerm: "",
             userData: null,
+            shopDetail: {},
         },
         actions: {
             getMessage: async () => {
@@ -120,6 +121,19 @@ const getState = ({ getStore, getActions, setStore }) => {
                 const updatedCart = store.cart.filter(item => item.id !== id);
                 setStore({ cart: updatedCart });
                 localStorage.setItem("cart", JSON.stringify(updatedCart));
+            },
+
+            getShopDetail: async (id) => {
+                try {
+                    const response = await axios.get(process.env.BACKEND_URL + `shops/shop/${id}`)
+                    if (response.data) {
+                        console.log(response.data)
+                        setStore({ shopDetail: response.data })
+                    }
+                } catch (error) {
+                    console.log("ha habido un error" + error)
+
+                }
             },
 
         }
