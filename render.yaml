@@ -34,7 +34,6 @@ services:
     buildCommand: "npm install & npm run build"
     startCommand: "npm run start"
     autoDeploy: true
-    staticPublishPath: build  # Ruta del build de la aplicación React
     envVars:
       - key: NODE_ENV
         value: production
