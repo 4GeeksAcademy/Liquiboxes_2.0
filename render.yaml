@@ -31,7 +31,7 @@ services:
     env: node
     plan: free  # Cambia a "starter" o cualquier otro plan si es necesario
     region: oregon  # O cambia según tu preferencia
-    buildCommand: "npm install --silent & npm run build"
+    buildCommand: "npm install -D webpack-cli & npm run build"
     startCommand: "npm run start"
     autoDeploy: true
     envVars:
