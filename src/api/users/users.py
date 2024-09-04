@@ -115,5 +115,28 @@ def update_profile():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
+    
+@users.route('/home_profile', methods=['GET'])
+@jwt_required()
+def get_home_profile():
+    current_user_email = get_jwt_identity()
+    user = User.query.filter_by(email=current_user_email).first()
+    if not user:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+    
+    home_profile = {
+        "id": user.id,
+        "name": user.name,
+        "surname": user.surname,
+        "email": user.email,
+        "categories": user.categories.split(',') if user.categories else [],
+        "profession": user.profession,
+        "fit": user.fit,
+        "upper_size": user.upper_size,
+        "lower_size": user.lower_size,
+        "shoe_size": user.shoe_size
+    }
+    
+    return jsonify(home_profile), 200
 
 
