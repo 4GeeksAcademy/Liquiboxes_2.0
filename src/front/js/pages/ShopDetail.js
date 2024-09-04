@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Context } from '../store/appContext';
 import { useParams } from 'react-router-dom';
 
-//aqui nesito usar useparams para traer el id
 export default function ShopDetail() {
 
   const [isArmarioVisible, setIsArmarioVisible] = useState(false);
