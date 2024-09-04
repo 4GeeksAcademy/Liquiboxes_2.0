@@ -6,10 +6,19 @@ from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
+
+from api.users.users import users
+from api.shops.routes import shops
+from api.google.routes import google
+
 api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 CORS(api)
+
+api.register_blueprint(users, url_prefix='/users')
+api.register_blueprint(shops, url_prefix='/shops')
+api.register_blueprint(google, url_prefix='/google')
 
 
 @api.route('/hello', methods=['POST', 'GET'])

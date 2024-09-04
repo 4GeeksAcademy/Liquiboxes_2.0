@@ -5,12 +5,15 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 from api.models import db, User, Shop
 import logging
+from flask_cors import cross_origin
+
 
 google = Blueprint('google', __name__)
 
 GOOGLE_CLIENT_ID = os.getenv("REACT_APP_ID_CLIENTE_GOOGLE")
 
 @google.route('/login', methods=['POST'])
+@cross_origin()
 def google_login():
     if not GOOGLE_CLIENT_ID:
         logging.error("GOOGLE_CLIENT_ID no está configurado")
