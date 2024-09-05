@@ -3,6 +3,7 @@ import HeaderShop from '../component/Shop Detail/HeaderShop';
 import { useState } from 'react';
 import { Context } from '../store/appContext';
 import { useParams } from 'react-router-dom';
+import RatingSystem from '../component/Shop Detail/RatingSystem';
 
 export default function ShopDetail() {
 
@@ -16,7 +17,7 @@ export default function ShopDetail() {
   const { id } = useParams()
 
   useEffect(() => {
-    actions.getShopDetail(id); 
+    actions.getShopDetail(id);
     setShopDetail(store.shopDetail)
     console.log(shopDetail)
 
@@ -55,7 +56,8 @@ export default function ShopDetail() {
           </div>
         </div>
       </div> {/*FINALIZA BOTONES PARA CAMBIAR ENTRE CARDS Y VALORACIONES*/}
-
+      
+      <RatingSystem />
     </>
 
   )
