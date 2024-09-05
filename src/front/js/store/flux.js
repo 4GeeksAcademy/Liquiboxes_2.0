@@ -125,7 +125,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
             getShopDetail: async (id) => {
                 try {
-                    const response = await axios.get(process.env.BACKEND_URL + `shops/shop/${id}`)
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/shop/${id}`)
                     if (response.data) {
                         console.log(response.data)
                         setStore({ shopDetail: response.data })

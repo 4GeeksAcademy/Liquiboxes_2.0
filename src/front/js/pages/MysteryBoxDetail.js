@@ -4,7 +4,7 @@ function MysteryBoxDetail() {
   const [mysteryBox, setMysteryBox] = useState({
     "description": "caja",
     "id": 1,
-    "image_url": "https://res.cloudinary.com/dg7u2cizh/image/upload/v1725295377/njjhz7ecu6wmhnc8odzm.jpg",
+    "image_url": "https://i.etsystatic.com/13266093/r/il/0ac053/1381983398/il_570xN.1381983398_d9v9.jpg",
     "name": "caja",
     "number_of_items": 12,
     "possible_items": [
