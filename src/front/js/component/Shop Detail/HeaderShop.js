@@ -15,7 +15,6 @@ function HeaderShop({ data }) {
         <div className="col-lg-8">
           <h2 className="fw-bold">{data.name}</h2>
           <p className="lead text-secondary">{data.shop_summary}</p>
-
           
           <div className="row">
             <div className="col-md-6 mb-2">
