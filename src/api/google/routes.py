@@ -1,68 +1,72 @@
-import os
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
+from api.models import User, Shop
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from api.models import db, User, Shop
+import os
 import logging
-from flask_cors import cross_origin
 
-
-google = Blueprint('google', __name__)
+auth = Blueprint('auth', __name__)
 
 GOOGLE_CLIENT_ID = os.getenv("REACT_APP_ID_CLIENTE_GOOGLE")
 
-@google.route('/login', methods=['POST'])
-@cross_origin()
+def create_token_response(user_or_shop, user_type):
+    access_token = create_access_token(identity={
+        'id': user_or_shop.id,
+        'email': user_or_shop.email,
+        'type': user_type
+    })
+    return jsonify({
+        'access_token': access_token,
+        'user_type': user_type,
+        'user': user_or_shop.serialize()
+    }), 200
+
+@auth.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    user = User.query.filter_by(email=email).first()
+    if user and user.check_password(password):
+        return create_token_response(user, 'normal')
+
+    shop = Shop.query.filter_by(email=email).first()
+    if shop and shop.check_password(password):
+        return create_token_response(shop, 'shop')
+
+    return jsonify({'error': 'Credenciales inválidas'}), 401
+
+@auth.route('/google_login', methods=['POST'])
 def google_login():
     if not GOOGLE_CLIENT_ID:
         logging.error("GOOGLE_CLIENT_ID no está configurado")
         return jsonify({'error': 'Configuración del servidor incompleta'}), 500
 
     token = request.json.get('token')
-    logging.info(f"Recibida solicitud de login con Google. Token: {token[:10]}...")
+    if not token:
+        return jsonify({'error': 'Token no proporcionado'}), 400
+
     try:
         idinfo = id_token.verify_oauth2_token(token, requests.Request(), GOOGLE_CLIENT_ID)
-        logging.info(f"Token verificado correctamente. Email: {idinfo['email']}")
+        email = idinfo['email']
 
-        user_email = idinfo['email']
-        user_name = idinfo.get('given_name', 'Usuario')
-        user_surname = idinfo.get('family_name', 'Google')
-
-        # Revisar esta parte de abajo
-
-        user = User.query.filter(User.email.like(user_email)).first()
-        shop = Shop.query.filter(User.email.like(user_email)).first()
-
-        #####
-
+        user = User.query.filter_by(email=email).first()
         if user:
-            logging.info(f"Usuario encontrado: {user.id}")
-            user_type = "normal"
-            identity = user.id
-            is_new_user = False
-        elif shop:
-            logging.info(f"Tienda encontrada: {shop.id}")
-            user_type = "shop"
-            identity = shop.id
-            is_new_user = False
-        else:
-            logging.info("Nuevo usuario detectado")
-            user_type = "new"
-            identity = user_email  # Usamos el email como identidad temporal
-            is_new_user = True
+            return create_token_response(user, 'normal')
 
-        access_token = create_access_token(identity=identity)
-        logging.info(f"Token JWT creado para {user_type} con id {identity}")
+        shop = Shop.query.filter_by(email=email).first()
+        if shop:
+            return create_token_response(shop, 'shop')
 
+        # New user
         return jsonify({
-            'access_token': access_token,
-            'user_type': user_type,
-            'is_new_user': is_new_user,
+            'is_new_user': True,
             'google_data': {
-                'email': user_email,
-                'name': user_name,
-                'surname': user_surname
+                'email': email,
+                'name': idinfo.get('given_name', ''),
+                'surname': idinfo.get('family_name', '')
             }
         }), 200
 
@@ -71,4 +75,4 @@ def google_login():
         return jsonify({'error': 'Token inválido'}), 400
     except Exception as e:
         logging.error(f"Error inesperado: {str(e)}")
-        return jsonify({'error': 'Error del servidor'}), 500
+        return jsonify({'error': 'Error del servidor', 'details': str(e)}), 500
