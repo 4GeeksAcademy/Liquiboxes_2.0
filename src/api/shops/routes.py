@@ -120,7 +120,7 @@ def create_mystery_box():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
-@shops.route('/', methods=['GET'])
+@shops.route('/', methods=['GET']) #BACKEND_URL + "api/shops/"
 def get_all_shops():
     shops = Shop.query.all()
     return jsonify([shop.serialize_for_card() for shop in shops]), 200
@@ -130,10 +130,10 @@ def get_all_mystery_boxes():
     mystery_boxes = MysteryBox.query.all()
     return jsonify([box.serialize_for_card() for box in mystery_boxes]), 200
 
-@shops.route('/<int:shop_id>', methods=['GET'])
+@shops.route('/<int:shop_id>', methods=['GET']) #BACKEND_URL + "api/shops/id"
 def get_shop(shop_id):
     shop = Shop.query.get(shop_id)
-    if shop:
+    if shop:                                    # Si la tienda existe
         return jsonify(shop.serialize_detail()), 200
     else:
         return jsonify({'error': 'Shop not found'}), 404

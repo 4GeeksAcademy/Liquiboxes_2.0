@@ -81,27 +81,45 @@ class Sale(BaseModel):
     __tablename__ = "sales"
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(20), default='completed', nullable=False)
+    commission_rate = db.Column(db.Float, default=0.05, nullable=False)  # 5% por defecto
 
     sale_details = db.relationship('SaleDetail', backref='sale', lazy='dynamic')
+    shop_sales = db.relationship('ShopSale', backref='sale', lazy='dynamic')
 
     def serialize(self):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'shop_id': self.shop_id,
             'date': self.created_at,
             'total_amount': self.total_amount,
-            'status': self.status,
-            'sale_details': [detail.serialize() for detail in self.sale_details]
+            'commission_rate': self.commission_rate,
+            'sale_details': [detail.serialize() for detail in self.sale_details],
+            'shop_sales': [shop_sale.serialize() for shop_sale in self.shop_sales]
+        }
+
+class ShopSale(BaseModel):
+    __tablename__ = "shop_sales"
+
+    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=False)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
+    subtotal = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), default='pending', nullable=False)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'sale_id': self.sale_id,
+            'shop_id': self.shop_id,
+            'subtotal': self.subtotal,
+            'status': self.status
         }
 
 class SaleDetail(BaseModel):
     __tablename__ = "sale_details"
 
     sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=False)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
     mystery_box_id = db.Column(db.Integer, db.ForeignKey('mystery_boxes.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)
@@ -111,12 +129,12 @@ class SaleDetail(BaseModel):
         return {
             'id': self.id,
             'sale_id': self.sale_id,
+            'shop_id': self.shop_id,
             'mystery_box_id': self.mystery_box_id,
             'quantity': self.quantity,
             'price': self.price,
             'subtotal': self.subtotal
         }
-
 
 class Shop(BaseModel):
     __tablename__ = "shops"
@@ -135,13 +153,15 @@ class Shop(BaseModel):
     owner_surname = db.Column(db.String(120), nullable=False)
     
     mystery_boxes = db.relationship('MysteryBox', backref='shop', lazy='dynamic')
-    sales = db.relationship('Sale', backref='shop', lazy='dynamic')
+    sales = db.relationship('Sale', backref='shop', lazy='dynamic') 
     ratings = db.relationship('Rating', backref='shop', lazy='dynamic')
+    shop_sales = db.relationship('ShopSale', backref='shop', lazy='dynamic')
+    sale_details = db.relationship('SaleDetail', backref='shop', lazy='dynamic')
 
     total_sales = column_property(
-        select([func.count(Sale.id)]).
-        where(Sale.shop_id == id).
-        correlate_except(Sale)
+        select([func.sum(ShopSale.subtotal)]).
+        where(ShopSale.shop_id == id).
+        correlate_except(ShopSale)
     )
 
     def serialize_for_card(self):
@@ -149,7 +169,7 @@ class Shop(BaseModel):
             "id": self.id,
             "name": self.name,
             "categories": self.categories,
-            "total_sales": self.total_sales,
+            "total_sales": float(self.total_sales) if self.total_sales else 0,
             "address": self.address,
             "shop_summary": self.shop_summary,
             "image_shop_url": self.image_shop_url
@@ -157,7 +177,7 @@ class Shop(BaseModel):
 
     def serialize_detail(self):
         return {
-            "id": self.id,
+            "id": self.id,  
             "name": self.name,
             "email": self.email,
             "address": self.address,
@@ -169,9 +189,11 @@ class Shop(BaseModel):
             "image_shop_url": self.image_shop_url,
             "owner_name": self.owner_name,
             "owner_surname": self.owner_surname,
-            "total_sales": self.total_sales,
+            "total_sales": float(self.total_sales) if self.total_sales else 0,
+            "total_orders": self.shop_sales.count(),
             "mystery_boxes": [box.serialize_for_card() for box in self.mystery_boxes],
-            "average_rating": self.average_rating()
+            "average_rating": self.average_rating(),
+            "ratings": [rating.serialize() for rating in self.ratings]
         }
 
     def average_rating(self):
@@ -189,12 +211,22 @@ class MysteryBox(BaseModel):
     image_url = db.Column(db.String(200), nullable=False)
     number_of_items = db.Column(db.Integer, nullable=False)
     shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
+    revenue = db.Column(db.Float, nullable=False)
 
     sale_details = db.relationship('SaleDetail', backref='mystery_box', lazy='dynamic')
     ratings = db.relationship('Rating', backref='mystery_box', lazy='dynamic')
 
+    tsale_details = db.relationship('SaleDetail', backref='mystery_box', lazy='dynamic')
+    ratings = db.relationship('Rating', backref='mystery_box', lazy='dynamic')
+
     total_sales = column_property(
         select([func.sum(SaleDetail.quantity)]).
+        where(SaleDetail.mystery_box_id == id).
+        correlate_except(SaleDetail)
+    )
+
+    total_revenue = column_property(
+        select([func.sum(SaleDetail.subtotal)]).
         where(SaleDetail.mystery_box_id == id).
         correlate_except(SaleDetail)
     )
@@ -207,7 +239,7 @@ class MysteryBox(BaseModel):
             'image_url': self.image_url,
             'shop_id': self.shop_id,
             'shop_name': self.shop.name,
-            'total_sales': self.total_sales,
+            'total_sales': int(self.total_sales) if self.total_sales else 0,
             'shop_categories': self.shop.categories
         }
 
@@ -223,7 +255,8 @@ class MysteryBox(BaseModel):
             'number_of_items': self.number_of_items,
             'shop_id': self.shop_id,
             'shop_name': self.shop.name,
-            'total_sales': self.total_sales,
+            'total_sales': int(self.total_sales) if self.total_sales else 0,
+            'total_revenue': float(self.total_revenue) if self.total_revenue else 0,
             'shop_categories': self.shop.categories,
             'average_rating': self.average_rating()
         }
