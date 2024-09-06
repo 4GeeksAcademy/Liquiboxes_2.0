@@ -3,6 +3,7 @@ import HeaderShop from '../component/Shop Detail/HeaderShop';
 import { useState } from 'react';
 import { Context } from '../store/appContext';
 import { useParams } from 'react-router-dom';
+import RatingSystem from '../component/Shop Detail/RatingSystem';
 
 export default function ShopDetail() {
 
@@ -12,11 +13,11 @@ export default function ShopDetail() {
 
   const { store, actions } = useContext(Context)
 
-  const [shopDetail, setShopDetail] = useState([])
+  const [shopDetail, setShopDetail] = useState([]) //Variable creada en el flux para poder hacer la llamada a la base de datos//
   const { id } = useParams()
 
-  useEffect(() => {
-    actions.getShopDetail(id); 
+  useEffect(() => {   //TRAE LOS DATOS DE UNA TIENDA ESPECIFICA PARA ORDENARLOS EN LOS CAMPOS DEL HEADER//
+    actions.getShopDetail(id);
     setShopDetail(store.shopDetail)
     console.log(shopDetail)
 
@@ -55,7 +56,8 @@ export default function ShopDetail() {
           </div>
         </div>
       </div> {/*FINALIZA BOTONES PARA CAMBIAR ENTRE CARDS Y VALORACIONES*/}
-
+      
+      <RatingSystem />
     </>
 
   )
