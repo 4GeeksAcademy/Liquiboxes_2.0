@@ -128,7 +128,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${ id }`)
                     if (response.data) {
-                        console.log(response.data)
+                        console.log("La API devuelve datos")
                         setStore({ mysteryBoxDetail: response.data })
                     }
                 } catch (error) {

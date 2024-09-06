@@ -3,42 +3,66 @@ import {Context} from '../store/appContext';
 import { useParams } from 'react-router-dom';
 function MysteryBoxDetail() {
   const {store, actions}= useContext(Context)
-  const [mysteryBoxDetail,setMysteryBoxDetail]= useState([])
+  const [mysteryBox, setMysteryBox]= useState([])
   const {id}= useParams()
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(()=>{
-    actions.getMysteryBoxDetail(id);
-    setMysteryBoxDetail(store.mysteryBoxDetail)
-    console.log(mysteryBoxDetail)
-  }, [])
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        await actions.getMysteryBoxDetail(id);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error al obtener los datos:", error);
+        setIsLoading(false);
+      }
+    };
 
+    fetchData();
+  }, [id]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setMysteryBox(store.mysteryBoxDetail);
+    }
+  }, [isLoading, store.mysteryBoxDetail]);
+
+
+  if (isLoading) {
+    return <div>Cargando...</div>;
+  }
+
+  if (!mysteryBox) {
+    return <div>No se encontró la Mystery Box</div>; // esta parte no funciona
+  }
 
   return (
-    <div className="mysterybox-detail container">
+    <div className="mysterybox-detail container my-5">
       <div className="row">
         {/* Sección de Imágenes */}
         <div className="col-md-6 images-section">
           <div className="main-image">
-            <img src={mysteryBoxDetail.image_url} className="img-fluid" alt={mysteryBoxDetail.name} />
+            <img src={mysteryBox.image_url} className="img-fluid" alt={mysteryBox.name} />
           </div>
           <div className="thumbnail-images d-flex justify-content-start mt-2">
             {/* Añadir thumbnails adicionales si tienes */}
-            <img src={mysteryBoxDetail.image_url} className="img-thumbnail" alt="Thumbnail 1" />
-            <img src={mysteryBoxDetail.image_url} className="img-thumbnail" alt="Thumbnail 2" />
+            <img src={mysteryBox.image_url} className="img-thumbnail" alt="Thumbnail 1" />
+            <img src={mysteryBox.image_url} className="img-thumbnail" alt="Thumbnail 2" />
           </div>
         </div>
 
         {/* Sección de Detalles */}
         <div className="col-md-6 details-section">
           <div className="price-info">
-            <h3>{mysteryBoxDetail.price} €</h3>
+            <h3>{mysteryBox.price} €</h3>
           </div>
           <div className="item-info">
-            <p><strong>Nombre:</strong> {mysteryBoxDetail.name}</p>
-            <p><strong>Tamaño:</strong> {mysteryBoxDetail.size}</p>
-            <p><strong>Número de ítems:</strong> {mysteryBoxDetail.number_of_items}</p>
+            <p><strong>Nombre:</strong> {mysteryBox.name}</p>
+            <p><strong>Tamaño:</strong> {mysteryBox.size}</p>
+            <p><strong>Número de ítems:</strong> {mysteryBox.number_of_items}</p>
             <h2>Descripción</h2>
-            <p>{mysteryBoxDetail.description}</p>
+            <p>{mysteryBox.description}</p>
           </div>
           <div className="possible-items">
             <h4>Ítems posibles:</h4>
