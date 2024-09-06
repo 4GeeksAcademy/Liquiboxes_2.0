@@ -4,6 +4,8 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from datetime import datetime
 from sqlalchemy.orm import column_property
 from sqlalchemy import select, func
+from sqlalchemy.ext.hybrid import hybrid_property
+
 
 db = SQLAlchemy()
 
@@ -82,7 +84,7 @@ class Sale(BaseModel):
 
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     total_amount = db.Column(db.Float, nullable=False)
-    commission_rate = db.Column(db.Float, default=0.05, nullable=False)  # 5% por defecto
+    commission_rate = db.Column(db.Float, default=0.05, nullable=False)
 
     sale_details = db.relationship('SaleDetail', backref='sale', lazy='dynamic')
     shop_sales = db.relationship('ShopSale', backref='sale', lazy='dynamic')
@@ -153,23 +155,20 @@ class Shop(BaseModel):
     owner_surname = db.Column(db.String(120), nullable=False)
     
     mystery_boxes = db.relationship('MysteryBox', backref='shop', lazy='dynamic')
-    sales = db.relationship('Sale', backref='shop', lazy='dynamic') 
-    ratings = db.relationship('Rating', backref='shop', lazy='dynamic')
     shop_sales = db.relationship('ShopSale', backref='shop', lazy='dynamic')
     sale_details = db.relationship('SaleDetail', backref='shop', lazy='dynamic')
+    ratings = db.relationship('Rating', backref='shop', lazy='dynamic')
 
-    total_sales = column_property(
-        select([func.sum(ShopSale.subtotal)]).
-        where(ShopSale.shop_id == id).
-        correlate_except(ShopSale)
-    )
+    @hybrid_property
+    def total_sales(self):
+        return db.session.query(func.coalesce(func.sum(ShopSale.subtotal), 0)).filter(ShopSale.shop_id == self.id).scalar()
 
     def serialize_for_card(self):
         return {
             "id": self.id,
             "name": self.name,
             "categories": self.categories,
-            "total_sales": float(self.total_sales) if self.total_sales else 0,
+            "total_sales": float(self.total_sales),
             "address": self.address,
             "shop_summary": self.shop_summary,
             "image_shop_url": self.image_shop_url
@@ -177,7 +176,7 @@ class Shop(BaseModel):
 
     def serialize_detail(self):
         return {
-            "id": self.id,  
+            "id": self.id,
             "name": self.name,
             "email": self.email,
             "address": self.address,
@@ -189,7 +188,7 @@ class Shop(BaseModel):
             "image_shop_url": self.image_shop_url,
             "owner_name": self.owner_name,
             "owner_surname": self.owner_surname,
-            "total_sales": float(self.total_sales) if self.total_sales else 0,
+            "total_sales": float(self.total_sales),
             "total_orders": self.shop_sales.count(),
             "mystery_boxes": [box.serialize_for_card() for box in self.mystery_boxes],
             "average_rating": self.average_rating(),
@@ -199,6 +198,12 @@ class Shop(BaseModel):
     def average_rating(self):
         ratings = [r.rating for r in self.ratings]
         return sum(ratings) / len(ratings) if ratings else 0
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class MysteryBox(BaseModel):
     __tablename__ = "mystery_boxes"
@@ -214,22 +219,15 @@ class MysteryBox(BaseModel):
     revenue = db.Column(db.Float, nullable=False)
 
     sale_details = db.relationship('SaleDetail', backref='mystery_box', lazy='dynamic')
-    ratings = db.relationship('Rating', backref='mystery_box', lazy='dynamic')
+    ratings = db.relationship('Rating', backref='rated_mystery_box', lazy='dynamic')
 
-    tsale_details = db.relationship('SaleDetail', backref='mystery_box', lazy='dynamic')
-    ratings = db.relationship('Rating', backref='mystery_box', lazy='dynamic')
+    @hybrid_property
+    def total_sales(self):
+        return db.session.query(func.coalesce(func.sum(SaleDetail.quantity), 0)).filter(SaleDetail.mystery_box_id == self.id).scalar()
 
-    total_sales = column_property(
-        select([func.sum(SaleDetail.quantity)]).
-        where(SaleDetail.mystery_box_id == id).
-        correlate_except(SaleDetail)
-    )
-
-    total_revenue = column_property(
-        select([func.sum(SaleDetail.subtotal)]).
-        where(SaleDetail.mystery_box_id == id).
-        correlate_except(SaleDetail)
-    )
+    @hybrid_property
+    def total_revenue(self):
+        return db.session.query(func.coalesce(func.sum(SaleDetail.subtotal), 0)).filter(SaleDetail.mystery_box_id == self.id).scalar()
 
     def serialize_for_card(self):
         return {
@@ -239,7 +237,7 @@ class MysteryBox(BaseModel):
             'image_url': self.image_url,
             'shop_id': self.shop_id,
             'shop_name': self.shop.name,
-            'total_sales': int(self.total_sales) if self.total_sales else 0,
+            'total_sales': int(self.total_sales),
             'shop_categories': self.shop.categories
         }
 
@@ -255,8 +253,8 @@ class MysteryBox(BaseModel):
             'number_of_items': self.number_of_items,
             'shop_id': self.shop_id,
             'shop_name': self.shop.name,
-            'total_sales': int(self.total_sales) if self.total_sales else 0,
-            'total_revenue': float(self.total_revenue) if self.total_revenue else 0,
+            'total_sales': int(self.total_sales),
+            'total_revenue': float(self.total_revenue),
             'shop_categories': self.shop.categories,
             'average_rating': self.average_rating()
         }
