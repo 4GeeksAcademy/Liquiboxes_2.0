@@ -102,7 +102,8 @@ const getState = ({ getStore, getActions, setStore }) => {
                     possibleItems: ["Novela bestseller", "Libro de poesía", "Cómic o novela gráfica", "Marcapáginas artesanal"],
                     image: "https://i.imgur.com/x0rZvRf.jpeg"
                 }
-            ]
+            ],
+            mysteryBoxDetail: {}
         },
         actions: {
             getMessage: async () => {
@@ -200,6 +201,19 @@ const getState = ({ getStore, getActions, setStore }) => {
                 const updatedCart = store.cart.filter(item => item.id !== id);
                 setStore({ cart: updatedCart });
                 localStorage.setItem("cart", JSON.stringify(updatedCart));
+            },
+
+            getMysteryBoxDetail: async (id) => {
+                try {
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery - box / ${ id }`)
+                    if (response.data) {
+                        console.log(response.data)
+                        setStore({ shopDetail: response.data })
+                    }
+                } catch (error) {
+                    console.log("ha habido un error" + error)
+
+                }
             },
         }
     };
