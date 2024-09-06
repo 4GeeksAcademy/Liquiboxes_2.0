@@ -21,15 +21,15 @@ export default function Login() {
         });
     };
 
-    const attemptLogin = async (endpoint, loginData) => {
+    const attemptLogin = async (loginData) => {
         try {
             const baseUrl = process.env.BACKEND_URL.replace(/\/$/, '');
-            const response = await axios.post(`${baseUrl}/${endpoint}`, loginData, {
+            const response = await axios.post(`${baseUrl}/auth/login`, loginData, {
                 headers: { "Content-Type": "application/json" },
             });
             return response.data;
         } catch (error) {
-            console.log(`Error en ${endpoint}:`, error);
+            console.log("Error en login:", error);
             if (error.response) {
                 console.log("Response data:", error.response.data);
                 console.log("Response status:", error.response.status);
@@ -48,37 +48,13 @@ export default function Login() {
         setErrorMessage("");
 
         try {
-            // Intenta iniciar sesión como usuario normal
-            try {
-                const userLoginResult = await attemptLogin("users/login", loginData);
-                if (userLoginResult && userLoginResult.access_token) {
-                    sessionStorage.setItem("token", userLoginResult.access_token);
-                    sessionStorage.setItem("userType", "normal");
-                    console.log("Ha entrado como usuario")
-                    navigate("/profile");
-                    return;
-                }
-            } catch (userError) {
-                console.log("Error en inicio de sesión de usuario:", userError);
+            const loginResult = await attemptLogin(loginData);
+            if (loginResult && loginResult.access_token) {
+                sessionStorage.setItem("token", loginResult.access_token);
+                sessionStorage.setItem("userType", loginResult.user_type);
+                console.log(`Ha entrado como ${loginResult.user_type}`);
+                navigate(loginResult.user_type === "normal" ? "/home" : "/shophome");
             }
-
-            // Si falla, intenta iniciar sesión como tienda
-            try {
-                const shopLoginResult = await attemptLogin("shops/login", loginData);
-                if (shopLoginResult && shopLoginResult.access_token) {
-                    sessionStorage.setItem('token', shopLoginResult.access_token);
-                    sessionStorage.setItem('shopId', shopLoginResult.shop.id);
-                    sessionStorage.setItem("userType", "shop");
-                    console.log("Ha entrado como tienda")
-                    navigate("/shophome");
-                    return;
-                }
-            } catch (shopError) {
-                console.log("Error en inicio de sesión de tienda:", shopError);
-            }
-
-            // Si ambos fallan, lanza un error
-            throw new Error("Credenciales inválidas para usuario y tienda");
         } catch (error) {
             console.log("Error de autenticación:", error);
             setShowError(true);
@@ -88,11 +64,11 @@ export default function Login() {
 
     const handleGoogleLogin = async (credentialResponse) => {
         try {
-            const response = await axios.post(`${process.env.BACKEND_URL}/google/login`, {
+            const response = await axios.post(`${process.env.BACKEND_URL}/auth/google_login`, {
                 token: credentialResponse.credential
             });
 
-            const { access_token, user_type, is_new_user, google_data } = response.data;
+            const { access_token, user_type, is_new_user, google_data, user } = response.data;
 
             if (is_new_user) {
                 // Usuario nuevo, navegar a la página de elección de tipo de registro
@@ -106,7 +82,7 @@ export default function Login() {
                 // Usuario existente, guardar token y redirigir
                 sessionStorage.setItem('token', access_token);
                 sessionStorage.setItem('userType', user_type);
-                navigate(user_type === 'normal' ? "/profile" : "/shophome");
+                navigate(user_type === 'normal' ? "/home" : "/shophome");
             }
         } catch (error) {
             console.log("Error en la autenticación con Google:", error);

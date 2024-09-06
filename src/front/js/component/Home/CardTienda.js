@@ -31,7 +31,7 @@ const CardTienda = ({ id, imageSrc, shopName, shopSummary, shopAddress }) => {
                 </p>
                 <button 
                     className="mt-auto w-100"
-                    onClick={() => navigate(`/tienda/${id}`)}
+                    onClick={() => navigate(`/shops/${id}`)}
                 >
                     Ver detalles
                 </button>

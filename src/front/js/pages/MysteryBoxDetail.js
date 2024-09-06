@@ -2,25 +2,6 @@ import React, { useContext, useEffect, useState } from 'react';
 import {Context} from '../store/appContext';
 import { useParams } from 'react-router-dom';
 function MysteryBoxDetail() {
-  // const [mysteryBox, setMysteryBox] = useState({
-  //   "description": "caja",
-  //   "id": 1,
-  //   "image_url": "https://res.cloudinary.com/dg7u2cizh/image/upload/v1725295377/njjhz7ecu6wmhnc8odzm.jpg",
-  //   "name": "caja",
-  //   "number_of_items": 12,
-  //   "possible_items": [
-  //     "1",
-  //     "1",
-  //     "1",
-  //     "1",
-  //     "1",
-  //     "1"
-  //   ],
-  //   "price": 12.0,
-  //   "shop_id": 7,
-  //   "size": "grande"
-  // })
-
   const {store, actions}= useContext(Context)
   const [mysteryBoxDetail,setMysteryBoxDetail]= useState([])
   const {id}= useParams()
@@ -30,6 +11,7 @@ function MysteryBoxDetail() {
     setMysteryBoxDetail(store.mysteryBoxDetail)
     console.log(mysteryBoxDetail)
   }, [])
+
 
   return (
     <div className="mysterybox-detail container">
