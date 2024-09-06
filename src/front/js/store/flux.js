@@ -17,7 +17,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         actions: {
             getMessage: async () => {
                 try {
-                    const resp = await fetch(process.env.BACKEND_URL + "/api/hello");
+                    const resp = await fetch(process.env.BACKEND_URL + "/hello");
                     const data = await resp.json();
                     setStore({ message: data.message });
                     return data;
@@ -70,7 +70,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                         getActions().logout();
                         return;
                     }
-                    const response = await axios.get(`${process.env.BACKEND_URL}/users/home_profile`, {
+                    const response = await axios.get(`${process.env.BACKEND_URL}/users/profile`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     if (response.data && typeof response.data === 'object') {
@@ -125,7 +125,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
             getShopDetail: async (id) => {
                 try {
-                    const response = await axios.get(process.env.BACKEND_URL + `/shops/shop/${id}`)
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/${id}`)
                     if (response.data) {
                         console.log(response.data)
                         setStore({ shopDetail: response.data })
