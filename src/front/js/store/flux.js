@@ -6,6 +6,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             message: null,
             cart: JSON.parse(localStorage.getItem("cart")) || [],
             categories: ['Moda', 'Ropa de Trabajo', 'Tecnología', 'Carpintería', 'Outdoor', 'Deporte', 'Arte', 'Cocina', 'Jardinería', 'Música', 'Viajes', 'Lectura', 'Cine', 'Fotografía', 'Yoga'],
+            mysteryBoxDetail: {},
             isLoading: true,
             error: null,
             allShops: [],
@@ -123,6 +124,19 @@ const getState = ({ getStore, getActions, setStore }) => {
                 localStorage.setItem("cart", JSON.stringify(updatedCart));
             },
 
+            getMysteryBoxDetail: async (id) => {
+                try {
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${ id }`)
+                    if (response.data) {
+                        console.log(response.data)
+                        setStore({ mysteryBoxDetail: response.data })
+                    }
+                } catch (error) {
+                    console.log("ha habido un error" + error)
+
+                }
+            },
+          
             getShopDetail: async (id) => {
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/${id}`)
@@ -135,7 +149,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 
                 }
             },
-
         }
     };
 };
