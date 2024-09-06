@@ -7,7 +7,7 @@ from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 
 
-from api.users.users import users
+from api.users.routes import users
 from api.shops.routes import shops
 from api.google.routes import auth
 

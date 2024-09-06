@@ -13,10 +13,10 @@ export default function ShopDetail() {
 
   const { store, actions } = useContext(Context)
 
-  const [shopDetail, setShopDetail] = useState([])
+  const [shopDetail, setShopDetail] = useState([]) //Variable creada en el flux para poder hacer la llamada a la base de datos//
   const { id } = useParams()
 
-  useEffect(() => {
+  useEffect(() => {   //TRAE LOS DATOS DE UNA TIENDA ESPECIFICA PARA ORDENARLOS EN LOS CAMPOS DEL HEADER//
     actions.getShopDetail(id);
     setShopDetail(store.shopDetail)
     console.log(shopDetail)
