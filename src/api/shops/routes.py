@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token
 from api.models import db, Shop, MysteryBox
 from werkzeug.exceptions import BadRequest
 import cloudinary
@@ -70,8 +71,14 @@ def register_shop():
         db.session.add(new_shop)
         db.session.commit()
         
-        from api.google.routes import create_token_response
-        return create_token_response(new_shop, 'shop')
+        access_token = create_access_token(identity=new_shop.id)
+        
+        return jsonify({
+            'message': 'Shop registered successfully',
+            'access_token': access_token,
+            'shop': new_shop.serialize_for_card()
+        }), 201
+    
     except BadRequest as e:
         return jsonify({'error': str(e)}), 400
     except Exception as e:

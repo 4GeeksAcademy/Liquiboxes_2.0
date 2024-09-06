@@ -23,7 +23,7 @@ export default function Login() {
 
     const attemptLogin = async (loginData) => {
         try {
-            const baseUrl = process.env.BACKEND_URL.replace(/\/$/, '');
+            const baseUrl = process.env.BACKEND_URL;
             const response = await axios.post(`${baseUrl}/auth/login`, loginData, {
                 headers: { "Content-Type": "application/json" },
             });

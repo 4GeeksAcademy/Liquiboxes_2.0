@@ -108,7 +108,7 @@ export default function SignUp() {
 
     try {
       const response = await axios.post(
-        `${process.env.BACKEND_URL}/users/register`,
+        process.env.BACKEND_URL + `/users/register`,
         signupData,
         { headers: { "Content-Type": "application/json" } }
       );

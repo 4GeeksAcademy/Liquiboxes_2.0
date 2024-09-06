@@ -93,7 +93,7 @@ export default function ShopSignUp() {
 
     try {
       const response = await axios.post(
-        process.env.BACKEND_URL+"/shops/register",
+        process.env.BACKEND_URL + "/shops/register",
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

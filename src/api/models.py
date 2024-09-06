@@ -162,6 +162,15 @@ class Shop(BaseModel):
     @hybrid_property
     def total_sales(self):
         return db.session.query(func.coalesce(func.sum(ShopSale.subtotal), 0)).filter(ShopSale.shop_id == self.id).scalar()
+    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "address": self.address,
+            "shop_summary": self.shop_summary,
+            "image_shop_url": self.image_shop_url
+        }
 
     def serialize_for_card(self):
         return {
@@ -216,7 +225,7 @@ class MysteryBox(BaseModel):
     image_url = db.Column(db.String(200), nullable=False)
     number_of_items = db.Column(db.Integer, nullable=False)
     shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
-    revenue = db.Column(db.Float, nullable=False)
+    revenue = db.Column(db.Float, nullable=True)
 
     sale_details = db.relationship('SaleDetail', backref='mystery_box', lazy='dynamic')
     ratings = db.relationship('Rating', backref='rated_mystery_box', lazy='dynamic')
@@ -228,6 +237,16 @@ class MysteryBox(BaseModel):
     @hybrid_property
     def total_revenue(self):
         return db.session.query(func.coalesce(func.sum(SaleDetail.subtotal), 0)).filter(SaleDetail.mystery_box_id == self.id).scalar()
+    
+    def serialize(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'price': self.price,
+            'image_url': self.image_url,
+            'shop_id': self.shop_id,
+            'shop_name': self.shop.name,
+        }
 
     def serialize_for_card(self):
         return {
