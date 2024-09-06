@@ -1,31 +1,51 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.dialects.postgresql import ARRAY
+from datetime import datetime
+from sqlalchemy.orm import column_property
+from sqlalchemy import select, func
 
 db = SQLAlchemy()
 
-class User(db.Model):
-    __tablename__ = "user"
-    
+class BaseModel(db.Model):
+    __abstract__ = True
+
     id = db.Column(db.Integer, primary_key=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+class User(BaseModel):
+    __tablename__ = "users"
+    
     name = db.Column(db.String(120), nullable=False)
     surname = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(300), nullable=False)
     gender = db.Column(db.String(20), nullable=False)
     address = db.Column(db.String(200), nullable=False)
     postal_code = db.Column(db.String(20), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(300), nullable=False)
     upper_size = db.Column(db.String(10), nullable=False)
     lower_size = db.Column(db.String(10), nullable=False)
-    cup_size = db.Column(db.String(10))
+    cap_size = db.Column(db.String(10))
     shoe_size = db.Column(db.String(10), nullable=False)
-    not_colors = db.Column(db.String(100))
+    not_colors = db.Column(ARRAY(db.String))
     stamps = db.Column(db.String(20), nullable=False)
     fit = db.Column(db.String(20), nullable=False)
-    not_clothes = db.Column(db.String(100))
-    categories = db.Column(db.String(200), nullable=False)
+    not_clothes = db.Column(ARRAY(db.String))
+    categories = db.Column(ARRAY(db.String), nullable=False)
     profession = db.Column(db.String(100), nullable=False)
     is_active = db.Column(db.Boolean(), default=True, nullable=False)
+    
+    sales = db.relationship('Sale', backref='user', lazy='dynamic')
+    ratings = db.relationship('Rating', backref='user', lazy='dynamic')
     
     def __repr__(self):
         return f'<User {self.email}>'
@@ -47,38 +67,65 @@ class User(db.Model):
             "postal_code": self.postal_code,
             "upper_size": self.upper_size,
             "lower_size": self.lower_size,
-            "cup_size": self.cup_size,
+            "cap_size": self.cap_size,
             "shoe_size": self.shoe_size,
-            "not_colors": self.not_colors.split(',') if self.not_colors else [],
+            "not_colors": self.not_colors,
             "stamps": self.stamps,
             "fit": self.fit,
-            "not_clothes": self.not_clothes.split(',') if self.not_clothes else [],
-            "categories": self.categories.split(',') if self.categories else [],
+            "not_clothes": self.not_clothes,
+            "categories": self.categories,
             "profession": self.profession,
         }
     
-    @classmethod
-    def deserialize(cls, data):
-        user = cls()
-        for key, value in data.items():
-            if key in ['not_colors', 'not_clothes', 'categories']:
-                if isinstance(value, list):
-                    setattr(user, key, ','.join(value) if value else None)
-                else:
-                    setattr(user, key, value)
-            elif hasattr(user, key):
-                setattr(user, key, value)
-        return user
+class Sale(BaseModel):
+    __tablename__ = "sales"
 
-class Shop(db.Model):
-    __tablename__ = "shop"
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
+    total_amount = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), default='completed', nullable=False)
+
+    sale_details = db.relationship('SaleDetail', backref='sale', lazy='dynamic')
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'shop_id': self.shop_id,
+            'date': self.created_at,
+            'total_amount': self.total_amount,
+            'status': self.status,
+            'sale_details': [detail.serialize() for detail in self.sale_details]
+        }
+
+class SaleDetail(BaseModel):
+    __tablename__ = "sale_details"
+
+    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=False)
+    mystery_box_id = db.Column(db.Integer, db.ForeignKey('mystery_boxes.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    subtotal = db.Column(db.Float, nullable=False)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'sale_id': self.sale_id,
+            'mystery_box_id': self.mystery_box_id,
+            'quantity': self.quantity,
+            'price': self.price,
+            'subtotal': self.subtotal
+        }
+
+
+class Shop(BaseModel):
+    __tablename__ = "shops"
     
-    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    postal_code = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(300), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    postal_code = db.Column(db.String(20), nullable=False)
     categories = db.Column(ARRAY(db.String), nullable=False)
     business_core = db.Column(db.Text, nullable=False)
     shop_description = db.Column(db.Text, nullable=False)
@@ -87,24 +134,34 @@ class Shop(db.Model):
     owner_name = db.Column(db.String(120), nullable=False)
     owner_surname = db.Column(db.String(120), nullable=False)
     
-    mystery_boxes = db.relationship('MysteryBox', backref='shop', lazy=True)
+    mystery_boxes = db.relationship('MysteryBox', backref='shop', lazy='dynamic')
+    sales = db.relationship('Sale', backref='shop', lazy='dynamic')
+    ratings = db.relationship('Rating', backref='shop', lazy='dynamic')
 
-    def __repr__(self):
-        return f'<Shop {self.name}>'
-    
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-    
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    total_sales = column_property(
+        select([func.count(Sale.id)]).
+        where(Sale.shop_id == id).
+        correlate_except(Sale)
+    )
 
-    def serialize(self):
+    def serialize_for_card(self):
         return {
             "id": self.id,
             "name": self.name,
+            "categories": self.categories,
+            "total_sales": self.total_sales,
+            "address": self.address,
+            "shop_summary": self.shop_summary,
+            "image_shop_url": self.image_shop_url
+        }
+
+    def serialize_detail(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
             "address": self.address,
             "postal_code": self.postal_code,
-            "email": self.email,
             "categories": self.categories,
             "business_core": self.business_core,
             "shop_description": self.shop_description,
@@ -112,13 +169,18 @@ class Shop(db.Model):
             "image_shop_url": self.image_shop_url,
             "owner_name": self.owner_name,
             "owner_surname": self.owner_surname,
-            "mystery_boxes": [box.serialize() for box in self.mystery_boxes]
+            "total_sales": self.total_sales,
+            "mystery_boxes": [box.serialize_for_card() for box in self.mystery_boxes],
+            "average_rating": self.average_rating()
         }
 
-class MysteryBox(db.Model):
-    __tablename__ = "mystery_box"
+    def average_rating(self):
+        ratings = [r.rating for r in self.ratings]
+        return sum(ratings) / len(ratings) if ratings else 0
+
+class MysteryBox(BaseModel):
+    __tablename__ = "mystery_boxes"
     
-    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
@@ -126,9 +188,30 @@ class MysteryBox(db.Model):
     possible_items = db.Column(ARRAY(db.String), nullable=False)
     image_url = db.Column(db.String(200), nullable=False)
     number_of_items = db.Column(db.Integer, nullable=False)
-    shop_id = db.Column(db.Integer, db.ForeignKey('shop.id'), nullable=False)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
 
-    def serialize(self):
+    sale_details = db.relationship('SaleDetail', backref='mystery_box', lazy='dynamic')
+    ratings = db.relationship('Rating', backref='mystery_box', lazy='dynamic')
+
+    total_sales = column_property(
+        select([func.sum(SaleDetail.quantity)]).
+        where(SaleDetail.mystery_box_id == id).
+        correlate_except(SaleDetail)
+    )
+
+    def serialize_for_card(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'price': self.price,
+            'image_url': self.image_url,
+            'shop_id': self.shop_id,
+            'shop_name': self.shop.name,
+            'total_sales': self.total_sales,
+            'shop_categories': self.shop.categories
+        }
+
+    def serialize_detail(self):
         return {
             'id': self.id,
             'name': self.name,
@@ -138,5 +221,37 @@ class MysteryBox(db.Model):
             'possible_items': self.possible_items,
             'image_url': self.image_url,
             'number_of_items': self.number_of_items,
-            'shop_id': self.shop_id
+            'shop_id': self.shop_id,
+            'shop_name': self.shop.name,
+            'total_sales': self.total_sales,
+            'shop_categories': self.shop.categories,
+            'average_rating': self.average_rating()
         }
+
+    def average_rating(self):
+        ratings = [r.rating for r in self.ratings]
+        return sum(ratings) / len(ratings) if ratings else 0
+
+class Rating(BaseModel):
+    __tablename__ = "ratings"
+
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
+    mystery_box_id = db.Column(db.Integer, db.ForeignKey('mystery_boxes.id'), nullable=False)
+    rating = db.Column(db.Float, nullable=False)
+    comment = db.Column(db.String(450))
+    is_anonymous = db.Column(db.Boolean, default=False, nullable=False)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'shop_id': self.shop_id,
+            'mystery_box_id': self.mystery_box_id,
+            'rating': self.rating,
+            'comment': self.comment,
+            'date': self.created_at,
+            'is_anonymous': self.is_anonymous
+        }
+
+
