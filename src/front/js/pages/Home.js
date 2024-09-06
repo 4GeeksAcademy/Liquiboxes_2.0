@@ -47,7 +47,7 @@ export const Home = () => {
                 <h3>Estas son las tiendas más vendidas hasta el momento:</h3>
                 <CarruselTopSellers />
             </div>
-            <h2>Y aquí tienes als tiendas recomendadas para ti:</h2>
+            <h2>Y aquí tienes las tiendas recomendadas para ti:</h2>
             {store.isLoading ? (
                 <p>Cargando tiendas recomendadas...</p>
             ) : recommendedShops.length > 0 ? (

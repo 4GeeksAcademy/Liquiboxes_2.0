@@ -33,9 +33,9 @@ def upload_image_to_cloudinary(image_file):
 def register_shop():
     try:
         data = request.form
-        required_fields = ['name', 'address', 'postal_code', 'email', 'password', 
-                           'categories', 'business_core', 'shop_description', 'shop_summary', 
-                           'owner_name', 'owner_surname']
+        required_fields = ['owner_name', 'owner_surname', 'shop_name', 'shop_address', 
+                   'postal_code', 'email', 'password', 'categories', 
+                   'business_core', 'shop_description', 'shop_summary']
         
         for field in required_fields:
             if field not in data:
@@ -53,11 +53,11 @@ def register_shop():
             return jsonify({'error': 'Failed to upload image to Cloudinary'}), 500
 
         new_shop = Shop(
-            name=data['name'],
-            address=data['address'],
+            name=data['shop_name'],
+            address=data['shop_address'],
             postal_code=data['postal_code'],
             email=data['email'],
-            categories=data['categories'].split(','),
+            categories=data['categories'].split(','),  # Asumiendo que las categorías vienen como una cadena separada por comas
             business_core=data['business_core'],
             shop_description=data['shop_description'],
             shop_summary=data['shop_summary'],
