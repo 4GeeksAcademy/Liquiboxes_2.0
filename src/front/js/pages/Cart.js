@@ -9,19 +9,16 @@ const Cart = () => {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate()
+  useEffect(() => {
+    const fetchCartDetails = async () => {
+      setIsLoading(true); const items = await actions.getCartItemsDetails(); setCartItems(items);
+      const cartTotal = await actions.getCartTotal();
+      setTotal(cartTotal);
+      setIsLoading(false);
+    };
 
-  // useEffect(() => {
-  //   const fetchCartDetails = async () => {
-  //     setIsLoading(true);
-  //     const items = await actions.getCartItemsDetails();
-  //     setCartItems(items);
-  //     const cartTotal = await actions.getCartTotal();
-  //     setTotal(cartTotal);
-  //     setIsLoading(false);
-  //   };
-
-  //   fetchCartDetails();
-  // }, [store.cart]);
+    fetchCartDetails();
+  }, [store.cart]);
 
   useEffect(() => {
     const fetchCartDetails = async () => {

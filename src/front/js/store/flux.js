@@ -101,20 +101,65 @@ const getState = ({ getStore, getActions, setStore }) => {
             },
 
             addToCart: (id) => {
-                const store = getStore();
-                const existingItem = store.cart.find(item => item.id === id);
-
-                if (existingItem) {
-                    const updatedCart = store.cart.map(item =>
-                        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+                const getLatestCart = () => {
+                    const store = getStore();
+                    console.log("Estado del carrito en el store:", store.cart);
+                    
+                    let storedCart = [];
+                    try {
+                        const storedCartString = localStorage.getItem("cart");
+                        console.log("Carrito en localStorage (raw):", storedCartString);
+                        storedCart = JSON.parse(storedCartString || "[]");
+                    } catch (error) {
+                        console.error("Error parsing cart from localStorage:", error);
+                    }
+                    console.log("Carrito en localStorage (parsed):", storedCart);
+                    
+                    if (Array.isArray(store.cart) && store.cart.length > 0 && storedCart.length === 0) {
+                        console.log("Usando carrito del store porque localStorage está vacío");
+                        return store.cart;
+                    }
+                    
+                    const combinedCart = [...storedCart];
+                    store.cart.forEach(storeItem => {
+                        const existingIndex = combinedCart.findIndex(item => item.id === storeItem.id);
+                        if (existingIndex !== -1) {
+                            combinedCart[existingIndex].quantity = Math.max(combinedCart[existingIndex].quantity, storeItem.quantity);
+                        } else {
+                            combinedCart.push(storeItem);
+                        }
+                    });
+                    
+                    console.log("Carrito combinado:", combinedCart);
+                    return combinedCart;
+                };
+            
+                const latestCart = getLatestCart();
+                console.log("Estado inicial del carrito (más actualizado):", latestCart);
+            
+                let updatedCart;
+                const existingItemIndex = latestCart.findIndex(item => item.id === id);
+                if (existingItemIndex !== -1) {
+                    console.log("El item ya existe en el carrito. Incrementando cantidad.");
+                    updatedCart = latestCart.map((item, index) => 
+                        index === existingItemIndex 
+                            ? { ...item, quantity: item.quantity + 1 } 
+                            : item
                     );
-                    setStore({ cart: updatedCart });
                 } else {
-                    const updatedCart = [...store.cart, { id, quantity: 1 }];
-                    setStore({ cart: updatedCart });
+                    console.log("Agregando nuevo item al carrito");
+                    updatedCart = [...latestCart, { id, quantity: 1 }];
                 }
-
-                localStorage.setItem("cart", JSON.stringify(getStore().cart));
+            
+                console.log("Actualizando el carrito:", updatedCart);
+                
+                setStore({ cart: updatedCart });
+                localStorage.setItem("cart", JSON.stringify(updatedCart));
+            
+                console.log("Estado final del store después de setStore:", getStore().cart);
+                console.log("Estado final en localStorage:", localStorage.getItem("cart"));
+            
+                return updatedCart;
             },
 
             removeFromCart: (id) => {
@@ -124,9 +169,11 @@ const getState = ({ getStore, getActions, setStore }) => {
                 localStorage.setItem("cart", JSON.stringify(updatedCart));
             },
 
+
+
             getMysteryBoxDetail: async (id) => {
                 try {
-                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${ id }`)
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`)
                     if (response.data) {
                         console.log("La API devuelve datos")
                         setStore({ mysteryBoxDetail: response.data })
@@ -136,7 +183,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
                 }
             },
-          
+
             getShopDetail: async (id) => {
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/${id}`)

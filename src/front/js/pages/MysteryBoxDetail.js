@@ -1,11 +1,14 @@
-import React, { useContext, useEffect, useState } from 'react';
-import {Context} from '../store/appContext';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { Context } from '../store/appContext';
 import { useParams } from 'react-router-dom';
 function MysteryBoxDetail() {
-  const {store, actions}= useContext(Context)
-  const [mysteryBox, setMysteryBox]= useState([])
-  const {id}= useParams()
+  const { store, actions } = useContext(Context)
+  const [mysteryBox, setMysteryBox] = useState([])
+  const { id } = useParams()
   const [isLoading, setIsLoading] = useState(true);
+  const [localCart, setLocalCart] = useState([]);
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,6 +30,34 @@ function MysteryBoxDetail() {
       setMysteryBox(store.mysteryBoxDetail);
     }
   }, [isLoading, store.mysteryBoxDetail]);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedCart = localStorage.getItem("cart");
+      setLocalCart(storedCart ? JSON.parse(storedCart) : []);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  useEffect(() => {
+    const storedCart = localStorage.getItem("cart");
+    if (storedCart) {
+      setLocalCart(JSON.parse(storedCart));
+    }
+  }, []);  // Elimina handleAddToCart de las dependencias
+
+  useEffect(() => {
+    setLocalCart(store.cart);
+  }, [store.cart]);
+
+  const handleAddToCart = useCallback(() => {
+    const updatedCart = actions.addToCart(id);
+    console.log("Carrito actualizado:", updatedCart);
+    setLocalCart(updatedCart);  // Actualiza el estado local del carrito
+  }, [id, actions]);
+  
 
 
   if (isLoading) {
@@ -66,18 +97,19 @@ function MysteryBoxDetail() {
           </div>
           <div className="possible-items">
             <h4>Ítems posibles:</h4>
-            {/* <ul>
-              {mysteryBoxDetail.possible_items.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul> */}
+            <ul>
+              {mysteryBox.possible_items && (
+                mysteryBox.possible_items.map((item, index) => (
+                  <li key={index}>{item}</li>
+                )))}
+            </ul>
           </div>
           <div className="shipping-info">
             <p><strong>Envío:</strong> desde 3,99 €</p>
           </div>
           <div className="action-buttons mt-4">
             <button type="button" className="btn btn-primary w-100 mb-2">Comprar Ahora</button>
-            <button type="button" className="btn btn-secondary w-100">Añadir al Carrito</button>
+            <button type="button" className="btn btn-secondary w-100" onClick={handleAddToCart}>Añadir al Carrito</button>
           </div>
         </div>
       </div>
