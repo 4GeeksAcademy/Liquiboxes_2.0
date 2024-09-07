@@ -32,7 +32,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             fetchShops: async () => {
                 try {
                     setStore({ isLoading: true, error: null });
-                    const url = `${process.env.BACKEND_URL}/shops`;
+                    const url = process.env.BACKEND_URL + "/shops";
                     const response = await axios.get(url);
                     const shopsData = response.data || [];
 
@@ -40,11 +40,9 @@ const getState = ({ getStore, getActions, setStore }) => {
                         ...shop,
                         categories: shop.categories.map(cat => {
                             try {
-                                // Intenta parsear la categoría si es un string JSON
                                 const parsed = JSON.parse(cat);
                                 return parsed.replace(/["\[\]]/g, '').trim().toLowerCase();
                             } catch (e) {
-                                // Si no se puede parsear, simplemente limpia y devuelve la cadena
                                 return cat.replace(/["\[\]]/g, '').trim().toLowerCase();
                             }
                         })
@@ -72,7 +70,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                         getActions().logout();
                         return;
                     }
-                    const response = await axios.get(`${process.env.BACKEND_URL}/users/profile`, {
+                    const response = await axios.get(process.env.BACKEND_URL + "/users/profile", {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     if (response.data && typeof response.data === 'object') {
