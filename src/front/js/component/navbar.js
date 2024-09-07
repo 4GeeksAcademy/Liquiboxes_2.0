@@ -1,7 +1,20 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Context } from "../store/appContext"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
+import "../../styles/navbar.css"
 
 export const Navbar = () => {
+    const { store, actions } = useContext(Context);
+    const [cartItemCount, setCartItemCount] = useState(0);
+
+    useEffect(() => {
+        // Calcular el número total de items en el carrito
+        const totalItems = store.cart.reduce((total, item) => total + item.quantity, 0);
+        setCartItemCount(totalItems);
+    }, [store.cart, actions]);
+
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
             <div className="container">
@@ -10,7 +23,7 @@ export const Navbar = () => {
                     <span className="navbar-toggler-icon"></span>
                 </button>
                 <div className="collapse navbar-collapse" id="navbarNavDropdown">
-                    <ul className="navbar-nav">
+                    <ul className="navbar-nav me-auto">
                         <li className="nav-item dropdown">
                             <a className="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Cliente
@@ -45,6 +58,15 @@ export const Navbar = () => {
                             </ul>
                         </li>
                     </ul>
+                    <Link to="/cart" className="nav-link position-relative">
+                        <FontAwesomeIcon icon={faShoppingCart} size="lg" />
+                        {cartItemCount > 0 && (
+                            <span className="position-absolute top-25 start-100 translate-middle badge rounded-pill bg-danger">
+                                {cartItemCount}
+                                <span className="visually-hidden">items en el carrito</span>
+                            </span>
+                        )}
+                    </Link>
                 </div>
             </div>
         </nav>

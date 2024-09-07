@@ -1,0 +1,17 @@
+.navbar .nav-link {
+    position: relative;
+    color: var(--secondary-color)
+}
+
+.navbar .badge {
+    font-size: 0.6rem;
+    padding: 0.25em 0.4em;
+    font-weight: 700;
+}
+
+@media (max-width: 991.98px) {
+    .navbar .nav-link {
+        display: inline-block;
+        margin-top: 10px;
+    }
+}

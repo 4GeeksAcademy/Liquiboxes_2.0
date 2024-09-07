@@ -100,33 +100,119 @@ const getState = ({ getStore, getActions, setStore }) => {
                 });
             },
 
+
             addToCart: (id) => {
-                const store = getStore();
-                const existingItem = store.cart.find(item => item.id === id);
-
-                if (existingItem) {
-                    const updatedCart = store.cart.map(item =>
-                        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-                    );
-                    setStore({ cart: updatedCart });
+                let cart = [];
+            
+                // Si el store no tiene el carrito, lo obtenemos del localStorage
+                if (!getStore().cart) {
+                    cart = JSON.parse(localStorage.getItem("cart") || "[]");
                 } else {
-                    const updatedCart = [...store.cart, { id, quantity: 1 }];
-                    setStore({ cart: updatedCart });
+                    cart = getStore().cart;
                 }
-
-                localStorage.setItem("cart", JSON.stringify(getStore().cart));
+            
+                // Verificamos si el item con este mysterybox_id ya está en el carrito
+                const existingItemIndex = cart.findIndex(item => item.mysterybox_id == id);
+            
+                if (existingItemIndex !== -1) {
+                    // Si ya existe, incrementamos la cantidad
+                    cart[existingItemIndex] = {
+                        ...cart[existingItemIndex],
+                        quantity: cart[existingItemIndex].quantity + 1
+                    };
+                } else {
+                    // Aseguramos que el id no sea null o undefined antes de agregar
+                    if (id) {
+                        let mysterybox_id = id;
+                        cart.push({ mysterybox_id, quantity: 1 });
+                    } else {
+                        console.error("El ID es inválido, no se puede añadir al carrito");
+                    }
+                }
+            
+                // Actualizamos el carrito en el store y en localStorage
+                setStore({ cart });
+                localStorage.setItem("cart", JSON.stringify(cart));
+                return cart;
             },
 
             removeFromCart: (id) => {
                 const store = getStore();
-                const updatedCart = store.cart.filter(item => item.id !== id);
-                setStore({ cart: updatedCart });
-                localStorage.setItem("cart", JSON.stringify(updatedCart));
+                let cart = store.cart || JSON.parse(localStorage.getItem("cart") || "[]");
+                
+                // Filtramos el carrito para eliminar el item con el id especificado
+                cart = cart.filter(item => item.mysterybox_id != id);
+                
+                // Actualizamos el carrito en el store y en localStorage
+                setStore({ cart });
+                localStorage.setItem("cart", JSON.stringify(cart));
+                
+                return cart;
             },
+            
+            decreaseQuantity: (id) => {
+                const store = getStore();
+                let cart = store.cart || JSON.parse(localStorage.getItem("cart") || "[]");
+                
+                const existingItemIndex = cart.findIndex(item => item.mysterybox_id == id);
+                
+                if (existingItemIndex !== -1) {
+                    if (cart[existingItemIndex].quantity > 1) {
+                        // Si la cantidad es mayor que 1, la reducimos
+                        cart[existingItemIndex] = {
+                            ...cart[existingItemIndex],
+                            quantity: cart[existingItemIndex].quantity - 1
+                        };
+                    } else {
+                        // Si la cantidad es 1, eliminamos el item del carrito
+                        cart = cart.filter(item => item.mysterybox_id != id);
+                    }
+                    
+                    // Actualizamos el carrito en el store y en localStorage
+                    setStore({ cart });
+                    localStorage.setItem("cart", JSON.stringify(cart));
+                }
+                
+                return cart;
+            },
+            
+            
+
+            getCartItemDetails: async (id) => {
+                try {
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`);
+                    if (response.data) {
+                        return response.data;
+                    }
+                } catch (error) {
+                    console.log("Error al obtener detalles del item del carrito:", error);
+                    return null;
+                }
+            },
+
+            fetchSingleItemDetail: async (id) => {
+                try {
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`);
+                    if (response.data) {
+                        console.log("Se ha ejecutado satisfactoriamente fetchSingleDetail")
+                        return response.data;
+                    }
+                } catch (error) {
+                    console.log("Error al obtener detalles del item:", error);
+                    return null;
+                }
+            },
+
+            getCartTotal: async () => {
+                const actions = getActions();
+                const cartItems = await actions.getCartItemsDetails();
+                return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+            },
+
 
             getMysteryBoxDetail: async (id) => {
                 try {
-                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${ id }`)
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`)
                     if (response.data) {
                         console.log("La API devuelve datos")
                         setStore({ mysteryBoxDetail: response.data })
@@ -136,7 +222,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
                 }
             },
-          
+
             getShopDetail: async (id) => {
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/${id}`)
