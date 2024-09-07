@@ -15,6 +15,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             userData: null,
             shopDetail: {},
             showError: true,
+            cardID: {},
         },
         actions: {
             getMessage: async () => {
@@ -232,6 +233,19 @@ const getState = ({ getStore, getActions, setStore }) => {
                     if (response.data) {
                         console.log(response.data)
                         setStore({ shopDetail: response.data })
+                    }
+                } catch (error) {
+                    console.log("ha habido un error" + error)
+
+                }
+            },
+
+            getCardID: async (id) => {
+                try {
+                    const responseBox = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`)
+                    if (responseBox.data) {
+                        console.log(responseBox.data)
+                        setStore({ cardID: responseBox.data })
                     }
                 } catch (error) {
                     console.log("ha habido un error" + error)

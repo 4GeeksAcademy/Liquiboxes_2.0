@@ -1,4 +1,4 @@
-import React from 'react'; //PASA LOS DATOS EN EL ENCABEZADO DE CADA TIENDA//
+import React from 'react'; // ESTE COMPONENTE PASA LOS DATOS EN EL ENCABEZADO DE CADA TIENDA//
 
 function HeaderShop({ data }) {
   return (

@@ -5,7 +5,7 @@
   }
   
   .carousel-image {
-    max-height: 500px; /* Ajusta esta altura según tus necesidades */
+    max-height: 400px; /* Ajusta esta altura según tus necesidades */
     object-fit: cover; /* Hace que la imagen se ajuste al contenedor sin distorsionarse */
     border-radius: 15px; /* Bordes redondeados para un look más moderno */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Añade una sombra sutil */
