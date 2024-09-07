@@ -1,5 +1,6 @@
 import React from 'react';
 import Card from 'react-bootstrap/Card';
+import "../../../styles/cardmbox.css";
 import Button from 'react-bootstrap/Button';
 import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 
@@ -13,7 +14,8 @@ function CardMBox({ data }) {
 
   return (
     <Card className='container p-3' border="info" style={{ width: '18rem' }}>
-      <Card.Img variant="top" src="https://images.pexels.com/photos/1666070/pexels-photo-1666070.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt={data.name} />
+      <Card.Img variant="top" className='card-img'
+        src="https://t4.ftcdn.net/jpg/05/81/14/19/360_F_581141998_4eswgrNT97MJAc2RXm0A9GHGeJ6BX3cb.jpg" alt={data.name} />
       <Card.Body>
         {/* Título con el nombre del artículo */}
         <Card.Title>{data.name}</Card.Title>
