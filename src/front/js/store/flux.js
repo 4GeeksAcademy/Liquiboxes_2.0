@@ -100,75 +100,114 @@ const getState = ({ getStore, getActions, setStore }) => {
                 });
             },
 
+
             addToCart: (id) => {
-                const getLatestCart = () => {
-                    const store = getStore();
-                    console.log("Estado del carrito en el store:", store.cart);
-                    
-                    let storedCart = [];
-                    try {
-                        const storedCartString = localStorage.getItem("cart");
-                        console.log("Carrito en localStorage (raw):", storedCartString);
-                        storedCart = JSON.parse(storedCartString || "[]");
-                    } catch (error) {
-                        console.error("Error parsing cart from localStorage:", error);
-                    }
-                    console.log("Carrito en localStorage (parsed):", storedCart);
-                    
-                    if (Array.isArray(store.cart) && store.cart.length > 0 && storedCart.length === 0) {
-                        console.log("Usando carrito del store porque localStorage está vacío");
-                        return store.cart;
-                    }
-                    
-                    const combinedCart = [...storedCart];
-                    store.cart.forEach(storeItem => {
-                        const existingIndex = combinedCart.findIndex(item => item.id === storeItem.id);
-                        if (existingIndex !== -1) {
-                            combinedCart[existingIndex].quantity = Math.max(combinedCart[existingIndex].quantity, storeItem.quantity);
-                        } else {
-                            combinedCart.push(storeItem);
-                        }
-                    });
-                    
-                    console.log("Carrito combinado:", combinedCart);
-                    return combinedCart;
-                };
+                let cart = [];
             
-                const latestCart = getLatestCart();
-                console.log("Estado inicial del carrito (más actualizado):", latestCart);
-            
-                let updatedCart;
-                const existingItemIndex = latestCart.findIndex(item => item.id === id);
-                if (existingItemIndex !== -1) {
-                    console.log("El item ya existe en el carrito. Incrementando cantidad.");
-                    updatedCart = latestCart.map((item, index) => 
-                        index === existingItemIndex 
-                            ? { ...item, quantity: item.quantity + 1 } 
-                            : item
-                    );
+                // Si el store no tiene el carrito, lo obtenemos del localStorage
+                if (!getStore().cart) {
+                    cart = JSON.parse(localStorage.getItem("cart") || "[]");
                 } else {
-                    console.log("Agregando nuevo item al carrito");
-                    updatedCart = [...latestCart, { id, quantity: 1 }];
+                    cart = getStore().cart;
                 }
             
-                console.log("Actualizando el carrito:", updatedCart);
-                
-                setStore({ cart: updatedCart });
-                localStorage.setItem("cart", JSON.stringify(updatedCart));
+                // Verificamos si el item con este mysterybox_id ya está en el carrito
+                const existingItemIndex = cart.findIndex(item => item.mysterybox_id == id);
             
-                console.log("Estado final del store después de setStore:", getStore().cart);
-                console.log("Estado final en localStorage:", localStorage.getItem("cart"));
+                if (existingItemIndex !== -1) {
+                    // Si ya existe, incrementamos la cantidad
+                    cart[existingItemIndex] = {
+                        ...cart[existingItemIndex],
+                        quantity: cart[existingItemIndex].quantity + 1
+                    };
+                } else {
+                    // Aseguramos que el id no sea null o undefined antes de agregar
+                    if (id) {
+                        let mysterybox_id = id;
+                        cart.push({ mysterybox_id, quantity: 1 });
+                    } else {
+                        console.error("El ID es inválido, no se puede añadir al carrito");
+                    }
+                }
             
-                return updatedCart;
+                // Actualizamos el carrito en el store y en localStorage
+                setStore({ cart });
+                localStorage.setItem("cart", JSON.stringify(cart));
+                return cart;
             },
 
             removeFromCart: (id) => {
                 const store = getStore();
-                const updatedCart = store.cart.filter(item => item.id !== id);
-                setStore({ cart: updatedCart });
-                localStorage.setItem("cart", JSON.stringify(updatedCart));
+                let cart = store.cart || JSON.parse(localStorage.getItem("cart") || "[]");
+                
+                // Filtramos el carrito para eliminar el item con el id especificado
+                cart = cart.filter(item => item.mysterybox_id != id);
+                
+                // Actualizamos el carrito en el store y en localStorage
+                setStore({ cart });
+                localStorage.setItem("cart", JSON.stringify(cart));
+                
+                return cart;
+            },
+            
+            decreaseQuantity: (id) => {
+                const store = getStore();
+                let cart = store.cart || JSON.parse(localStorage.getItem("cart") || "[]");
+                
+                const existingItemIndex = cart.findIndex(item => item.mysterybox_id == id);
+                
+                if (existingItemIndex !== -1) {
+                    if (cart[existingItemIndex].quantity > 1) {
+                        // Si la cantidad es mayor que 1, la reducimos
+                        cart[existingItemIndex] = {
+                            ...cart[existingItemIndex],
+                            quantity: cart[existingItemIndex].quantity - 1
+                        };
+                    } else {
+                        // Si la cantidad es 1, eliminamos el item del carrito
+                        cart = cart.filter(item => item.mysterybox_id != id);
+                    }
+                    
+                    // Actualizamos el carrito en el store y en localStorage
+                    setStore({ cart });
+                    localStorage.setItem("cart", JSON.stringify(cart));
+                }
+                
+                return cart;
+            },
+            
+            
+
+            getCartItemDetails: async (id) => {
+                try {
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`);
+                    if (response.data) {
+                        return response.data;
+                    }
+                } catch (error) {
+                    console.log("Error al obtener detalles del item del carrito:", error);
+                    return null;
+                }
             },
 
+            fetchSingleItemDetail: async (id) => {
+                try {
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`);
+                    if (response.data) {
+                        console.log("Se ha ejecutado satisfactoriamente fetchSingleDetail")
+                        return response.data;
+                    }
+                } catch (error) {
+                    console.log("Error al obtener detalles del item:", error);
+                    return null;
+                }
+            },
+
+            getCartTotal: async () => {
+                const actions = getActions();
+                const cartItems = await actions.getCartItemsDetails();
+                return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+            },
 
 
             getMysteryBoxDetail: async (id) => {

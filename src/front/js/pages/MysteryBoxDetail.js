@@ -31,32 +31,9 @@ function MysteryBoxDetail() {
     }
   }, [isLoading, store.mysteryBoxDetail]);
 
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const storedCart = localStorage.getItem("cart");
-      setLocalCart(storedCart ? JSON.parse(storedCart) : []);
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  useEffect(() => {
-    const storedCart = localStorage.getItem("cart");
-    if (storedCart) {
-      setLocalCart(JSON.parse(storedCart));
-    }
-  }, []);  // Elimina handleAddToCart de las dependencias
-
-  useEffect(() => {
-    setLocalCart(store.cart);
-  }, [store.cart]);
-
-  const handleAddToCart = useCallback(() => {
-    const updatedCart = actions.addToCart(id);
-    console.log("Carrito actualizado:", updatedCart);
-    setLocalCart(updatedCart);  // Actualiza el estado local del carrito
-  }, [id, actions]);
+  const handleAddToCart = () => {
+    actions.addToCart(id);
+  };
   
 
 
