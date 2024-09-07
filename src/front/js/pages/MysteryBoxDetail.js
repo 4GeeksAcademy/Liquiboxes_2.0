@@ -1,48 +1,70 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Context } from '../store/appContext';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes, faHome } from '@fortawesome/free-solid-svg-icons';
+
 function MysteryBoxDetail() {
-  const { store, actions } = useContext(Context)
-  const [mysteryBox, setMysteryBox] = useState([])
-  const { id } = useParams()
-  const [isLoading, setIsLoading] = useState(true);
-  const [localCart, setLocalCart] = useState([]);
-
-
+  const { store, actions } = useContext(Context);
+  const [mysteryBox, setMysteryBox] = useState(null);
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        await actions.getMysteryBoxDetail(id);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error al obtener los datos:", error);
-        setIsLoading(false);
-      }
+      await actions.getMysteryBoxDetail(id);
     };
 
     fetchData();
   }, [id]);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!store.isLoading && !store.showError) {
       setMysteryBox(store.mysteryBoxDetail);
     }
-  }, [isLoading, store.mysteryBoxDetail]);
+  }, [store.isLoading, store.showError, store.mysteryBoxDetail]);
 
   const handleAddToCart = () => {
     actions.addToCart(id);
   };
-  
 
+  const handleCloseError = () => {
+    navigate('/home');
+  };
 
-  if (isLoading) {
-    return <div>Cargando...</div>;
+  if (store.isLoading) {
+    return <div className="text-center mt-5">Cargando...</div>;
+  }
+
+  if (store.showError) {
+    return (
+      <div className={`modal ${store.showError ? 'd-block' : ''}`} tabIndex="-1" role="dialog" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+        <div className="modal-dialog" role="document">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Mystery Box no encontrada</h5>
+              <button type="button" className="close" onClick={handleCloseError} aria-label="Close">
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p>Lo sentimos, no hemos encontrado la Mystery Box que estás buscando.</p>
+              <p>Por favor, verifica el enlace o intenta con otra Mystery Box. Si el problema persiste, no dudes en contactar con nuestro servicio de atención al cliente.</p>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-primary" onClick={handleCloseError}>
+                <FontAwesomeIcon icon={faHome} className="me-2" />
+                Volver a la página principal
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!mysteryBox) {
-    return <div>No se encontró la Mystery Box</div>; // esta parte no funciona
+    return null;
   }
 
   return (
