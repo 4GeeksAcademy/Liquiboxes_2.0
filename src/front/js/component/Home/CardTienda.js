@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStore, faMapMarkerAlt, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
+
 const CardTienda = ({ id, imageSrc, shopName, shopSummary, shopAddress }) => {
     const navigate = useNavigate();
 
@@ -41,3 +42,4 @@ const CardTienda = ({ id, imageSrc, shopName, shopSummary, shopAddress }) => {
 };
 
 export default CardTienda;
+

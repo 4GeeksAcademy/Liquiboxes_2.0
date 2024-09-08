@@ -21,10 +21,12 @@ export const Home = () => {
 
     useEffect(() => {
         if (store.userData && store.allShops.length > 0) {
+            console.log("Datos del usuario", store.userData, "Datos de todas las tiendas", store.allShops);
             const userCategories = store.userData.categories.map(cat => cat.toLowerCase());
             const filtered = store.allShops.filter(shop => 
-                shop.categories.some(category => userCategories.includes(category.toLowerCase()))
+                shop.categories.some(category => userCategories.includes(category))
             );
+            console.log(filtered)
             setRecommendedShops(filtered);
         }
     }, [store.userData, store.allShops]);
@@ -51,7 +53,7 @@ export const Home = () => {
             {store.isLoading ? (
                 <p>Cargando tiendas recomendadas...</p>
             ) : recommendedShops.length > 0 ? (
-                <ScrollHorizontalShops cardsData={recommendedShops} className='mx-4' />
+                <ScrollHorizontalShops cardsData={recommendedShops} className='mx-4 my-3' />
             ) : (
                 <p>No hay tiendas recomendadas en este momento.</p>
             )}
