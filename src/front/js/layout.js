@@ -39,6 +39,8 @@ const Layout = () => {
 
   const initialOptions = {
     clientId: "AU2HNEjnvlNYSB7p6hGNb8gjhh0leKkEIZechEQLIb1IpU0k8IOeZa4ECvXdj5ErYrdZUn8UWFGTGNNC",
+    currency: "EUR",
+    intent: "capture",
   };
 
 

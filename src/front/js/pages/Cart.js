@@ -25,6 +25,7 @@ const Cart = () => {
 
     const validItems = itemsWithDetails.filter(item => item !== null);
     setCartItems(validItems);
+    actions.updateCartWithDetails(validItems)
 
     const cartTotal = validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     setTotal(cartTotal);
@@ -34,7 +35,7 @@ const Cart = () => {
 
   useEffect(() => {
     fetchCartDetails();
-  }, [fetchCartDetails]);
+  }, []);
 
   const updateLocalCart = useCallback((itemId, updateFn) => {
     setCartItems(prevItems => {

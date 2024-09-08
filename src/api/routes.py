@@ -10,6 +10,7 @@ from flask_cors import CORS
 from api.users.routes import users
 from api.shops.routes import shops
 from api.google.routes import auth
+from api.sales.routes import sales
 
 api = Blueprint('api', __name__)
 
@@ -19,6 +20,7 @@ CORS(api)
 api.register_blueprint(users, url_prefix='/users')
 api.register_blueprint(shops, url_prefix='/shops')
 api.register_blueprint(auth, url_prefix='/auth')
+api.register_blueprint(sales, url_prefix='/sales')
 
 
 @api.route('/hello', methods=['POST', 'GET'])
