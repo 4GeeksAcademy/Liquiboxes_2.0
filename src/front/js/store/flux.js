@@ -210,6 +210,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
 
             getMysteryBoxDetail: async (id) => {
+                setStore({ showError: true, isLoading: true });
                 try {
                     const response = await axios.get(`${process.env.BACKEND_URL}/shops/mystery-box/${id}`);
                     setStore({ mysteryBoxDetail: response.data, showError: false, isLoading: false });
@@ -225,17 +226,25 @@ const getState = ({ getStore, getActions, setStore }) => {
             },
 
             getShopDetail: async (id) => {
+                setStore({ showError: true, isLoading: true });
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/${id}`)
                     if (response.data) {
                         console.log(response.data)
-                        setStore({ shopDetail: response.data })
+                        setStore({ shopDetail: response.data, showError: false, isLoading: false})
+                        console.log(first)
                     }
                 } catch (error) {
-                    console.log("ha habido un error" + error)
+                    console.log("Error al obtener la Tienda:", error);
+                    if (error.response && error.response.status === 404) {
+                        setStore({ showError: true, isLoading: false });
 
+                    } else {
+                        setStore({ showError: true, isLoading: false });
+                    }
                 }
             },
+
         }
     };
 };
