@@ -5,6 +5,7 @@ import SearchBar from "../component/Home/SearchBar";
 import ScrollHorizontalShops from "../component/Home/ScrollHorizontalShops";
 import CarruselTopSellers from "../component/Home/CarruselTopSellers";
 
+
 export const Home = () => {
     const { store, actions } = useContext(Context);
     const [recommendedShops, setRecommendedShops] = useState([]);
@@ -57,6 +58,7 @@ export const Home = () => {
             ) : (
                 <p>No hay tiendas recomendadas en este momento.</p>
             )}
+            
             
         </div>
     );
