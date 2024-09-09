@@ -28,7 +28,7 @@ import ShopSignUp from "./pages/Shops/ShopSignUp"
 import CreateBox from "./pages/Shops/CreateBox";
 
 import { Navbar } from "./component/navbar";
-import { Footer } from "./component/footer";
+import Footer from "./component/Footer";
 
 import injectContext from "./store/appContext"; // Asegúrate de importar correctamente
 
