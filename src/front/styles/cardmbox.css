@@ -9,9 +9,10 @@
 .card-container {
   width: 18rem;
   border: none;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra sutil */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   overflow: hidden; /* Asegura que los bordes redondeados se apliquen a la imagen */
+  margin: auto;
   background: #fff; /* Fondo blanco */
 }
 
@@ -27,7 +28,7 @@
 }
 
 .card-title {
-  font-size: 1.25rem; /* Tamaño de fuente del título */
+  font-size: 2rem; /* Tamaño de fuente del título */
   font-weight: bold; /* Peso de fuente fuerte */
   color: #343a40; /* Color oscuro para el título */
   margin-bottom: 0.5rem; /* Espacio debajo del título */
@@ -35,26 +36,18 @@
 
 .card-subtitle {
   color: #6c757d; /* Color de texto para la subtítulo */
-  font-size: 0.875rem; /* Tamaño de fuente más pequeño para la subtítulo */
+  font-size: 1rem; /* Tamaño de fuente más pequeño para la subtítulo */
   margin-bottom: 1rem; /* Espacio debajo de la subtítulo */
 }
 
 .card-text {
-  font-size: 0.875rem; /* Tamaño de fuente más pequeño para el texto */
+  font-size: 1.5rem; /* Tamaño de fuente más pequeño para el texto */
   color: #495057; /* Color de texto más claro */
   margin-bottom: 1rem; /* Espacio debajo del texto */
 }
 
 .card-button {
   background-color: #4b6a5e; /* Color de fondo del botón */
-  border: none;
-  padding: 0.75rem 1.5rem; /* Espaciado interno del botón */
-  font-size: 1rem; /* Tamaño de fuente del botón */
-  color: #fff; /* Color del texto del botón */
-  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
-.card-button:hover {
-  background-color: #49505797; /* Color más oscuro al pasar el ratón */
-  transform: scale(2.05); /* Escala ligera del botón al pasar el ratón */
-}
+

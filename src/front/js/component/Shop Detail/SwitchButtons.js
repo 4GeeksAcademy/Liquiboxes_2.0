@@ -1,36 +1,29 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBoxOpen, faStar } from '@fortawesome/free-solid-svg-icons'; // Importa los íconos
 
-export default function SwitchButtons() {
-    const [isArmarioVisible, setIsArmarioVisible] = useState(false);
-
+export default function SwitchButtons({ boxVisible, setBoxVisible }) {
     return (
         <div>
-            {/* BOTONES PARA CAMBIAR ENTRE ARMARIO Y VALORACIONES */}
             <div className="row">
                 <div className="col text-center">
-                    {/* Botón para mostrar el Armario */}
-                    <button
+                    {/* Botón para mostrar las Cajas */}
+                    <button 
                         type="button"
-                        className="fa-solid fa-table-cells-large"
-                        onClick={() => setIsArmarioVisible(true)}
-                    />
+                        className="btn btn-primary mx-2"
+                        onClick={() => setBoxVisible(true)}  // Muestra las Cajas
+                    >
+                        <FontAwesomeIcon icon={faBoxOpen} /> Cajas
+                    </button>
+                    
                     {/* Botón para mostrar las Valoraciones */}
                     <button
                         type="button"
-                        className="fa-solid fa-align-justify"
-                        onClick={() => setIsArmarioVisible(false)}
-                    />
-                </div>
-            </div>
-
-            {/* Contenido que cambia según el estado */}
-            <div className="row mt-4">
-                <div className="col text-center">
-                    {isArmarioVisible ? (
-                        <p>Aquí van las Boxes</p>
-                    ) : (
-                        <p>Aquí van las Valoraciones</p>
-                    )}
+                        className="btn btn-primary mx-2"
+                        onClick={() => setBoxVisible(false)}  // Muestra las Valoraciones
+                    >
+                        <FontAwesomeIcon icon={faStar} /> Valoraciones
+                    </button>
                 </div>
             </div>
         </div>
