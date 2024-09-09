@@ -1,21 +1,47 @@
 /* 
     General Styles used on every website (Don't Repeat Yourself)
 */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1 0 auto;
+}
+
+.footer {
+  flex-shrink: 0;
+}
+
 :root {
-    --primary-color: #6a8e7fff;
-    --secondary-color: #073b3aff;
-    --background-color: #FDFFFC;
-    --text-color: #28112B;
-    --border-color: #361D2E;
-  }
-  
-  body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: var(--background-color);
-    color: var(--text-color);
-  }
+  --primary-color: #6a8e7fff;
+  --secondary-color: #073b3aff;
+  --background-color: #fdfffc;
+  --text-color: #28112b;
+  --border-color: #361d2e;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  min-height: 100vh;
+}
 
 input[type="text"],
 input[type="email"],
@@ -53,7 +79,6 @@ input[type="checkbox"] {
   accent-color: var(--primary-color);
 }
 
-
 .navigation-buttons {
   display: flex;
   justify-content: space-between;
@@ -86,11 +111,12 @@ button:disabled {
   .signup-content {
     flex-direction: column;
   }
-  
-  .step-info, .step-form {
+
+  .step-info,
+  .step-form {
     width: 100%;
   }
-  
+
   .signup-progress {
     display: none;
   }

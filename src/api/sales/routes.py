@@ -14,7 +14,7 @@ sales = Blueprint('sales', __name__)
 def create_payment_intent():
     try:
         data = request.json
-        amount = int(data['amount'])  # Asegúrate de que el monto sea un entero
+        amount = int(data['amount'])  # Hacer que el amount venga de un wuery a la tabla MysteryBox.
         
         intent = stripe.PaymentIntent.create(
             amount=amount,

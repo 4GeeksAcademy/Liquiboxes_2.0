@@ -10,13 +10,12 @@ export const Navbar = () => {
     const [cartItemCount, setCartItemCount] = useState(0);
 
     useEffect(() => {
-        // Calcular el número total de items en el carrito
         const totalItems = store.cart.reduce((total, item) => total + item.quantity, 0);
         setCartItemCount(totalItems);
     }, [store.cart, actions]);
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
+        <nav className="navbar navbar-expand-lg">
             <div className="container">
                 <Link to="/" className="navbar-brand">Mi Aplicación</Link>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,10 +24,10 @@ export const Navbar = () => {
                 <div className="collapse navbar-collapse" id="navbarNavDropdown">
                     <ul className="navbar-nav me-auto">
                         <li className="nav-item dropdown">
-                            <a className="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a className="nav-link dropdown-toggle" href="#" id="clienteDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Cliente
                             </a>
-                            <ul className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <ul className="dropdown-menu" aria-labelledby="clienteDropdown">
                                 <li><Link to="/signup" className="dropdown-item">Registro</Link></li>
                                 <li><Link to="/home" className="dropdown-item">Home</Link></li>
                                 <li><Link to="/private" className="dropdown-item">Área Privada</Link></li>
@@ -41,18 +40,18 @@ export const Navbar = () => {
                             </ul>
                         </li>
                         <li className="nav-item dropdown">
-                            <a className="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a className="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Admin
                             </a>
-                            <ul className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <ul className="dropdown-menu" aria-labelledby="adminDropdown">
                                 <li><Link to="/adminhome" className="dropdown-item">Inicio Admin</Link></li>
                             </ul>
                         </li>
                         <li className="nav-item dropdown">
-                            <a className="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a className="nav-link dropdown-toggle" href="#" id="tiendaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Tienda
                             </a>
-                            <ul className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <ul className="dropdown-menu" aria-labelledby="tiendaDropdown">
                                 <li><Link to="/shophome" className="dropdown-item">Inicio Tienda</Link></li>
                                 <li><Link to="/shopsignup" className="dropdown-item">Registro Tienda</Link></li>
                             </ul>
@@ -61,7 +60,7 @@ export const Navbar = () => {
                     <Link to="/cart" className="nav-link position-relative">
                         <FontAwesomeIcon icon={faShoppingCart} size="lg" />
                         {cartItemCount > 0 && (
-                            <span className="position-absolute top-25 start-100 translate-middle badge rounded-pill bg-danger">
+                            <span className="position-absolute top-25 start-100 translate-middle badge rounded-pill">
                                 {cartItemCount}
                                 <span className="visually-hidden">items en el carrito</span>
                             </span>
