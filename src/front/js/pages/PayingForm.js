@@ -1,21 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Context } from "../store/appContext";
 import axios from 'axios';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import PayPalCheckoutButton from '../component/PayingForm/PayPalCheckoutButton';
+import StripePaymentForm from '../component/PayingForm/StripePaymentForm';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCreditCard, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { faPaypal } from '@fortawesome/free-brands-svg-icons';
 
-function PayingForm() {
+const stripePromise = loadStripe(process.env.STRIPE_PK);
+
+const PayingForm = () => {
   const [checkoutCart, setCheckoutCart] = useState([]);
   const { store, actions } = useContext(Context);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('normal');
-  const [cardDetails, setCardDetails] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: ''
-  });
+  const [paymentMethod, setPaymentMethod] = useState('stripe');
 
   useEffect(() => {
     const fetchCartData = async () => {
@@ -50,52 +53,51 @@ function PayingForm() {
     fetchCartData();
   }, [store.cartWithDetails]);
 
-  const handleInputChange = (e) => {
-    setCardDetails({
-      ...cardDetails,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleNormalCheckout = async (e) => {
-    e.preventDefault();
+  const handleStripePaymentSuccess = async (paymentIntentId) => {
     try {
-      // Aquí normalmente se procesaría el pago con un servicio de procesamiento de pagos
-      // Por ahora, simularemos que el pago fue exitoso
-      
       const token = sessionStorage.getItem('token');
       if (!token) {
         throw new Error("No se encontró el token de autenticación");
       }
 
-      // Validación básica de la tarjeta
-      if (cardDetails.cardNumber.length !== 16 || 
-          cardDetails.expiryDate.length !== 5 || 
-          cardDetails.cvv.length !== 3) {
-        throw new Error("Los datos de la tarjeta no son válidos");
-      }
-
-      const response = await axios.post(`${process.env.BACKEND_URL}/sales/create`, {
+      console.log('Enviando solicitud al backend:', {
         total_amount: total,
-        items: checkoutCart.map(item => ({
-          mystery_box_id: item.id,
-          quantity: item.quantity
-        })),
-        payment_method: 'credit_card',
-        // No envíes los detalles completos de la tarjeta al backend por seguridad
-        card_last_four: cardDetails.cardNumber.slice(-4)
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
+        items: checkoutCart,
+        stripe_payment_intent_id: paymentIntentId,
+        user_data: userProfile
       });
+
+      const response = await axios.post(
+        `${process.env.BACKEND_URL}/sales/create`,
+        {
+          total_amount: total,
+          items: checkoutCart.map(item => ({
+            mystery_box_id: item.id,
+            quantity: item.quantity
+          })),
+          stripe_payment_intent_id: paymentIntentId,
+          user_data: userProfile
+        },
+        {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
       
+      console.log('Respuesta del backend:', response.data);
       alert('Compra realizada con éxito. ID de la venta: ' + response.data.sale_id);
       actions.clearCart();
     } catch (err) {
-      setError("Error al procesar la compra: " + err.message);
+      console.error("Error completo:", err);
+      const errorMessage = err.response?.data?.error || err.message;
+      console.error("Mensaje de error:", errorMessage);
+      setError("Error al procesar la compra: " + errorMessage);
     }
   };
 
-  const onApprove = async (data, actions) => {
+  const handlePayPalApprove = async (data, actions) => {
     try {
       const details = await actions.order.capture();
       const token = sessionStorage.getItem('token');
@@ -108,6 +110,7 @@ function PayingForm() {
           mystery_box_id: item.id,
           quantity: item.quantity
         })),
+        payment_method: 'paypal',
         paypal_order_id: details.id
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -120,12 +123,20 @@ function PayingForm() {
     }
   };
 
-  if (isLoading) return <div>Cargando...</div>;
+  if (isLoading) return <div className="text-center">
+    <div className="spinner-border text-primary" role="status">
+      <span className="sr-only">Loading...</span>
+    </div>
+  </div>;
+  
   if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
     <div className="container mt-5">
-      <h2 className="mb-4">Resumen de tu compra</h2>
+      <h2 className="mb-4">
+        <FontAwesomeIcon icon={faShoppingCart} className="mr-2" />
+        Resumen de tu compra
+      </h2>
       {checkoutCart.length > 0 ? (
         <>
           {/* Resumen del carrito */}
@@ -153,94 +164,49 @@ function PayingForm() {
                 <p>Nombre: {userProfile.name} {userProfile.surname}</p>
                 <p>Dirección: {userProfile.address}</p>
                 <p>Código Postal: {userProfile.postal_code}</p>
+                <p>Email: {userProfile.email}</p>
               </div>
             </div>
           )}
 
           {/* Selección de método de pago */}
           <div className="mb-4">
-            <h4>Método de pago</h4>
-            <div className="form-check">
-              <input 
-                className="form-check-input" 
-                type="radio" 
-                name="paymentMethod" 
-                id="normalPayment" 
-                value="normal" 
-                checked={paymentMethod === 'normal'}
-                onChange={() => setPaymentMethod('normal')}
-              />
-              <label className="form-check-label" htmlFor="normalPayment">
-                Tarjeta de crédito/débito
-              </label>
-            </div>
-            <div className="form-check">
-              <input 
-                className="form-check-input" 
-                type="radio" 
-                name="paymentMethod" 
-                id="paypalPayment" 
-                value="paypal" 
-                checked={paymentMethod === 'paypal'}
-                onChange={() => setPaymentMethod('paypal')}
-              />
-              <label className="form-check-label" htmlFor="paypalPayment">
+            <h4 className="mb-3">Método de pago</h4>
+            <div className="d-flex justify-content-center">
+              <button
+                className={`btn btn-lg mx-2 ${paymentMethod === 'stripe' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setPaymentMethod('stripe')}
+              >
+                <FontAwesomeIcon icon={faCreditCard} className="mr-2" />
+                Tarjeta de crédito
+              </button>
+              <button
+                className={`btn btn-lg mx-2 ${paymentMethod === 'paypal' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setPaymentMethod('paypal')}
+              >
+                <FontAwesomeIcon icon={faPaypal} className="mr-2" />
                 PayPal
-              </label>
+              </button>
             </div>
           </div>
 
-          {/* Formulario de tarjeta de crédito */}
-          {paymentMethod === 'normal' && (
-            <form onSubmit={handleNormalCheckout} className="mb-4">
-              <div className="mb-3">
-                <label htmlFor="cardNumber" className="form-label">Número de tarjeta</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="cardNumber"
-                  name="cardNumber"
-                  value={cardDetails.cardNumber}
-                  onChange={handleInputChange}
-                  maxLength="16"
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="expiryDate" className="form-label">Fecha de expiración (MM/YY)</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="expiryDate"
-                  name="expiryDate"
-                  value={cardDetails.expiryDate}
-                  onChange={handleInputChange}
-                  maxLength="5"
-                  required
-                />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="cvv" className="form-label">CVV</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="cvv"
-                  name="cvv"
-                  value={cardDetails.cvv}
-                  onChange={handleInputChange}
-                  maxLength="3"
-                  required
-                />
-              </div>
-              <button type="submit" className="btn btn-primary">Realizar Compra</button>
-            </form>
+          {/* Formulario de pago de Stripe */}
+          {paymentMethod === 'stripe' && (
+            <Elements stripe={stripePromise}>
+              <StripePaymentForm 
+                total={total} 
+                onPaymentSuccess={handleStripePaymentSuccess}
+                onPaymentError={(err) => setError("Error en Stripe: " + err)}
+                userProfile={userProfile}
+              />
+            </Elements>
           )}
 
           {/* Botón de PayPal */}
           {paymentMethod === 'paypal' && (
             <PayPalCheckoutButton 
               total={total} 
-              onApprove={onApprove}
+              onApprove={handlePayPalApprove}
               onError={(err) => setError("Error en PayPal: " + err.message)}
             />
           )}
@@ -250,6 +216,6 @@ function PayingForm() {
       )}
     </div>
   );
-}
+};
 
 export default PayingForm;

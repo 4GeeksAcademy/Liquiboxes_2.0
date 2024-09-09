@@ -3,8 +3,28 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from api.models import db, Sale, SaleDetail, ShopSale, MysteryBox, Shop
 from sqlalchemy.exc import SQLAlchemyError
 import logging
+import stripe
+import os
+
+stripe.api_key = os.getenv('STRIPE_SK')
 
 sales = Blueprint('sales', __name__)
+
+@sales.route('/create-payment-intent', methods=['POST'])
+def create_payment_intent():
+    try:
+        data = request.json
+        amount = int(data['amount'])  # Asegúrate de que el monto sea un entero
+        
+        intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency='eur'
+        )
+        
+        return jsonify(clientSecret=intent.client_secret)
+    except Exception as e:
+        return jsonify(error=str(e)), 400
+    
 
 @sales.route('/create', methods=['POST'])
 @jwt_required()
@@ -13,6 +33,20 @@ def create_sale():
     data = request.json
 
     try:
+        # Verificar que todos los datos necesarios estén presentes
+        required_fields = ['total_amount', 'items', 'stripe_payment_intent_id']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        # Verificar el pago con Stripe
+        try:
+            payment_intent = stripe.PaymentIntent.retrieve(data['stripe_payment_intent_id'])
+            if payment_intent.status != 'succeeded':
+                return jsonify({'error': 'Payment not successful', 'status': payment_intent.status}), 400
+        except stripe.error.StripeError as e:
+            return jsonify({'error': 'Stripe error', 'details': str(e)}), 400
+
         # Crear la venta principal
         new_sale = Sale(
             user_id=current_user['id'],
@@ -50,7 +84,7 @@ def create_sale():
                 sale_id=new_sale.id,
                 shop_id=shop_id,
                 subtotal=subtotal,
-                status='pending'  # Estado inicial
+                status='paid'
             )
             db.session.add(shop_sale)
 
@@ -60,13 +94,13 @@ def create_sale():
             'sale_id': new_sale.id
         }), 201
 
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
     except SQLAlchemyError as e:
         db.session.rollback()
         logging.error(f"Database error: {str(e)}")
         return jsonify({'error': 'Database error occurred'}), 500
-    except ValueError as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 400
     except Exception as e:
         db.session.rollback()
         logging.error(f"Unexpected error: {str(e)}")
