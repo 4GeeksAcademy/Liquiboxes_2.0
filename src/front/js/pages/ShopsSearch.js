@@ -3,6 +3,8 @@ import SearchBar from '../component/Home/SearchBar'
 import CardTienda from '../component/Home/CardTienda'
 import axios from 'axios'
 import { useLocation } from 'react-router-dom'
+import '../../styles/shopssearch.css';
+
 
 function ShopsSearch() {
   const [shops, setShops] = useState([])

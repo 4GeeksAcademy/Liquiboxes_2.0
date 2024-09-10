@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import '../../styles/chooseregistration.css';
+
 
 const ChooseRegistration = () => {
   const navigate = useNavigate();

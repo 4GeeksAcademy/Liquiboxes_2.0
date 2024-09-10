@@ -1,34 +1,116 @@
-
 import click
-from api.models import db, User
+from flask.cli import with_appcontext
+from api.models import db, User, Admin_User, Shop, MysteryBox
+from werkzeug.security import generate_password_hash
+import random
+from faker import Faker
 
-"""
-In this file, you can add as many commands as you want using the @app.cli.command decorator
-Flask commands are usefull to run cronjobs or tasks outside of the API but sill in integration 
-with youy database, for example: Import the price of bitcoin every night as 12am
-"""
+fake = Faker('es_ES')
+
+CATEGORIES = ['Moda', 'Ropa de Trabajo', 'Tecnología', 'Carpintería', 'Outdoor', 'Deporte', 'Arte', 'Cocina', 'Jardinería', 'Música', 'Viajes', 'Lectura', 'Cine', 'Fotografía', 'Yoga']
+
+COLORES = ['Rojo', 'Azul', 'Verde', 'Amarillo', 'Naranja', 'Morado', 'Rosa', 'Blanco', 'Negro', 'Gris']
+
+TAMANOS = ['Pequeño', 'Mediano', 'Grande']
+
+OBJETOS_POR_CATEGORIA = {
+    'Moda': ['Camiseta', 'Pantalón', 'Vestido', 'Chaqueta', 'Zapatos', 'Bufanda', 'Sombrero'],
+    'Ropa de Trabajo': ['Mono de trabajo', 'Botas de seguridad', 'Casco', 'Guantes', 'Chaleco reflectante'],
+    'Tecnología': ['Auriculares', 'Cargador', 'Funda de móvil', 'Soporte para portátil', 'Ratón inalámbrico'],
+    'Carpintería': ['Martillo', 'Destornillador', 'Cinta métrica', 'Lija', 'Pincel'],
+    'Outdoor': ['Linterna', 'Navaja multiusos', 'Botella de agua', 'Brújula', 'Mochila pequeña'],
+    'Deporte': ['Pelota', 'Banda elástica', 'Toalla deportiva', 'Botella de agua', 'Calcetines deportivos'],
+    'Arte': ['Pinceles', 'Cuaderno de dibujo', 'Lápices de colores', 'Acuarelas', 'Lienzo pequeño'],
+    'Cocina': ['Delantal', 'Utensilios de madera', 'Especias', 'Molde para hornear', 'Libro de recetas'],
+    'Jardinería': ['Guantes de jardín', 'Semillas', 'Pala pequeña', 'Regadera', 'Maceta'],
+    'Música': ['Púas de guitarra', 'Afinador', 'Partitura', 'Audífonos', 'Limpiador de instrumento'],
+    'Viajes': ['Almohada de viaje', 'Antifaz para dormir', 'Adaptador universal', 'Neceser', 'Etiqueta para maleta'],
+    'Lectura': ['Marcapáginas', 'Funda para libro', 'Luz de lectura', 'Libreta', 'Lápiz'],
+    'Cine': ['Entradas de cine', 'Palomitas gourmet', 'Figura de personaje', 'Póster de película', 'Gafas 3D'],
+    'Fotografía': ['Tarjeta de memoria', 'Paño de limpieza', 'Mini trípode', 'Funda para cámara', 'Filtro para lente'],
+    'Yoga': ['Esterilla', 'Bloque de yoga', 'Cinta elástica', 'Bolsa para esterilla', 'Botella de agua']
+}
+
 def setup_commands(app):
     
-    """ 
-    This is an example command "insert-test-users" that you can run from the command line
-    by typing: $ flask insert-test-users 5
-    Note: 5 is the number of users to add
-    """
-    @app.cli.command("insert-test-users") # name of our command
-    @click.argument("count") # argument of out command
+    @app.cli.command("insert-test-users")
+    @click.argument("count")
     def insert_test_users(count):
-        print("Creating test users")
+        print("Creando usuarios de prueba")
         for x in range(1, int(count) + 1):
             user = User()
-            user.email = "test_user" + str(x) + "@test.com"
+            user.email = f"usuario_prueba{x}@test.com"
             user.password = "123456"
             user.is_active = True
             db.session.add(user)
             db.session.commit()
-            print("User: ", user.email, " created.")
+            print(f"Usuario: {user.email} creado.")
+        print("Todos los usuarios de prueba han sido creados")
 
-        print("All test users created")
+    @app.cli.command("create-superuser")
+    @click.option('--name', prompt=True)
+    @click.option('--surname', prompt=True)
+    @click.option('--email', prompt=True)
+    @click.option('--password', prompt=True, hide_input=True, confirmation_prompt=True)
+    def create_superuser(name, surname, email, password):
+        if Admin_User.query.filter_by(is_superuser=True).first():
+            click.echo('Ya existe un superusuario.')
+            return
 
-    @app.cli.command("insert-test-data")
-    def insert_test_data():
-        pass
+        superuser = Admin_User(
+            name=name,
+            surname=surname,
+            email=email,
+            is_superuser=True,
+            is_active=True
+        )
+        superuser.set_password(password)
+
+        db.session.add(superuser)
+        db.session.commit()
+
+        click.echo(f'Superusuario {email} creado exitosamente.')
+
+    @app.cli.command("init-db")
+    def init_db():
+        """Inicializar la base de datos con tiendas y cajas misteriosas de muestra."""
+        click.echo("Inicializando la base de datos...")
+
+        # Crear tiendas
+        for i in range(10):
+            shop_categories = random.sample(CATEGORIES, random.randint(1, 3))
+            shop = Shop(
+                name=fake.company(),
+                email=fake.email(),
+                address=fake.address(),
+                postal_code=fake.postcode(),
+                categories=shop_categories,
+                business_core=fake.catch_phrase(),
+                shop_description=fake.paragraph(),
+                shop_summary=fake.sentence(),
+                image_shop_url=f"https://picsum.photos/seed/{i}/300/200",
+                owner_name=fake.first_name(),
+                owner_surname=fake.last_name()
+            )
+            shop.set_password('password123')
+            db.session.add(shop)
+            db.session.commit()
+
+            # Crear cajas misteriosas para cada tienda
+            for j in range(5):
+                category = random.choice(shop_categories)
+                possible_items = random.sample(OBJETOS_POR_CATEGORIA[category], 5)
+                box = MysteryBox(
+                    name=f"Caja Misteriosa de {category}",
+                    description=fake.paragraph(),
+                    price=round(random.uniform(10, 100), 2),
+                    size=random.choice(TAMANOS),
+                    possible_items=possible_items,
+                    image_url=f"https://picsum.photos/seed/{i*10+j}/300/200",
+                    number_of_items=random.randint(3, 10),
+                    shop_id=shop.id
+                )
+                db.session.add(box)
+
+        db.session.commit()
+        click.echo("Base de datos inicializada con 10 tiendas y 50 cajas misteriosas.")

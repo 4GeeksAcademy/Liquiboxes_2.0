@@ -26,11 +26,11 @@ function CardMBox({ data }) {
         <Card.Title className='card-title'>
           {data.name} 
         </Card.Title>
-        <Card.Subtitle className='card-subtitle'>
+        <Card.Subtitle className='card-subtitle my-4'>
           <FontAwesomeIcon icon={faStore} /> Tienda: {data.shop_name}
         </Card.Subtitle>
-        <Card.Text className='card-text'>
-          <FontAwesomeIcon icon={faEuroSign} /> Precio: {data.price} <br />
+        <Card.Text className='card-text mx-4'>
+        Precio: {data.price} <FontAwesomeIcon icon={faEuroSign} /> <br />
         </Card.Text>
         <Button className='card-button mx-4' onClick={handleButtonClick}>
           <FontAwesomeIcon icon={faBoxOpen} /> Ver detalles

@@ -23,6 +23,7 @@ import ChooseRegistration from "./pages/ChooseRegistration";
 
 // Vistas para Admins
 import AdminHome from "./pages/Admins/AdminHome"
+import AdminLogin from "./pages/Admins/AdminLogin";
 
 // Vistas para Tiendas
 import ShopHome from "./pages/Shops/ShopHome"
@@ -75,6 +76,7 @@ const Layout = () => {
 
                   {/* Vistas de Admin */}
                   <Route element={<AdminHome />} path="/adminhome" />
+                  <Route element={<AdminLogin />} path="/adminlogin" />
 
                   {/* Vistas de Tienda */}
                   <Route element={<ShopHome />} path="/shophome" />
