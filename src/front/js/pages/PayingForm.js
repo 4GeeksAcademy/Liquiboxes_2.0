@@ -59,14 +59,7 @@ const PayingForm = () => {
       if (!token) {
         throw new Error("No se encontró el token de autenticación");
       }
-
-      console.log('Enviando solicitud al backend:', {
-        total_amount: total,
-        items: checkoutCart,
-        stripe_payment_intent_id: paymentIntentId,
-        user_data: userProfile
-      });
-
+  
       const response = await axios.post(
         `${process.env.BACKEND_URL}/sales/create`,
         {
@@ -128,7 +121,7 @@ const PayingForm = () => {
       <span className="sr-only">Loading...</span>
     </div>
   </div>;
-  
+
   if (error) return <div className="alert alert-danger">{error}</div>;
 
   return (
@@ -155,7 +148,7 @@ const PayingForm = () => {
               <h4 className="card-title">Total a pagar: €{total.toFixed(2)}</h4>
             </div>
           </div>
-          
+
           {/* Datos de envío */}
           {userProfile && (
             <div className="card mb-4">
@@ -193,8 +186,9 @@ const PayingForm = () => {
           {/* Formulario de pago de Stripe */}
           {paymentMethod === 'stripe' && (
             <Elements stripe={stripePromise}>
-              <StripePaymentForm 
-                total={total} 
+              <StripePaymentForm
+                items={checkoutCart}
+                total={total}
                 onPaymentSuccess={handleStripePaymentSuccess}
                 onPaymentError={(err) => setError("Error en Stripe: " + err)}
                 userProfile={userProfile}

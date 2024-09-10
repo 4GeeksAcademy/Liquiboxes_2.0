@@ -4,7 +4,7 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCreditCard, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const StripePaymentForm = ({ total, onPaymentSuccess, onPaymentError, userProfile }) => {
+const StripePaymentForm = ({ items, total, onPaymentSuccess, onPaymentError, userProfile }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -26,11 +26,20 @@ const StripePaymentForm = ({ total, onPaymentSuccess, onPaymentError, userProfil
     setIsProcessing(true);
 
     try {
-      const response = await axios.post(`${process.env.BACKEND_URL}/sales/create-payment-intent`, {
-        amount: Math.round(total * 100), // Asegúrate de que el monto sea un entero
-      });
+      // Enviar la lista de items en lugar del monto total
+      const response = await axios.post(`${process.env.BACKEND_URL}/sales/create-payment-intent`, 
+        items.map(item => ({
+          mysterybox_id: item.id,
+          quantity: item.quantity
+        }))
+      );
 
-      const clientSecret = response.data.clientSecret;
+      const { clientSecret, amount } = response.data;
+
+      // Verificar que el monto calculado por el backend coincide con el total del frontend
+      if (amount !== Math.round(total * 100)) {
+        throw new Error('El monto calculado por el servidor no coincide con el total del carrito');
+      }
 
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
@@ -92,7 +101,7 @@ const StripePaymentForm = ({ total, onPaymentSuccess, onPaymentError, userProfil
                 color: '#9e2146',
               },
             },
-            hidePostalCode: true, // Añade esta línea
+            hidePostalCode: true,
           }}
         />
         <small className="form-text text-muted">

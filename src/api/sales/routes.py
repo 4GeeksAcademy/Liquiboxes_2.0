@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from api.models import db, Sale, SaleDetail, ShopSale, MysteryBox, Shop
+from api.models import db, Sale, SaleDetail, ShopSale, MysteryBox, Shop, Notification, BoxItem
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import stripe
 import os
+import random
+
 
 stripe.api_key = os.getenv('STRIPE_SK')
 
@@ -15,17 +17,38 @@ def create_payment_intent():
     try:
         data = request.json
         
-        amount = int(data['amount'])  # Hacer que el amount venga de un query a la tabla MysteryBox.
+        if not data or not isinstance(data, list):
+            return jsonify({'error': 'Invalid data format. Expected a list of items.'}), 400
+
+        total_amount = 0
+
+        for item in data:
+            if 'mysterybox_id' not in item or 'quantity' not in item:
+                return jsonify({'error': 'Each item must have mysterybox_id and quantity'}), 400
+
+            mystery_box = MysteryBox.query.get(int(item['mysterybox_id']))
+            if not mystery_box:
+                return jsonify({'error': f"Mystery box with id {item['mysterybox_id']} not found"}), 404
+
+            quantity = int(item['quantity'])
+            subtotal = mystery_box.price * quantity
+            total_amount += subtotal
+
+        # Convertir a centavos para Stripe
+        amount_in_cents = int(total_amount * 100)
         
         intent = stripe.PaymentIntent.create(
-            amount=amount,
+            amount=amount_in_cents,
             currency='eur'
         )
         
-        return jsonify(clientSecret=intent.client_secret)
+        return jsonify({
+            'clientSecret': intent.client_secret,
+            'amount': amount_in_cents
+        })
     except Exception as e:
-        return jsonify(error=str(e)), 400
-    
+        logging.error(f"Error creating PaymentIntent: {str(e)}")
+        return jsonify({'error': str(e)}), 400
 
 @sales.route('/create', methods=['POST'])
 @jwt_required()
@@ -35,68 +58,131 @@ def create_sale():
 
     try:
         # Verificar que todos los datos necesarios estén presentes
-        required_fields = ['total_amount', 'items', 'stripe_payment_intent_id']
+        required_fields = ['items', 'stripe_payment_intent_id', 'total_amount']
         for field in required_fields:
             if field not in data:
                 return jsonify({'error': f'Missing required field: {field}'}), 400
+
+        # Calcular el total de la venta en el backend
+        total_amount = 0
+        sale_items = []
+
+        for item in data['items']:
+            if 'mystery_box_id' not in item or 'quantity' not in item:
+                return jsonify({'error': 'Each item must have mystery_box_id and quantity'}), 400
+
+            mystery_box = MysteryBox.query.get(item['mystery_box_id'])
+            if not mystery_box:
+                return jsonify({'error': f"Mystery box with id {item['mystery_box_id']} not found"}), 404
+
+            quantity = int(item['quantity'])
+            subtotal = mystery_box.price * quantity
+            total_amount += subtotal
+            sale_items.append({
+                'mystery_box': mystery_box,
+                'quantity': quantity,
+                'subtotal': subtotal
+            })
+
+        # Verificar que el total calculado coincide con el total enviado por el frontend
+        if abs(total_amount - float(data['total_amount'])) > 0.01:  # Permitimos una pequeña diferencia por redondeo
+            return jsonify({'error': 'Total amount mismatch'}), 400
 
         # Verificar el pago con Stripe
         try:
             payment_intent = stripe.PaymentIntent.retrieve(data['stripe_payment_intent_id'])
             if payment_intent.status != 'succeeded':
                 return jsonify({'error': 'Payment not successful', 'status': payment_intent.status}), 400
+            
+            # Verificar que el monto pagado coincide con el calculado
+            if abs(payment_intent.amount - int(total_amount * 100)) > 1:  # Stripe usa centavos
+                return jsonify({'error': 'Payment amount does not match order total'}), 400
         except stripe.error.StripeError as e:
             return jsonify({'error': 'Stripe error', 'details': str(e)}), 400
 
-        # Crear la venta principal
+         # Crear la venta principal
         new_sale = Sale(
             user_id=current_user['id'],
-            total_amount=data['total_amount'],
+            total_amount=total_amount,
             commission_rate=0.05  # Asumiendo una tasa de comisión fija del 5%
         )
         db.session.add(new_sale)
         db.session.flush()  # Esto asigna un ID a new_sale sin hacer commit
 
         # Procesar los detalles de la venta
-        shop_totals = {}
-        for item in data['items']:
-            mystery_box = MysteryBox.query.get(item['mystery_box_id'])
-            if not mystery_box:
-                raise ValueError(f"Mystery box with id {item['mystery_box_id']} not found")
+        for item in sale_items:
+            mystery_box = item['mystery_box']
+            quantity = item['quantity']
+            subtotal = item['subtotal']
+
+            logging.info(f"Processing mystery box {mystery_box.id}: {mystery_box.name}")
+            logging.info(f"Number of possible items: {len(mystery_box.possible_items)}")
+            logging.info(f"Number of items per box: {mystery_box.number_of_items}")
+            logging.info(f"Quantity ordered: {quantity}")
+
+            # Calcular cuántos artículos necesitamos en total
+            total_items_needed = mystery_box.number_of_items * quantity
+
+            # Si necesitamos más artículos de los disponibles, ajustamos
+            if total_items_needed > len(mystery_box.possible_items):
+                logging.warning(f"Not enough unique items in mystery box {mystery_box.id}. Adjusting selection.")
+                selected_items = mystery_box.possible_items * (total_items_needed // len(mystery_box.possible_items) + 1)
+                selected_items = selected_items[:total_items_needed]
+            else:
+                selected_items = random.sample(mystery_box.possible_items, total_items_needed)
 
             sale_detail = SaleDetail(
                 sale_id=new_sale.id,
                 shop_id=mystery_box.shop_id,
                 mystery_box_id=mystery_box.id,
-                quantity=item['quantity'],
+                quantity=quantity,
                 price=mystery_box.price,
-                subtotal=mystery_box.price * item['quantity']
+                subtotal=subtotal
             )
             db.session.add(sale_detail)
+            db.session.flush()  # Esto asigna un ID a sale_detail sin hacer commit
 
-            # Actualizar o crear el total para cada tienda
-            if mystery_box.shop_id not in shop_totals:
-                shop_totals[mystery_box.shop_id] = 0
-            shop_totals[mystery_box.shop_id] += sale_detail.subtotal
+            logging.info(f"Created SaleDetail with id: {sale_detail.id}")
 
-        # Crear ShopSale para cada tienda involucrada
-        for shop_id, subtotal in shop_totals.items():
-            shop_sale = ShopSale(
+            # Create BoxItem for each selected item
+            for selected_item in selected_items:
+                box_item = BoxItem(
+                    sale_detail_id=sale_detail.id,
+                    item_name=selected_item,
+                    item_size=mystery_box.size,
+                    item_category=random.choice(mystery_box.shop.categories)
+                )
+                db.session.add(box_item)
+
+            # Create notification for the shop
+            shop_notification = Notification(
+                shop_id=mystery_box.shop_id,
                 sale_id=new_sale.id,
-                shop_id=shop_id,
-                subtotal=subtotal,
-                status='paid'
+                type="new_sale",
+                content=f"New sale of {quantity} {mystery_box.name} box(es)"
             )
-            db.session.add(shop_sale)
+            db.session.add(shop_notification)
+
+        # Create notification for the user
+        user_notification = Notification(
+            recipient_id=current_user['id'],
+            sale_id=new_sale.id,
+            type="purchase_confirmation",
+            content="Your purchase has been confirmed"
+        )
+        db.session.add(user_notification)
 
         db.session.commit()
+        logging.info(f"Sale created successfully with id: {new_sale.id}")
         return jsonify({
             'message': 'Sale created successfully',
-            'sale_id': new_sale.id
+            'sale_id': new_sale.id,
+            'total_amount': total_amount
         }), 201
 
     except ValueError as e:
         db.session.rollback()
+        logging.error(f"ValueError: {str(e)}")
         return jsonify({'error': str(e)}), 400
     except SQLAlchemyError as e:
         db.session.rollback()

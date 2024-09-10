@@ -13,11 +13,14 @@ from api.models import db
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+
 from api.users.routes import users
 from api.shops.routes import shops
 from api.google.routes import auth
 from api.sales.routes import sales
 from api.admins.routes import admins
+from api.notifications.routes import notifications
+
 
 
 
@@ -60,6 +63,8 @@ app.register_blueprint(shops, url_prefix='/api/shops')
 app.register_blueprint(auth, url_prefix='/api/auth')
 app.register_blueprint(sales, url_prefix='/api/sales')
 app.register_blueprint(admins, url_prefix='/api/admins')
+app.register_blueprint(notifications, url_prefix='/api/notifications')
+
 
 # Handle/serialize errors like a JSON object
 
