@@ -32,8 +32,8 @@ function CardMBox({ data }) {
         <Card.Text className='card-text'>
           <FontAwesomeIcon icon={faEuroSign} /> Precio: {data.price} <br />
         </Card.Text>
-        <Button className='card-button' onClick={handleButtonClick}>
-          <FontAwesomeIcon icon={faBoxOpen} /> Check Mystery Box
+        <Button className='card-button mx-4' onClick={handleButtonClick}>
+          <FontAwesomeIcon icon={faBoxOpen} /> Ver detalles
         </Button>
       </Card.Body>
     </Card>

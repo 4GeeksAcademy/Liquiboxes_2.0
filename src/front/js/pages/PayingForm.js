@@ -204,11 +204,7 @@ const PayingForm = () => {
 
           {/* Botón de PayPal */}
           {paymentMethod === 'paypal' && (
-            <PayPalCheckoutButton 
-              total={total} 
-              onApprove={handlePayPalApprove}
-              onError={(err) => setError("Error en PayPal: " + err.message)}
-            />
+            <PayPalCheckoutButton />
           )}
         </>
       ) : (
