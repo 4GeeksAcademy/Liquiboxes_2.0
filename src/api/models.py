@@ -48,6 +48,8 @@ class User(BaseModel):
     
     sales = db.relationship('Sale', backref='user', lazy='dynamic')
     ratings = db.relationship('Rating', backref='user', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='recipient', lazy='dynamic', foreign_keys='Notification.recipient_id')
+
     
     def __repr__(self):
         return f'<User {self.email}>'
@@ -88,6 +90,8 @@ class Sale(BaseModel):
 
     sale_details = db.relationship('SaleDetail', backref='sale', lazy='dynamic')
     shop_sales = db.relationship('ShopSale', backref='sale', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='sale', lazy='dynamic')
+
 
     def serialize(self):
         return {
@@ -127,6 +131,9 @@ class SaleDetail(BaseModel):
     price = db.Column(db.Float, nullable=False)
     subtotal = db.Column(db.Float, nullable=False)
 
+    box_items = db.relationship('BoxItem', back_populates='sale_detail', cascade='all, delete-orphan')
+
+
     def serialize(self):
         return {
             'id': self.id,
@@ -158,6 +165,8 @@ class Shop(BaseModel):
     shop_sales = db.relationship('ShopSale', backref='shop', lazy='dynamic')
     sale_details = db.relationship('SaleDetail', backref='shop', lazy='dynamic')
     ratings = db.relationship('Rating', backref='shop', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='shop', lazy='dynamic', foreign_keys='Notification.shop_id')
+    item_change_requests = db.relationship('ItemChangeRequest', backref='shop', lazy='dynamic')
 
     @hybrid_property
     def total_sales(self):
@@ -315,6 +324,9 @@ class Admin_User(BaseModel):
     is_superuser = db.Column(db.Boolean(), default=False, nullable=False)
     last_login = db.Column(db.DateTime)
 
+    item_change_requests = db.relationship('ItemChangeRequest', backref='admin', lazy='dynamic')
+
+
     def __repr__(self):
         return f'<Admin_User {self.email}>'
 
@@ -337,4 +349,82 @@ class Admin_User(BaseModel):
             "updated_at": self.updated_at
         }
 
+class Notification(BaseModel):
+    __tablename__ = "notifications"
 
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=True)
+    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=True)
+    type = db.Column(db.String(50), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+    item_change_request_id = db.Column(db.Integer, db.ForeignKey('item_change_requests.id'), nullable=True)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'recipient_id': self.recipient_id,
+            'shop_id': self.shop_id,
+            'sale_id': self.sale_id,
+            'type': self.type,
+            'content': self.content,
+            'is_read': self.is_read,
+            'created_at': self.created_at,
+            'item_change_request_id': self.item_change_request_id
+        }
+
+class BoxItem(BaseModel):
+    __tablename__ = "box_items"
+
+    sale_detail_id = db.Column(db.Integer, db.ForeignKey('sale_details.id'), nullable=False)
+    item_name = db.Column(db.String(100), nullable=False)
+    item_size = db.Column(db.String(20), nullable=False)
+    item_category = db.Column(db.String(50), nullable=False)
+
+    sale_detail = db.relationship('SaleDetail', back_populates='box_items')
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'sale_detail_id': self.sale_detail_id,
+            'item_name': self.item_name,
+            'item_size': self.item_size,
+            'item_category': self.item_category
+        }
+
+class ItemChangeRequest(BaseModel):
+    __tablename__ = "item_change_requests"
+
+    box_item_id = db.Column(db.Integer, db.ForeignKey('box_items.id'), nullable=False)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
+    original_item_name = db.Column(db.String(100), nullable=False)
+    original_item_size = db.Column(db.String(20), nullable=False)
+    original_item_category = db.Column(db.String(50), nullable=False)
+    proposed_item_name = db.Column(db.String(100), nullable=False)
+    proposed_item_size = db.Column(db.String(20), nullable=False)
+    proposed_item_category = db.Column(db.String(50), nullable=False)
+    reason = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='pending', nullable=False)  # pending, approved, rejected
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin_users.id'), nullable=True)
+    admin_comment = db.Column(db.Text, nullable=True)
+
+    notifications = db.relationship('Notification', backref='item_change_request', lazy='dynamic')
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'box_item_id': self.box_item_id,
+            'shop_id': self.shop_id,
+            'original_item_name': self.original_item_name,
+            'original_item_size': self.original_item_size,
+            'original_item_category': self.original_item_category,
+            'proposed_item_name': self.proposed_item_name,
+            'proposed_item_size': self.proposed_item_size,
+            'proposed_item_category': self.proposed_item_category,
+            'reason': self.reason,
+            'status': self.status,
+            'admin_id': self.admin_id,
+            'admin_comment': self.admin_comment,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
+        }
