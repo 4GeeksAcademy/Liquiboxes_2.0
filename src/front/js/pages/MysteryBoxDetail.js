@@ -3,6 +3,7 @@ import { Context } from '../store/appContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faHome } from '@fortawesome/free-solid-svg-icons';
+import '../../styles/mysteryboxdetail.css';
 
 function MysteryBoxDetail() {
   const { store, actions } = useContext(Context);

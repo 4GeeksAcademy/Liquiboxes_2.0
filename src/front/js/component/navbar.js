@@ -45,6 +45,7 @@ export const Navbar = () => {
                             </a>
                             <ul className="dropdown-menu" aria-labelledby="adminDropdown">
                                 <li><Link to="/adminhome" className="dropdown-item">Inicio Admin</Link></li>
+                                <li><Link to="/adminlogin" className="dropdown-item">Login Admin</Link></li>
                             </ul>
                         </li>
                         <li className="nav-item dropdown">

@@ -1,0 +1,23 @@
+.admin-login {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--background-secondary-color);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .admin-login h2 {
+    margin-bottom: 2rem;
+    color: var(--secondary-color);
+    text-align: center;
+  }
+  
+  .admin-login .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .admin-login .btn {
+    width: 100%;
+    margin-top: 1rem;
+  }

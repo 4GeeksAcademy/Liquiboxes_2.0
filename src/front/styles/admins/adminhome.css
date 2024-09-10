@@ -1,0 +1,24 @@
+.admin-home {
+    padding: 2rem;
+  }
+  
+  .admin-home h1 {
+    margin-bottom: 2rem;
+    color: var(--secondary-color);
+  }
+  
+  .admin-home .table {
+    margin-top: 2rem;
+  }
+  
+  .admin-home .btn {
+    margin-right: 0.5rem;
+  }
+  
+  .admin-home .fa-star {
+    font-size: 1.2rem;
+  }
+  
+  .modal-body .form-group {
+    margin-bottom: 1rem;
+  }

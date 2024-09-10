@@ -28,7 +28,7 @@
 }
 
 .card-title {
-  font-size: 2rem; /* Tamaño de fuente del título */
+  font-size: 1.3rem; /* Tamaño de fuente del título */
   font-weight: bold; /* Peso de fuente fuerte */
   color: #343a40; /* Color oscuro para el título */
   margin-bottom: 0.5rem; /* Espacio debajo del título */
@@ -36,13 +36,13 @@
 
 .card-subtitle {
   color: #6c757d; /* Color de texto para la subtítulo */
-  font-size: 1rem; /* Tamaño de fuente más pequeño para la subtítulo */
+  font-size: 0.8rem; /* Tamaño de fuente más pequeño para la subtítulo */
   margin-bottom: 1rem; /* Espacio debajo de la subtítulo */
 }
 
 .card-text {
   font-size: 1.5rem; /* Tamaño de fuente más pequeño para el texto */
-  color: #495057; /* Color de texto más claro */
+  color: #3f4245; /* Color de texto más claro */
   margin-bottom: 1rem; /* Espacio debajo del texto */
 }
 

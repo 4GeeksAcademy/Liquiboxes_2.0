@@ -39,11 +39,11 @@ export default function ShopDetail() {
       <div className="mb-5">
         {/* Renderiza las mystery boxes solo si boxVisible es true */}
         {boxVisible && mysteryBoxes && (
-          <div>
+          <div className='row mx-5'>
             {mysteryBoxes.map((mysterybox) => {
               console.log("Renderizando mystery box:", mysterybox);
               return (
-                <div key={mysterybox.id}>
+                <div key={mysterybox.id} className='col-12 col-md-6 col-lg-4 col-xl-3 col-xxl-2'>
                   <CardMBox data={mysterybox} />
                 </div>
               );
