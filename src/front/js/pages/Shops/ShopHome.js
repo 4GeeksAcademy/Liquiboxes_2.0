@@ -7,12 +7,17 @@ import {
   faUser,
   faHeadset,
   faShoppingCart,
-  faBox,
+  faPlus,
   faBoxes,
   faStore
 } from '@fortawesome/free-solid-svg-icons';
 import ProfileField from '../../component/Profile/ProfileField';
 import { Context } from '../../store/appContext';
+
+import BoxesOnSale from '../../component/ShopHome/BoxesOnSale';
+import ContactSupport from '../../component/ShopHome/ContactSupport';
+import SaleStatistics from '../../component/ShopHome/SaleStatistics';
+import ShopNotifications from '../../component/ShopHome/ShopNotifications';
 
 function ShopHome() {
   const navigate = useNavigate();
@@ -35,16 +40,19 @@ function ShopHome() {
       }
       try {
         const response = await axios.get(`${process.env.BACKEND_URL}/shops/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          }
         });
-        
+
         // Procesar las categorías
         const processedCategories = response.data.categories.map(cat => {
           // Eliminar las comillas extras y los caracteres de escape
           return cat.replace(/^"/, '').replace(/"$/, '').replace(/\\"/g, '"');
         });
 
-        setShopData({...response.data, categories: processedCategories});
+        setShopData({ ...response.data, categories: processedCategories });
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching shop data:", error.response || error);
@@ -74,11 +82,11 @@ function ShopHome() {
 
       await axios.patch(`${process.env.BACKEND_URL}/shops/profile`,
         formData,
-        { 
-          headers: { 
+        {
+          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
-          } 
+          }
         }
       );
       setEditMode(prev => ({ ...prev, [field]: false }));
@@ -179,7 +187,9 @@ function ShopHome() {
 
     switch (activeSection) {
       case 'notifications':
-        return <div>Aquí irían las notificaciones</div>;
+        return <div>
+          < ShopNotifications />
+        </div>;
       case 'profile':
         return (
           <div className="row">
@@ -195,16 +205,22 @@ function ShopHome() {
           </div>
         );
       case 'support':
-        return <div>Aquí iría el formulario de contacto con soporte</div>;
+        return <div>
+          <ContactSupport />
+        </div>;
       case 'sales':
-        return <div>Aquí irían las estadísticas de ventas</div>;
+        return <div>
+          <SaleStatistics />
+        </div>;
       case 'createBox':
         return <div>
           <h3>Crear Nueva Caja</h3>
           <button type='button' className='btn btn-success' onClick={() => { navigate("/createbox") }}>Crear una nueva caja</button>
         </div>;
       case 'boxesOnSale':
-        return <div>Aquí iría la lista de cajas a la venta</div>;
+        return <div>
+          <BoxesOnSale />
+        </div>;
       default:
         return <div>Selecciona una opción del menú</div>;
     }
@@ -226,11 +242,11 @@ function ShopHome() {
           <button className={`list-group-item list-group-item-action ${activeSection === 'sales' ? 'active' : ''}`} onClick={() => setActiveSection('sales')}>
             <FontAwesomeIcon icon={faShoppingCart} className="mr-2" /> Ventas
           </button>
-          <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => setActiveSection('createBox')}>
-            <FontAwesomeIcon icon={faBox} className="mr-2" /> Crear Nueva Caja
-          </button>
           <button className={`list-group-item list-group-item-action ${activeSection === 'boxesOnSale' ? 'active' : ''}`} onClick={() => setActiveSection('boxesOnSale')}>
             <FontAwesomeIcon icon={faBoxes} className="mr-2" /> Cajas a la Venta
+          </button>
+          <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => { navigate("/createbox") }}>
+            <FontAwesomeIcon icon={faPlus} className="mr-2" /> Crear Nueva Caja
           </button>
         </div>
       </div>

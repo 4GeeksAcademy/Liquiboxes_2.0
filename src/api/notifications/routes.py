@@ -50,6 +50,17 @@ def get_shop_notifications():
     notifications = Notification.query.filter_by(shop_id=shop.id).order_by(Notification.created_at.desc()).all()
     return jsonify([notification.serialize_shops() for notification in notifications]), 200
 
+@notifications.route('/<int:notification_id>/read', methods=['PATCH'])
+@jwt_required()
+def mark_notification_as_read(notification_id):
+    notification = Notification.query.get(notification_id)
+    if not notification:
+        return jsonify({"success": False, "error": "Notification not found"}), 404
+    
+    notification.is_read = True
+    db.session.commit()
+    return jsonify({"success": True, "message": "Notification marked as read"}), 200
+
 @notifications.route('/all', methods=['GET'])
 @jwt_required()
 def get_all_notifications():

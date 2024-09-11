@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
-from api.models import db, Admin_User
-from flask_jwt_extended import create_access_token
+from api.models import db, Admin_User, ItemChangeRequest, BoxItem, Notification, Shop
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import check_password_hash
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.exc import SQLAlchemyError
 
 admins = Blueprint('admins', __name__)
 
@@ -132,3 +132,101 @@ def toggle_superuser(admin_id):
     admin_user.is_superuser = not admin_user.is_superuser
     db.session.commit()
     return jsonify(admin_user.serialize()), 200
+
+@admins.route('/change-requests', methods=['GET'])
+@jwt_required()
+def get_change_requests():
+    current_user = Admin_User.query.get(get_jwt_identity())
+    if not current_user.is_active:
+        return jsonify({"message": "Access denied"}), 403
+    
+    try:
+        change_requests = ItemChangeRequest.query.filter_by(status='pending').all()
+        return jsonify([request.serialize() for request in change_requests]), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+@admins.route('/approve-change', methods=['POST'])
+@jwt_required()
+def approve_change():
+    current_user = Admin_User.query.get(get_jwt_identity())
+    if not current_user.is_active:
+        return jsonify({"message": "Access denied"}), 403
+    
+    data = request.get_json()
+    try:
+        change_request = ItemChangeRequest.query.get(data['requestId'])
+        if not change_request:
+            return jsonify({"error": "Change request not found"}), 404
+        
+        change_request.status = 'approved' if data['approved'] else 'rejected'
+        change_request.admin_id = current_user.id
+        change_request.admin_comment = data.get('comment', '')
+        
+        if data['approved']:
+            box_item = change_request.box_item
+            box_item.item_name = change_request.proposed_item_name
+            box_item.item_size = change_request.proposed_item_size
+            box_item.item_category = change_request.proposed_item_category
+            
+            # Crear notificación para la tienda
+            shop_notification = Notification(
+                shop_id=change_request.shop_id,
+                type="item_change_approved",
+                content=f"Item change for order {box_item.sale_detail.sale_id} has been approved",
+                item_change_request_id=change_request.id
+            )
+            db.session.add(shop_notification)
+        else:
+            # Crear notificación de rechazo para la tienda
+            shop_notification = Notification(
+                shop_id=change_request.shop_id,
+                type="item_change_rejected",
+                content=f"Item change for order {change_request.box_item.sale_detail.sale_id} has been rejected",
+                item_change_request_id=change_request.id
+            )
+            db.session.add(shop_notification)
+        
+        db.session.commit()
+        return jsonify({"message": "Change request processed successfully"}), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@admins.route('/change-requests/stats', methods=['GET'])
+@jwt_required()
+def get_change_request_stats():
+    current_user = Admin_User.query.get(get_jwt_identity())
+    if not current_user.is_superuser:
+        return jsonify({"message": "Access denied"}), 403
+    
+    try:
+        total_requests = ItemChangeRequest.query.count()
+        pending_requests = ItemChangeRequest.query.filter_by(status='pending').count()
+        approved_requests = ItemChangeRequest.query.filter_by(status='approved').count()
+        rejected_requests = ItemChangeRequest.query.filter_by(status='rejected').count()
+        
+        return jsonify({
+            "total_requests": total_requests,
+            "pending_requests": pending_requests,
+            "approved_requests": approved_requests,
+            "rejected_requests": rejected_requests
+        }), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
+
+@admins.route('/change-request/<int:request_id>', methods=['GET'])
+@jwt_required()
+def get_change_request_details(request_id):
+    current_user = Admin_User.query.get(get_jwt_identity())
+    if not current_user.is_active:
+        return jsonify({"message": "Access denied"}), 403
+    
+    try:
+        change_request = ItemChangeRequest.query.get(request_id)
+        if not change_request:
+            return jsonify({"error": "Change request not found"}), 404
+        
+        return jsonify(change_request.serialize()), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500

@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_jwt_extended import create_access_token
-from api.models import db, Shop, MysteryBox
+from api.models import db, Shop, MysteryBox, ItemChangeRequest, BoxItem
 from werkzeug.exceptions import BadRequest
+from sqlalchemy.exc import SQLAlchemyError
 import cloudinary
 import cloudinary.uploader
 from cloudinary.exceptions import Error as CloudinaryError
@@ -225,3 +226,44 @@ def update_shop_profile():
         db.session.rollback()
         logging.error(f"Error updating shop profile: {str(e)}")
         return jsonify({"error": f"An error occurred while updating the profile: {str(e)}"}), 500
+    
+@shops.route('/create-change-request', methods=['POST'])
+@jwt_required()
+def create_change_request():
+    current_shop = Shop.query.get(get_jwt_identity())
+    data = request.get_json()
+    
+    try:
+        box_item = BoxItem.query.get(data['box_item_id'])
+        if not box_item or box_item.sale_detail.shop_id != current_shop.id:
+            return jsonify({"error": "Invalid box item"}), 400
+
+        new_request = ItemChangeRequest(
+            box_item_id=data['box_item_id'],
+            shop_id=current_shop.id,
+            original_item_name=box_item.item_name,
+            original_item_size=box_item.item_size,
+            original_item_category=box_item.item_category,
+            proposed_item_name=data['proposed_item_name'],
+            proposed_item_size=data['proposed_item_size'],
+            proposed_item_category=data['proposed_item_category'],
+            reason=data['reason']
+        )
+        db.session.add(new_request)
+        db.session.commit()
+        
+        return jsonify(new_request.serialize()), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+@shops.route('/change-requests', methods=['GET'])
+@jwt_required()
+def get_shop_change_requests():
+    current_shop = Shop.query.get(get_jwt_identity())
+    
+    try:
+        change_requests = ItemChangeRequest.query.filter_by(shop_id=current_shop.id).all()
+        return jsonify([request.serialize() for request in change_requests]), 200
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500

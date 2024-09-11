@@ -1,0 +1,75 @@
+.shop-notifications {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shop-notifications h2 {
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+  }
+  
+  .shop-notifications .badge {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .shop-notifications .btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+  
+  .shop-notifications .btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+  }
+  
+  .shop-notifications .btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+  
+  .shop-notifications .btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .shop-notifications .table {
+    background-color: var(--background-secondary-color);
+  }
+  
+  .shop-notifications .table th {
+    background-color: var(--secondary-color);
+    color: white;
+  }
+  
+  .shop-notifications .table-hover tbody tr:hover {
+    background-color: rgba(106, 142, 127, 0.1);
+  }
+  
+  .shop-notifications .cursor-pointer {
+    cursor: pointer;
+  }
+  
+  .shop-notifications .modal-content {
+    background-color: var(--background-color);
+  }
+  
+  .shop-notifications .modal-header {
+    background-color: var(--secondary-color);
+    color: white;
+  }
+  
+  .shop-notifications .modal-footer {
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .shop-notifications .close {
+    color: white;
+  }
+  
+  .shop-notifications .close:hover {
+    color: var(--background-secondary-color);
+  }

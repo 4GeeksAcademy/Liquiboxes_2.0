@@ -138,6 +138,8 @@ def create_sale():
                 mystery_box_id=mystery_box.id,
                 quantity=quantity,
                 price=mystery_box.price,
+                subtotal=subtotal,
+
             )
             db.session.add(sale_detail)
             db.session.flush()  # Esto asigna un ID a sale_detail sin hacer commit

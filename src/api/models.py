@@ -132,6 +132,7 @@ class SaleDetail(BaseModel):
     subtotal = db.Column(db.Float, nullable=False)
 
     box_items = db.relationship('BoxItem', back_populates='sale_detail', cascade='all, delete-orphan')
+    shop = db.relationship('Shop', back_populates='sale_details')
 
 
     def serialize(self):
@@ -168,6 +169,8 @@ class Shop(BaseModel):
     ratings = db.relationship('Rating', backref='shop', lazy='dynamic')
     notifications = db.relationship('Notification', backref='shop', lazy='dynamic', foreign_keys='Notification.shop_id')
     item_change_requests = db.relationship('ItemChangeRequest', backref='shop', lazy='dynamic')
+    sale_details = db.relationship('SaleDetail', back_populates='shop', lazy='dynamic')
+
 
     @hybrid_property
     def total_sales(self):
@@ -325,8 +328,8 @@ class Admin_User(BaseModel):
     is_superuser = db.Column(db.Boolean(), default=False, nullable=False)
     last_login = db.Column(db.DateTime)
 
-    item_change_requests = db.relationship('ItemChangeRequest', backref='admin', lazy='dynamic')
-
+    item_change_requests = db.relationship('ItemChangeRequest', backref='admin_user', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='admin', lazy='dynamic', foreign_keys='Notification.admin_id')
 
     def __repr__(self):
         return f'<Admin_User {self.email}>'
@@ -356,6 +359,7 @@ class Notification(BaseModel):
     recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=True)
     sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin_users.id'), nullable=True)
     type = db.Column(db.String(50), nullable=False)
     content = db.Column(db.Text, nullable=False)
     is_read = db.Column(db.Boolean, default=False, nullable=False)
@@ -367,6 +371,7 @@ class Notification(BaseModel):
             'recipient_id': self.recipient_id,
             'shop_id': self.shop_id,
             'sale_id': self.sale_id,
+            'admin_id': self.admin_id,
             'type': self.type,
             'content': self.content,
             'is_read': self.is_read,
@@ -404,12 +409,16 @@ class BoxItem(BaseModel):
     item_name = db.Column(db.String(100), nullable=False)
 
     sale_detail = db.relationship('SaleDetail', back_populates='box_items')
+    change_requests = db.relationship('ItemChangeRequest', back_populates='box_item')
+    shop = db.relationship('Shop', secondary='sale_details', viewonly=True, uselist=False)
 
     def serialize(self):
         return {
             'id': self.id,
             'sale_detail_id': self.sale_detail_id,
             'item_name': self.item_name,
+            'shop_id': self.shop.id if self.shop else None,
+            'shop_name': self.shop.name if self.shop else None
         }
 
 class ItemChangeRequest(BaseModel):
@@ -418,16 +427,13 @@ class ItemChangeRequest(BaseModel):
     box_item_id = db.Column(db.Integer, db.ForeignKey('box_items.id'), nullable=False)
     shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
     original_item_name = db.Column(db.String(100), nullable=False)
-    original_item_size = db.Column(db.String(20), nullable=False)
-    original_item_category = db.Column(db.String(50), nullable=False)
     proposed_item_name = db.Column(db.String(100), nullable=False)
-    proposed_item_size = db.Column(db.String(20), nullable=False)
-    proposed_item_category = db.Column(db.String(50), nullable=False)
     reason = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default='pending', nullable=False)  # pending, approved, rejected
     admin_id = db.Column(db.Integer, db.ForeignKey('admin_users.id'), nullable=True)
     admin_comment = db.Column(db.Text, nullable=True)
 
+    box_item = db.relationship('BoxItem', back_populates='change_requests')
     notifications = db.relationship('Notification', backref='item_change_request', lazy='dynamic')
 
     def serialize(self):
@@ -436,11 +442,7 @@ class ItemChangeRequest(BaseModel):
             'box_item_id': self.box_item_id,
             'shop_id': self.shop_id,
             'original_item_name': self.original_item_name,
-            'original_item_size': self.original_item_size,
-            'original_item_category': self.original_item_category,
             'proposed_item_name': self.proposed_item_name,
-            'proposed_item_size': self.proposed_item_size,
-            'proposed_item_category': self.proposed_item_category,
             'reason': self.reason,
             'status': self.status,
             'admin_id': self.admin_id,
