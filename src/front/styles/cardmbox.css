@@ -1,0 +1,53 @@
+.card-img {
+  transition: transform 0.6s ease, box-shadow 0.3s ease;
+}
+
+.card-img:hover {
+  transform: scale(1.3) rotate(15deg); /* Zoom y rotación */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+.card-container {
+  width: 18rem;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra sutil */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden; /* Asegura que los bordes redondeados se apliquen a la imagen */
+  margin: auto;
+  background: #fff; /* Fondo blanco */
+}
+
+.card-container:hover {
+  transform: translateY(-10px); /* Desplaza la tarjeta hacia arriba al pasar el ratón */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más profunda al pasar el ratón */
+}
+
+.card-body {
+  padding: 1.5rem; /* Espaciado interno */
+  background: #f8f9fa; /* Fondo gris claro para el contenido */
+  border-top: 1px solid #e9ecef; /* Borde superior para separar la imagen del contenido */
+}
+
+.card-title {
+  font-size: 1.3rem; /* Tamaño de fuente del título */
+  font-weight: bold; /* Peso de fuente fuerte */
+  color: #343a40; /* Color oscuro para el título */
+  margin-bottom: 0.5rem; /* Espacio debajo del título */
+}
+
+.card-subtitle {
+  color: #6c757d; /* Color de texto para la subtítulo */
+  font-size: 0.8rem; /* Tamaño de fuente más pequeño para la subtítulo */
+  margin-bottom: 1rem; /* Espacio debajo de la subtítulo */
+}
+
+.card-text {
+  font-size: 1.5rem; /* Tamaño de fuente más pequeño para el texto */
+  color: #3f4245; /* Color de texto más claro */
+  margin-bottom: 1rem; /* Espacio debajo del texto */
+}
+
+.card-button {
+  background-color: #4b6a5e; /* Color de fondo del botón */
+}
+
+

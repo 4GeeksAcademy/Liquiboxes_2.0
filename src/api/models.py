@@ -48,6 +48,8 @@ class User(BaseModel):
     
     sales = db.relationship('Sale', backref='user', lazy='dynamic')
     ratings = db.relationship('Rating', backref='user', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='recipient', lazy='dynamic', foreign_keys='Notification.recipient_id')
+
     
     def __repr__(self):
         return f'<User {self.email}>'
@@ -79,6 +81,32 @@ class User(BaseModel):
             "profession": self.profession,
         }
     
+    def serialize_sizes(self):
+        return {
+            "id": self.id,
+            "gender": self.gender,
+            "upper_size": self.upper_size,
+            "lower_size": self.lower_size,
+            "cap_size": self.cap_size,
+            "shoe_size": self.shoe_size,
+            "not_colors": self.not_colors,
+            "stamps": self.stamps,
+            "fit": self.fit,
+            "not_clothes": self.not_clothes,
+            "categories": self.categories,
+            "profession": self.profession,
+        }
+    
+    def serialize_shipment(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "surname": self.surname,
+            "email": self.email,
+            "address": self.address,
+            "postal_code": self.postal_code,
+        }
+    
 class Sale(BaseModel):
     __tablename__ = "sales"
 
@@ -88,6 +116,8 @@ class Sale(BaseModel):
 
     sale_details = db.relationship('SaleDetail', backref='sale', lazy='dynamic')
     shop_sales = db.relationship('ShopSale', backref='sale', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='sale', lazy='dynamic')
+
 
     def serialize(self):
         return {
@@ -127,6 +157,10 @@ class SaleDetail(BaseModel):
     price = db.Column(db.Float, nullable=False)
     subtotal = db.Column(db.Float, nullable=False)
 
+    box_items = db.relationship('BoxItem', back_populates='sale_detail', cascade='all, delete-orphan')
+    shop = db.relationship('Shop', back_populates='sale_details')
+
+
     def serialize(self):
         return {
             'id': self.id,
@@ -135,7 +169,8 @@ class SaleDetail(BaseModel):
             'mystery_box_id': self.mystery_box_id,
             'quantity': self.quantity,
             'price': self.price,
-            'subtotal': self.subtotal
+            'subtotal': self.subtotal,
+            'box_items':[item.serialize() for item in self.box_items],
         }
 
 class Shop(BaseModel):
@@ -158,6 +193,10 @@ class Shop(BaseModel):
     shop_sales = db.relationship('ShopSale', backref='shop', lazy='dynamic')
     sale_details = db.relationship('SaleDetail', backref='shop', lazy='dynamic')
     ratings = db.relationship('Rating', backref='shop', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='shop', lazy='dynamic', foreign_keys='Notification.shop_id')
+    item_change_requests = db.relationship('ItemChangeRequest', backref='shop', lazy='dynamic')
+    sale_details = db.relationship('SaleDetail', back_populates='shop', lazy='dynamic')
+
 
     @hybrid_property
     def total_sales(self):
@@ -303,5 +342,137 @@ class Rating(BaseModel):
             'date': self.created_at,
             'is_anonymous': self.is_anonymous
         }
+    
+class Admin_User(BaseModel):
+    __tablename__ = "admin_users"
 
+    name = db.Column(db.String(120), nullable=False)
+    surname = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(300), nullable=False)
+    is_active = db.Column(db.Boolean(), default=True, nullable=False)
+    is_superuser = db.Column(db.Boolean(), default=False, nullable=False)
+    last_login = db.Column(db.DateTime)
 
+    item_change_requests = db.relationship('ItemChangeRequest', backref='admin_user', lazy='dynamic')
+    notifications = db.relationship('Notification', backref='admin', lazy='dynamic', foreign_keys='Notification.admin_id')
+
+    def __repr__(self):
+        return f'<Admin_User {self.email}>'
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "surname": self.surname,
+            "email": self.email,
+            "is_active": self.is_active,
+            "is_superuser": self.is_superuser,
+            "last_login": self.last_login,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
+
+class Notification(BaseModel):
+    __tablename__ = "notifications"
+
+    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=True)
+    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin_users.id'), nullable=True)
+    type = db.Column(db.String(50), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+    item_change_request_id = db.Column(db.Integer, db.ForeignKey('item_change_requests.id'), nullable=True)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'recipient_id': self.recipient_id,
+            'shop_id': self.shop_id,
+            'sale_id': self.sale_id,
+            'admin_id': self.admin_id,
+            'type': self.type,
+            'content': self.content,
+            'is_read': self.is_read,
+            'created_at': self.created_at,
+            'item_change_request_id': self.item_change_request_id
+        }
+
+    def serialize_users(self):
+        return {
+            'id': self.id,
+            'recipient_id': self.recipient_id,
+            'sale_id': self.sale_id,
+            'type': self.type,
+            'content': self.content,
+            'is_read': self.is_read,
+            'created_at': self.created_at,
+        }
+    
+    def serialize_shops(self):
+        return {
+            'id': self.id,
+            'shop_id': self.shop_id,
+            'sale_id': self.sale_id,
+            'type': self.type,
+            'content': self.content,
+            'is_read': self.is_read,
+            'created_at': self.created_at,
+            'item_change_request_id': self.item_change_request_id
+        }
+
+class BoxItem(BaseModel):
+    __tablename__ = "box_items"
+
+    sale_detail_id = db.Column(db.Integer, db.ForeignKey('sale_details.id'), nullable=False)
+    item_name = db.Column(db.String(100), nullable=False)
+
+    sale_detail = db.relationship('SaleDetail', back_populates='box_items')
+    change_requests = db.relationship('ItemChangeRequest', back_populates='box_item')
+    shop = db.relationship('Shop', secondary='sale_details', viewonly=True, uselist=False)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'sale_detail_id': self.sale_detail_id,
+            'item_name': self.item_name,
+            'shop_id': self.shop.id if self.shop else None,
+            'shop_name': self.shop.name if self.shop else None
+        }
+
+class ItemChangeRequest(BaseModel):
+    __tablename__ = "item_change_requests"
+
+    box_item_id = db.Column(db.Integer, db.ForeignKey('box_items.id'), nullable=False)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=False)
+    original_item_name = db.Column(db.String(100), nullable=False)
+    proposed_item_name = db.Column(db.String(100), nullable=False)
+    reason = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='pending', nullable=False)  # pending, approved, rejected
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin_users.id'), nullable=True)
+    admin_comment = db.Column(db.Text, nullable=True)
+
+    box_item = db.relationship('BoxItem', back_populates='change_requests')
+    notifications = db.relationship('Notification', backref='item_change_request', lazy='dynamic')
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'box_item_id': self.box_item_id,
+            'shop_id': self.shop_id,
+            'original_item_name': self.original_item_name,
+            'proposed_item_name': self.proposed_item_name,
+            'reason': self.reason,
+            'status': self.status,
+            'admin_id': self.admin_id,
+            'admin_comment': self.admin_comment,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
+        }

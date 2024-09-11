@@ -25,6 +25,7 @@ const Cart = () => {
 
     const validItems = itemsWithDetails.filter(item => item !== null);
     setCartItems(validItems);
+    actions.updateCartWithDetails(validItems)
 
     const cartTotal = validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     setTotal(cartTotal);
@@ -34,7 +35,7 @@ const Cart = () => {
 
   useEffect(() => {
     fetchCartDetails();
-  }, [fetchCartDetails]);
+  }, []);
 
   const updateLocalCart = useCallback((itemId, updateFn) => {
     setCartItems(prevItems => {
@@ -125,7 +126,7 @@ const Cart = () => {
             </div>
           </div>
           <div className="text-center mt-4">
-            <button className="btn btn-primary btn-lg" onClick={() => navigate("/payingform")}>
+            <button className="mb-4" onClick={() => navigate("/payingform")}>
               <FontAwesomeIcon icon={faCreditCard} className="mr-2 me-2" />
               Proceder al pago
             </button>

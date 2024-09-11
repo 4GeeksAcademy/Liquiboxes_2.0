@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { Context } from "../store/appContext";
+import "../../styles/login.css"
 
 export default function Login() {
     const { store, actions } = useContext(Context);
@@ -72,10 +73,10 @@ export default function Login() {
 
             if (is_new_user) {
                 // Usuario nuevo, navegar a la página de elección de tipo de registro
-                navigate('/chooseregistration', { 
-                    state: { 
+                navigate('/chooseregistration', {
+                    state: {
                         google_data,
-                        access_token 
+                        access_token
                     }
                 });
             } else {
@@ -92,57 +93,50 @@ export default function Login() {
     };
 
     return (
-        <div className="container mt-5">
-            <h2>Iniciar Sesión</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
-                    <input
-                        type="email"
-                        className="form-control"
-                        id="email"
-                        name="email"
-                        value={loginData.email}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="password" className="form-label">Contraseña</label>
-                    <input
-                        type="password"
-                        className="form-control"
-                        id="password"
-                        name="password"
-                        value={loginData.password}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                {showError && (
-                    <div className="alert alert-danger" role="alert">
-                        {errorMessage}
+        <div className="login-container">
+            <div className="login-form-wrapper">
+                <h2 className="login-title">Iniciar Sesión</h2>
+                <form onSubmit={handleSubmit} className="login-form">
+                    <div className="form-group">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={loginData.email}
+                            onChange={handleChange}
+                            required
+                        />
                     </div>
-                )}
-                <button type="submit" className="btn btn-primary">Iniciar Sesión</button>
-            </form>
-
-            <div className="mt-3">
-                <GoogleLogin
-                    onSuccess={handleGoogleLogin}
-                    onError={() => {
-                        console.log('Login Failed');
-                        setShowError(true);
-                        setErrorMessage("Error en la autenticación con Google");
-                    }}
-                />
-            </div>
-
-            {showError && (
-                <div className="alert alert-danger" role="alert">
-                    {errorMessage}
+                    <div className="form-group">
+                        <label htmlFor="password">Contraseña</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value={loginData.password}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    {showError && (
+                        <div className="error-message">
+                            {errorMessage}
+                        </div>
+                    )}
+                    <button type="submit" className="login-button">Iniciar Sesión</button>
+                </form>
+                <div className="google-login-wrapper">
+                    <GoogleLogin
+                        onSuccess={handleGoogleLogin}
+                        onError={() => {
+                            console.log('Login Failed');
+                            setShowError(true);
+                            setErrorMessage("Error en la autenticación con Google");
+                        }}
+                    />
                 </div>
-            )}
+            </div>
         </div>
     );
 }

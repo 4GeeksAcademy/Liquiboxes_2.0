@@ -1,0 +1,133 @@
+.header-shop-container {
+    padding: 2rem;
+    background-color: var(--background-color);
+  }
+  
+  .header-shop-card {
+    display: flex;
+    background-color: var(--background-secondary-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .header-shop-image {
+    flex: 1;
+    max-width: 40%;
+    min-height: 300px;
+    position: relative;
+  }
+  
+  .header-shop-image img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .header-shop-content {
+    flex: 2;
+    padding: 2rem;
+  }
+  
+  .shop-name {
+    color: var(--text-color);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .shop-summary {
+    color: var(--text-color);
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .shop-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .detail-item {
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .detail-item i {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    margin-top: 0.2rem;
+  }
+  
+  .detail-item strong {
+    display: block;
+    color: var(--text-color);
+    margin-bottom: 0.25rem;
+  }
+  
+  .detail-item p {
+    margin: 0;
+    color: var(--text-color);
+  }
+  
+  .shop-categories {
+    margin-bottom: 2rem;
+  }
+  
+  .shop-categories strong,
+  .shop-description strong {
+    display: block;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+  }
+  
+  .category-list {
+    display: flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .category-list li {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .shop-description p {
+    color: var(--text-color);
+    line-height: 1.6;
+  }
+  
+  @media (max-width: 1024px) {
+    .header-shop-card {
+      flex-direction: column;
+    }
+  
+    .header-shop-image {
+      max-width: 100%;
+      height: 300px;
+      min-height: auto;
+    }
+  
+    .header-shop-image img {
+      position: static;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .header-shop-image {
+      height: 200px;
+    }
+  
+    .shop-details {
+      grid-template-columns: 1fr;
+    }
+  }

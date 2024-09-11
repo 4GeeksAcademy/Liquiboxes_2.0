@@ -1,51 +1,65 @@
-import React from "react";
-import "../../styles/footer.css";
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFacebookF, faTwitter, faInstagram, faLinkedinIn } from '@fortawesome/free-brands-svg-icons'; // Icons from FontAwesome
-
+import { faFacebookF, faTwitter, faInstagram, faLinkedinIn } from '@fortawesome/free-brands-svg-icons';
+import { faEnvelope, faPhone, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import "../../styles/footer.css"
 
 const Footer = () => {
   return (
     <footer className="footer">
-      <div className="footer-container">
-        <div className="footer-section">
-          <h3>LiquiBoxes</h3>
-          <p>Leading the industry with innovative solutions and a passion for excellence.</p>
-        </div>
-        <div className="footer-section">
-          <h3>Quick Links</h3>
-          <ul>
-            <li><a href="/about">About Us</a></li>
-            <li><a href="/services">Services</a></li>
-            <li><a href="/contact">Contact</a></li>
-            <li><a href="/faq">FAQ</a></li>
-          </ul>
-        </div>
-        <div className="footer-section">
-          <h3>Siguenos</h3>
-          <div className="social-icons">
-            <a href="https://facebook.com" target="_blank" rel="noreferrer">
-              <FontAwesomeIcon icon={faFacebookF} />
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer">
-              <FontAwesomeIcon icon={faTwitter} />
-            </a>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer">
-              <FontAwesomeIcon icon={faInstagram} />
-            </a>
-            <a href="https://linkedin.com" target="_blank" rel="noreferrer">
-              <FontAwesomeIcon icon={faLinkedinIn} />
-            </a>
+      <div className="container py-5">
+        <div className="row g-4">
+          <div className="col-lg-4 col-md-6">
+            <h5 className="mb-4">Mi Aplicación</h5>
+            <p className="mb-4">Innovando en soluciones para un futuro más verde.</p>
+          </div>
+          <div className="col-lg-2 col-md-6">
+            <h5 className="mb-4">Enlaces Rápidos</h5>
+            <ul className="list-unstyled">
+              <li><a href="/about" className="footer-link">Sobre Nosotros</a></li>
+              <li><a href="/services" className="footer-link">Servicios</a></li>
+              <li><a href="/products" className="footer-link">Productos</a></li>
+              <li><a href="/contact" className="footer-link">Contacto</a></li>
+            </ul>
+          </div>
+          <div className="col-lg-3 col-md-6">
+            <h5 className="mb-4">Contáctanos</h5>
+            <ul className="list-unstyled">
+              <li className="mb-2">
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="me-2" />
+                123 Calle Innovación, Ciudad Eco, 12345
+              </li>
+              <li className="mb-2">
+                <FontAwesomeIcon icon={faPhone} className="me-2" />
+                +1 (555) 123-4567
+              </li>
+              <li className="mb-2">
+                <FontAwesomeIcon icon={faEnvelope} className="me-2" />
+                info@miaplicacion.com
+              </li>
+            </ul>
+          </div>
+          <div className="col-lg-3 col-md-6">
+            <h5 className="mb-4">Síguenos</h5>
+            <div className="d-flex">
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="btn btn-outline-light btn-floating me-2">
+                <FontAwesomeIcon icon={faFacebookF} />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noreferrer" className="btn btn-outline-light btn-floating me-2">
+                <FontAwesomeIcon icon={faTwitter} />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="btn btn-outline-light btn-floating me-2">
+                <FontAwesomeIcon icon={faInstagram} />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="btn btn-outline-light btn-floating">
+                <FontAwesomeIcon icon={faLinkedinIn} />
+              </a>
+            </div>
           </div>
         </div>
-        <div className="footer-section">
-          <h3>Contact Us</h3>
-          <p>Email: contact@company.com</p>
-          <p>Phone: +123 456 7890</p>
-        </div>
       </div>
-      <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} LiquiBoxes. All rights reserved.</p>
+      <div className="text-center py-3 copyright">
+        © {new Date().getFullYear()} Mi Aplicación. Todos los derechos reservados.
       </div>
     </footer>
   );

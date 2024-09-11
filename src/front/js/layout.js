@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter, Route, Routes, Switch } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+
 
 
 // Imports para las vistas de cliente
@@ -21,6 +23,7 @@ import ChooseRegistration from "./pages/ChooseRegistration";
 
 // Vistas para Admins
 import AdminHome from "./pages/Admins/AdminHome"
+import AdminLogin from "./pages/Admins/AdminLogin";
 
 // Vistas para Tiendas
 import ShopHome from "./pages/Shops/ShopHome"
@@ -35,45 +38,58 @@ import injectContext from "./store/appContext"; // Asegúrate de importar correc
 const Layout = () => {
   const basename = process.env.BASENAME || "";
 
+  const initialOptions = {
+    clientId: "AU2HNEjnvlNYSB7p6hGNb8gjhh0leKkEIZechEQLIb1IpU0k8IOeZa4ECvXdj5ErYrdZUn8UWFGTGNNC",
+    currency: "EUR",
+    intent: "capture",
+  };
+
+
 
 
   return (
-    <div>
+    <div className="layout">
       <GoogleOAuthProvider clientId={process.env.REACT_APP_ID_CLIENTE_GOOGLE}>
-        <BrowserRouter basename={basename}>
-          <ScrollToTop>
-            <Navbar />
-            <Routes>
-
-              {/* Vistas de cliente */}
-              <Route element={<Home />} path="/home" />
-              <Route element={<SignUp />} path="/signup" />
-              <Route element={<Login />} path="/" />
-              <Route element={<Private />} path="/private" />
-              <Route element={<Cart />} path="/cart" />
-              <Route element={<ContactUs />} path="/contactus" />
-              <Route element={<PayingForm />} path="/payingform" />
-              <Route element={<Profile />} path="/profile" />
-              <Route element={<Shops />} path="/shops" />
-              <Route element={<ShopDetail />} path="/shops/:id" />
-              <Route element={<ShopsSearch />} path="/shopssearch" />
-              <Route element={<MysteryBoxDetail />} path="/mysterybox/:id" />
-              <Route element={<ChooseRegistration />} path="/chooseregistration" />
+        <PayPalScriptProvider options={initialOptions}>
+          <BrowserRouter basename={basename}>
+            <ScrollToTop>
+              <Navbar />
+              <div className="main-content">
+                <Routes>
 
 
-              {/* Vistas de Admin */}
-              <Route element={<AdminHome />} path="/adminhome" />
+                  {/* Vistas de cliente */}
+                  <Route element={<Home />} path="/home" />
+                  <Route element={<SignUp />} path="/signup" />
+                  <Route element={<Login />} path="/" />
+                  <Route element={<Private />} path="/private" />
+                  <Route element={<Cart />} path="/cart" />
+                  <Route element={<ContactUs />} path="/contactus" />
+                  <Route element={<PayingForm />} path="/payingform" />
+                  <Route element={<Profile />} path="/profile" />
+                  <Route element={<Shops />} path="/shops" />
+                  <Route element={<ShopDetail />} path="/shops/:id" />
+                  <Route element={<ShopsSearch />} path="/shopssearch" />
+                  <Route element={<MysteryBoxDetail />} path="/mysterybox/:id" />
+                  <Route element={<ChooseRegistration />} path="/chooseregistration" />
 
-              {/* Vistas de Tienda */}
-              <Route element={<ShopHome />} path="/shophome" />
-              <Route element={<ShopSignUp />} path="/shopsignup" />
-              <Route element={<CreateBox />} path="/createbox" />
 
-              <Route element={<h1>Not found!</h1>} path="*" />
-            </Routes>
-            <Footer />
-          </ScrollToTop>
-        </BrowserRouter>
+                  {/* Vistas de Admin */}
+                  <Route element={<AdminHome />} path="/adminhome" />
+                  <Route element={<AdminLogin />} path="/adminlogin" />
+
+                  {/* Vistas de Tienda */}
+                  <Route element={<ShopHome />} path="/shophome" />
+                  <Route element={<ShopSignUp />} path="/shopsignup" />
+                  <Route element={<CreateBox />} path="/createbox" />
+
+                  <Route element={<h1>Not found!</h1>} path="*" />
+                </Routes>
+              </div>
+              <Footer />
+            </ScrollToTop>
+          </BrowserRouter>
+        </PayPalScriptProvider>
       </GoogleOAuthProvider>
     </div>
   );

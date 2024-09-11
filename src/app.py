@@ -14,6 +14,14 @@ from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
 
+from api.users.routes import users
+from api.shops.routes import shops
+from api.google.routes import auth
+from api.sales.routes import sales
+from api.admins.routes import admins
+from api.notifications.routes import notifications
+
+
 
 
 # from models import Person
@@ -50,11 +58,13 @@ setup_commands(app)
 
 # Add all endpoints 
 app.register_blueprint(api, url_prefix='/api')
+app.register_blueprint(users, url_prefix='/api/users')
+app.register_blueprint(shops, url_prefix='/api/shops')
+app.register_blueprint(auth, url_prefix='/api/auth')
+app.register_blueprint(sales, url_prefix='/api/sales')
+app.register_blueprint(admins, url_prefix='/api/admins')
+app.register_blueprint(notifications, url_prefix='/api/notifications')
 
-
-
-
-######## TODO Hablar con el equipo para la organización de los archivos de las rutas (estructura del proyecto)
 
 # Handle/serialize errors like a JSON object
 

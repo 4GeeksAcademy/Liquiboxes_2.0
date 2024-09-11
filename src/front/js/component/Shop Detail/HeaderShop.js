@@ -1,54 +1,71 @@
-import React from 'react'; //PASA LOS DATOS EN EL ENCABEZADO DE CADA TIENDA//
+import React from 'react';
+import "../../../styles/headershop.css";
 
 function HeaderShop({ data }) {
+  const formatCategories = (categories) => {
+    if (!Array.isArray(categories)) return [];
+    return categories.map(category => category.replace(/[\[\]"\\]/g, '').trim()).filter(Boolean);
+  };
+
+  const categories = formatCategories(data.categories);
+
   return (
-    <div className="container my-5 p-4 shadow-lg p-3 mb-5 bg-body-tertiary rounded shadow-sm bg-light">
-      <div className="row align-items-center">
-        <div className="col-lg-4 text-center mb-4 mb-lg-0">
-          <img 
-            className="img-fluid rounded shadow"
-            src={data.image_shop_url}
-            alt={data.name}
-            style={{ maxWidth: '100%', height: 'auto', maxHeight: '250px', objectFit: 'cover' }}
-          />
+    <div className="header-shop-container">
+      <div className="header-shop-card">
+        <div className="header-shop-image">
+          <img src={data.image_shop_url} alt={data.name} />
         </div>
-
-        <div className="col-lg-8" > 
-          <h2 className="fw-bold">{data.name}</h2 > 
-          <p className="lead text-secondary">{data.shop_summary}</p>
+        <div className="header-shop-content">
+          <h1 className="shop-name">{data.name}</h1>
+          <p className="shop-summary">{data.shop_summary}</p>
           
-          <div className="row">
-            <div className="col-md-6 mb-2">
-              <i className="fas fa-map-marker-alt me-2"></i>
-              <strong>Address:</strong> <span className="text-muted">{data.address}</span>
+          <div className="shop-details">
+            <div className="detail-item">
+              <i className="fas fa-map-marker-alt"></i>
+              <div>
+                <strong>Dirección</strong>
+                <p>{data.address}</p>
+              </div>
             </div>
-
-            <div className="col-md-6 mb-2">
-              <i className="fas fa-envelope me-2"></i>
-              <strong>Email:</strong> <span className="text-muted">{data.email}</span>
+            <div className="detail-item">
+              <i className="fas fa-envelope"></i>
+              <div>
+                <strong>Correo electrónico</strong>
+                <p>{data.email}</p>
+              </div>
             </div>
-
-            <div className="col-md-6 mb-2">
-              <i className="fas fa-tags me-2"></i>
-              <strong>Categories:</strong> <span className="text-muted">{data.categories}</span>
+            <div className="detail-item">
+              <i className="fas fa-building"></i>
+              <div>
+                <strong>Actividad principal</strong>
+                <p>{data.business_core}</p>
+              </div>
             </div>
-
-            <div className="col-md-6 mb-2">
-              <i className="fas fa-building me-2"></i>
-              <strong>Business Core:</strong> <span className="text-muted">{data.business_core}</span>
-            </div>
-            
-            <div className="col-md-6 mb-2">
-              <i className="fas fa-user me-2"></i>
-              <strong>Owner:</strong> <span className="text-muted">{data.owner_name} {data.owner_surname}</span>
+            <div className="detail-item">
+              <i className="fas fa-user"></i>
+              <div>
+                <strong>Propietario</strong>
+                <p>{data.owner_name} {data.owner_surname}</p>
+              </div>
             </div>
           </div>
 
-          <hr className="my-4" />
+          <div className="shop-categories">
+            <strong>Categorías</strong>
+            {categories.length > 0 ? (
+              <ul className="category-list">
+                {categories.map((category, index) => (
+                  <li key={index}>{category}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No se han especificado categorías.</p>
+            )}
+          </div>
 
-          <div className="mb-3">
-            <strong>Shop Description:</strong>
-            <p className="text-muted">{data.shop_description}</p>
+          <div className="shop-description">
+            <strong>Descripción de la tienda</strong>
+            <p>{data.shop_description}</p>
           </div>
         </div>
       </div>

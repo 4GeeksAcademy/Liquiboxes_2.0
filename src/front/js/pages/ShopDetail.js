@@ -1,64 +1,64 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext, useEffect, useState } from 'react';
 import HeaderShop from '../component/Shop Detail/HeaderShop';
-import { useState } from 'react';
 import { Context } from '../store/appContext';
 import { useParams } from 'react-router-dom';
-import RatingSystem from '../component/Shop Detail/RatingSystem';
+import CardMBox from '../component/Shop Detail/CardMBox';
+import SwitchButtons from '../component/Shop Detail/SwitchButtons';
 
 export default function ShopDetail() {
+  const [mysteryBoxes, setMysteryBoxes] = useState([]);
+  const [boxVisible, setBoxVisible] = useState(true);  // Maneja el estado entre cajas y valoraciones
+  const { store, actions } = useContext(Context);
+  const { id } = useParams();  // ID de la tienda
 
-  const [isArmarioVisible, setIsArmarioVisible] = useState(false);
-  const showArmario = () => setIsArmarioVisible(true);
-  const showValoraciones = () => setIsArmarioVisible(false);
+  // Trae los datos de la tienda y del ID
+  useEffect(() => {
+    const fetchData = async () => {
+      await actions.getShopDetail(id);
+    };
+    fetchData();
+  }, [id]);
 
-  const { store, actions } = useContext(Context)
+  useEffect(() => {
+    if (!store.isLoading && !store.showError) {
+      setMysteryBoxes(store.shopDetail.mystery_boxes);
+    }
+  }, [store.isLoading, store.showError, store.mysteryBoxDetail]);
 
-  const [shopDetail, setShopDetail] = useState([]) //Variable creada en el flux para poder hacer la llamada a la base de datos//
-  const { id } = useParams()
-
-  useEffect(() => {   //TRAE LOS DATOS DE UNA TIENDA ESPECIFICA PARA ORDENARLOS EN LOS CAMPOS DEL HEADER//
-    actions.getShopDetail(id);
-    setShopDetail(store.shopDetail)
-    console.log(shopDetail)
-
-  }, [])
-
+  if (store.isLoading) {
+    return <div className="text-center mt-5">Cargando...</div>;
+  }
 
   return (
-    <>
+    <main>
       <HeaderShop data={store.shopDetail} />
 
-      <div> {/*BOTONES PARA CAMBIAR ENTRE CARDS Y VALORACIONES*/}
-        <div className="row">
-          <div className="col text-center">
-            <button
-              type="button"
-              className="fa-solid fa-table-cells-large"
-              onClick={showArmario}
-            >
-            </button>
-            <button
-              type="button"
-              className="fa-solid fa-align-justify"
-              onClick={showValoraciones}
-            >
-            </button>
-          </div>
-        </div>
+      {/* Pasa el estado y la función a SwitchButtons */}
+      <SwitchButtons boxVisible={boxVisible} setBoxVisible={setBoxVisible} />
 
-        <div className="row mt-4">
-          <div className="col text-center">
-            {isArmarioVisible ? (
-              <p>Aquí va el armario</p>
-            ) : (
-              <p>Aquí van las valoraciones</p>
-            )}
+      <div className="mb-5">
+        {/* Renderiza las mystery boxes solo si boxVisible es true */}
+        {boxVisible && mysteryBoxes && (
+          <div className='row mx-5'>
+            {mysteryBoxes.map((mysterybox) => {
+              console.log("Renderizando mystery box:", mysterybox);
+              return (
+                <div key={mysterybox.id} className='col-12 col-md-6 col-lg-4 col-xl-3 col-xxl-2'>
+                  <CardMBox data={mysterybox} />
+                </div>
+              );
+            })}
           </div>
-        </div>
-      </div> {/*FINALIZA BOTONES PARA CAMBIAR ENTRE CARDS Y VALORACIONES*/}
-      
-      <RatingSystem />
-    </>
+        )}
 
-  )
+        {/* Si boxVisible es false, se muestran las Valoraciones" */}
+        {!boxVisible && (
+          <div className="text-center mt-5">
+            <p>Aquí van las Valoraciones</p>
+          </div>
+        )}
+      </div>
+
+    </main>
+  );
 }
