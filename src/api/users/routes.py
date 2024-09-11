@@ -126,3 +126,21 @@ def update_user_profile():
 def get_all_users():
     users = User.query.all()
     return jsonify([user.serialize() for user in users]), 200
+
+@users.route('/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_user_sizes(user_id):
+    user = User.query.get(user_id)
+    if user:
+        return jsonify(user.serialize_sizes()), 200
+    else:
+        return jsonify({'error': 'User not found'}), 404
+    
+@users.route('/<int:user_id>/shipment', methods=['GET'])
+@jwt_required()
+def get_user_shipment(user_id):
+    user = User.query.get(user_id)
+    if user:
+        return jsonify(user.serialize_shipment()), 200
+    else:
+        return jsonify({'error': 'User not found'}), 404

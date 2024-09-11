@@ -81,6 +81,32 @@ class User(BaseModel):
             "profession": self.profession,
         }
     
+    def serialize_sizes(self):
+        return {
+            "id": self.id,
+            "gender": self.gender,
+            "upper_size": self.upper_size,
+            "lower_size": self.lower_size,
+            "cap_size": self.cap_size,
+            "shoe_size": self.shoe_size,
+            "not_colors": self.not_colors,
+            "stamps": self.stamps,
+            "fit": self.fit,
+            "not_clothes": self.not_clothes,
+            "categories": self.categories,
+            "profession": self.profession,
+        }
+    
+    def serialize_shipment(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "surname": self.surname,
+            "email": self.email,
+            "address": self.address,
+            "postal_code": self.postal_code,
+        }
+    
 class Sale(BaseModel):
     __tablename__ = "sales"
 
