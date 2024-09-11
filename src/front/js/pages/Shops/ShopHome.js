@@ -16,8 +16,9 @@ import { Context } from '../../store/appContext';
 
 import BoxesOnSale from '../../component/ShopHome/BoxesOnSale';
 import ContactSupport from '../../component/ShopHome/ContactSupport';
-import SaleStatistics from '../../component/ShopHome/SaleStatistics';
 import ShopNotifications from '../../component/ShopHome/ShopNotifications';
+import ShopSales from '../../component/ShopHome/ShopSales';
+
 
 function ShopHome() {
   const navigate = useNavigate();
@@ -206,11 +207,12 @@ function ShopHome() {
         );
       case 'support':
         return <div>
-          <ContactSupport />
+          <ContactSupport shopData = {shopData} />
         </div>;
       case 'sales':
         return <div>
-          <SaleStatistics />
+          <h2>Estas son tus ventas:</h2>
+          <ShopSales shopData = {shopData}/>
         </div>;
       case 'createBox':
         return <div>
@@ -219,7 +221,7 @@ function ShopHome() {
         </div>;
       case 'boxesOnSale':
         return <div>
-          <BoxesOnSale />
+          <BoxesOnSale shopData = {shopData}/>
         </div>;
       default:
         return <div>Selecciona una opción del menú</div>;

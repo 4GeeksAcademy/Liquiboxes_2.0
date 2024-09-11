@@ -144,7 +144,8 @@ class ShopSale(BaseModel):
             'sale_id': self.sale_id,
             'shop_id': self.shop_id,
             'subtotal': self.subtotal,
-            'status': self.status
+            'status': self.status,
+            'created_at': self.created_at
         }
 
 class SaleDetail(BaseModel):

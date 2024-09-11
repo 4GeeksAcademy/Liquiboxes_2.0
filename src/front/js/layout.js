@@ -29,7 +29,6 @@ import AdminLogin from "./pages/Admins/AdminLogin";
 import ShopHome from "./pages/Shops/ShopHome"
 import ShopSignUp from "./pages/Shops/ShopSignUp"
 import CreateBox from "./pages/Shops/CreateBox";
-import ShopSales from "./pages/ShopSales";
 import { Navbar } from "./component/navbar";
 import Footer from "./component/Footer";
 
@@ -82,7 +81,6 @@ const Layout = () => {
                   <Route element={<ShopHome />} path="/shophome" />
                   <Route element={<ShopSignUp />} path="/shopsignup" />
                   <Route element={<CreateBox />} path="/createbox" />
-                  <Route element={<ShopSales />} path="/shopsales" />
 
                   <Route element={<h1>Not found!</h1>} path="*" />
                 </Routes>
