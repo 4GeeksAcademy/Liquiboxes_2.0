@@ -79,7 +79,7 @@ const StripePaymentForm = ({ items, total, onPaymentSuccess, onPaymentError, use
   };
 
   return (
-    <form onSubmit={handleSubmit} className="stripe-form">
+    <form onSubmit={handleSubmit} className="stripe-form mb-4">
       <div className="form-group">
         <label htmlFor="card-element">
           <FontAwesomeIcon icon={faCreditCard} className="mr-2" />

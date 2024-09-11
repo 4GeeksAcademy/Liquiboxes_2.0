@@ -174,7 +174,7 @@ const PayingForm = () => {
                 Tarjeta de crédito
               </button>
               <button
-                className={`btn btn-lg mx-2 ${paymentMethod === 'paypal' ? 'btn-primary' : 'btn-outline-primary'}`}
+                className={`mx-2`}
                 onClick={() => setPaymentMethod('paypal')}
               >
                 <FontAwesomeIcon icon={faPaypal} className="mr-2" />

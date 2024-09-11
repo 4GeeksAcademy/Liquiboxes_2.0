@@ -87,6 +87,7 @@ def create_sale():
         # Verificar que el total calculado coincide con el total enviado por el frontend
         if abs(total_amount - float(data['total_amount'])) > 0.01:  # Permitimos una pequeña diferencia por redondeo
             return jsonify({'error': 'Total amount mismatch'}), 400
+            ## TODO: Aquí se podría añadir un aviso a los admins para detectar usuarios maliciosos.
 
         # Verificar el pago con Stripe
         try:
@@ -95,7 +96,7 @@ def create_sale():
                 return jsonify({'error': 'Payment not successful', 'status': payment_intent.status}), 400
             
             # Verificar que el monto pagado coincide con el calculado
-            if abs(payment_intent.amount - int(total_amount * 100)) > 1:  # Stripe usa centavos
+            if abs(payment_intent.amount - int(total_amount * 100)) > 1:  # Stripe usa centimos
                 return jsonify({'error': 'Payment amount does not match order total'}), 400
         except stripe.error.StripeError as e:
             return jsonify({'error': 'Stripe error', 'details': str(e)}), 400
@@ -137,20 +138,30 @@ def create_sale():
                 mystery_box_id=mystery_box.id,
                 quantity=quantity,
                 price=mystery_box.price,
-                subtotal=subtotal
             )
             db.session.add(sale_detail)
             db.session.flush()  # Esto asigna un ID a sale_detail sin hacer commit
 
             logging.info(f"Created SaleDetail with id: {sale_detail.id}")
 
+
+            shop_sale = ShopSale(
+                sale_id=new_sale.id,
+                shop_id=mystery_box.shop_id,
+                subtotal=subtotal,
+                status="pending"
+            )
+            db.session.add(shop_sale)
+            db.session.flush()  # Esto asigna un ID a shop_sale sin hacer commit
+            
+            logging.info(f"Created ShopSale with id: {shop_sale.id}")
+
+
             # Create BoxItem for each selected item
             for selected_item in selected_items:
                 box_item = BoxItem(
                     sale_detail_id=sale_detail.id,
                     item_name=selected_item,
-                    item_size=mystery_box.size,
-                    item_category=random.choice(mystery_box.shop.categories)
                 )
                 db.session.add(box_item)
 
@@ -168,7 +179,7 @@ def create_sale():
             recipient_id=current_user['id'],
             sale_id=new_sale.id,
             type="purchase_confirmation",
-            content="Your purchase has been confirmed"
+            content="Su compra ha sido aprobada"
         )
         db.session.add(user_notification)
 
@@ -196,6 +207,11 @@ def create_sale():
 @sales.route('/', methods = ['GET'])
 def get_all_sales():
     sales = Sale.query.all()
+    return jsonify([sale.serialize() for sale in sales]), 200
+
+@sales.route('/saledetail', methods = ['GET'])
+def get_all_sales_details():
+    sales = SaleDetail.query.all()
     return jsonify([sale.serialize() for sale in sales]), 200
 
 
