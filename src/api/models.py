@@ -142,7 +142,8 @@ class SaleDetail(BaseModel):
             'mystery_box_id': self.mystery_box_id,
             'quantity': self.quantity,
             'price': self.price,
-            'subtotal': self.subtotal
+            'subtotal': self.subtotal,
+            'box_items':[item.serialize() for item in self.box_items],
         }
 
 class Shop(BaseModel):
@@ -373,13 +374,34 @@ class Notification(BaseModel):
             'item_change_request_id': self.item_change_request_id
         }
 
+    def serialize_users(self):
+        return {
+            'id': self.id,
+            'recipient_id': self.recipient_id,
+            'sale_id': self.sale_id,
+            'type': self.type,
+            'content': self.content,
+            'is_read': self.is_read,
+            'created_at': self.created_at,
+        }
+    
+    def serialize_shops(self):
+        return {
+            'id': self.id,
+            'shop_id': self.shop_id,
+            'sale_id': self.sale_id,
+            'type': self.type,
+            'content': self.content,
+            'is_read': self.is_read,
+            'created_at': self.created_at,
+            'item_change_request_id': self.item_change_request_id
+        }
+
 class BoxItem(BaseModel):
     __tablename__ = "box_items"
 
     sale_detail_id = db.Column(db.Integer, db.ForeignKey('sale_details.id'), nullable=False)
     item_name = db.Column(db.String(100), nullable=False)
-    item_size = db.Column(db.String(20), nullable=False)
-    item_category = db.Column(db.String(50), nullable=False)
 
     sale_detail = db.relationship('SaleDetail', back_populates='box_items')
 
@@ -388,8 +410,6 @@ class BoxItem(BaseModel):
             'id': self.id,
             'sale_detail_id': self.sale_detail_id,
             'item_name': self.item_name,
-            'item_size': self.item_size,
-            'item_category': self.item_category
         }
 
 class ItemChangeRequest(BaseModel):

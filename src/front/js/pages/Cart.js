@@ -126,7 +126,7 @@ const Cart = () => {
             </div>
           </div>
           <div className="text-center mt-4">
-            <button className="btn btn-primary btn-lg" onClick={() => navigate("/payingform")}>
+            <button className="mb-4" onClick={() => navigate("/payingform")}>
               <FontAwesomeIcon icon={faCreditCard} className="mr-2 me-2" />
               Proceder al pago
             </button>

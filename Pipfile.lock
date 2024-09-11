@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "709200ac6a2000a364d5f33c328cb6510b5ba88b79a108687e78371b06bea642"
+            "sha256": "71bae04fef1d1a644c59ca969262dee089382dcfb10e16c757cd5d51b2f5c880"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -327,6 +327,22 @@
             "index": "pypi",
             "version": "==1.1.1"
         },
+        "marshmallow": {
+            "hashes": [
+                "sha256:4972f529104a220bb8637d595aa4c9762afbe7f7a77d82dc58c1615d70c5823e",
+                "sha256:71a2dce49ef901c3f97ed296ae5051135fd3febd2bf43afe0ae9a82143a494d9"
+            ],
+            "index": "pypi",
+            "version": "==3.22.0"
+        },
+        "packaging": {
+            "hashes": [
+                "sha256:026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002",
+                "sha256:5b8f2217dbdbd2f7f384c41c628544e6d52f2d0f53c6d0c3ea61aa5d1d7ff124"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==24.1"
+        },
         "psycopg2-binary": {
             "hashes": [
                 "sha256:0deac2af1a587ae12836aa07970f5cb91964f05a7c6cdb69d8425ff4c15d4e2c",
@@ -370,19 +386,17 @@
         },
         "pyasn1": {
             "hashes": [
-                "sha256:3a35ab2c4b5ef98e17dfdec8ab074046fbda76e281c5a706ccd82328cfc8f64c",
-                "sha256:cca4bb0f2df5504f02f6f8a775b6e416ff9b0b3b16f7ee80b5a3153d9b804473"
+                "sha256:6f580d2bdd84365380830acf45550f2511469f673cb4a5ae3857a3170128b034"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==0.6.0"
+            "version": "==0.6.1"
         },
         "pyasn1-modules": {
             "hashes": [
-                "sha256:831dbcea1b177b28c9baddf4c6d1013c24c3accd14a1873fffaa6a2e905f17b6",
-                "sha256:be04f15b66c206eed667e0bb5ab27e2b1855ea54a842e5037738099e8ca4ae0b"
+                "sha256:c28e2dbf9c06ad61c71a075c7e0f9fd0f1b0bb2d2ad4377f240d33ac2ab60a7c"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==0.4.0"
+            "version": "==0.4.1"
         },
         "pyjwt": {
             "hashes": [

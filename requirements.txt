@@ -32,3 +32,4 @@ google-auth
 requests
 stripe
 faker
+marshmallow

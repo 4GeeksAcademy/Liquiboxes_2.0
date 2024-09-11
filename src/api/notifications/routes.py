@@ -37,7 +37,7 @@ def get_user_notifications():
         return jsonify({"error": "User not found"}), 404
     
     notifications = Notification.query.filter_by(recipient_id=user.id).order_by(Notification.created_at.desc()).all()
-    return jsonify([notification.serialize() for notification in notifications]), 200
+    return jsonify([notification.serialize_users() for notification in notifications]), 200
 
 @notifications.route('/shop', methods=['GET'])
 @jwt_required()
@@ -48,7 +48,7 @@ def get_shop_notifications():
         return jsonify({"error": "Shop not found"}), 404
     
     notifications = Notification.query.filter_by(shop_id=shop.id).order_by(Notification.created_at.desc()).all()
-    return jsonify([notification.serialize() for notification in notifications]), 200
+    return jsonify([notification.serialize_shops() for notification in notifications]), 200
 
 @notifications.route('/all', methods=['GET'])
 @jwt_required()
@@ -60,6 +60,16 @@ def get_all_notifications():
     if not admin.is_superuser:
         return jsonify({"error": "Unauthorized. Only superadmins can access all notifications."}), 403
     
+    try:
+        notifications = Notification.query.order_by(Notification.created_at.desc()).all()
+        return jsonify([notification.serialize() for notification in notifications]), 200
+    except SQLAlchemyError as e:
+        logging.error(f"Database error: {str(e)}")
+        return jsonify({'error': 'Database error occurred'}), 500
+    
+@notifications.route('/all/backend', methods=['GET'])
+def get_all_notifications_backend():
+
     try:
         notifications = Notification.query.order_by(Notification.created_at.desc()).all()
         return jsonify([notification.serialize() for notification in notifications]), 200

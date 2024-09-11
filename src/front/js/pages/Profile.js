@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -14,15 +14,23 @@ import {
   faTape,
   faBriefcase,
   faBan,
-  faList
+  faList,
+  faBell,
+  faShoppingBag,
+  faHeadset,
+  faBars
 } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/profile.css";
 import ProfileField from '../component/Profile/ProfileField';
+import { Context } from '../store/appContext'
 
 function Profile() {
   const [userData, setUserData] = useState(null);
   const [editMode, setEditMode] = useState({});
   const [error, setError] = useState(null);
+  const [activeSection, setActiveSection] = useState('notifications');
+  const [isLoading, setIsLoading] = useState(true);
+  const { store } = useContext(Context)
 
   // Definiciones para opciones de selección
   const sizeOptions = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
@@ -30,13 +38,15 @@ function Profile() {
   const shoeSizeOptions = Array.from({ length: 27 }, (_, i) => (i + 28).toString());
   const colorOptions = ['Rojo', 'Azul', 'Verde', 'Amarillo', 'Naranja', 'Morado', 'Rosa', 'Marrón', 'Negro', 'Blanco'];
   const clothesOptions = ['Camisetas', 'Pantalones', 'Faldas', 'Vestidos', 'Chaquetas', 'Abrigos', 'Zapatos', 'Accesorios', 'Ropa Interior', 'Trajes'];
-  const categoryOptions = ['Moda', 'Ropa de Trabajo', 'Tecnología', 'Carpintería', 'Outdoor', 'Deporte', 'Arte', 'Cocina', 'Jardinería', 'Música', 'Viajes', 'Lectura', 'Cine', 'Fotografía', 'Yoga'];
+  const categoryOptions = store.categories;
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       const token = sessionStorage.getItem('token');
       if (!token) {
         setError("No se encontró el token de autenticación");
+        setIsLoading(false);
         return;
       }
       try {
@@ -44,15 +54,32 @@ function Profile() {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        setUserData(response.data);
+        // Procesar las categorías
+        let categories;
+        try {
+          categories = JSON.parse(response.data.categories);
+        } catch (e) {
+          categories = response.data.categories || [];
+        }
+
+        // Asegurarse de que categories sea un array
+        categories = Array.isArray(categories) ? categories : [];
+
+        setUserData({ ...response.data, categories });
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching user data:", error.response || error);
         setError(error.response?.data?.msg || error.message);
+        setIsLoading(false);
       }
     };
 
     fetchUserData();
   }, []);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
 
   const handleEdit = (field) => {
     setEditMode(prev => ({ ...prev, [field]: true }));
@@ -62,17 +89,15 @@ function Profile() {
     const token = sessionStorage.getItem('token');
     try {
       let value = userData[field];
-      if (['not_colors', 'not_clothes', 'categories'].includes(field) && Array.isArray(value)) {
-        value = value.join(',');
-      }
 
       if (!validateField(field, value)) {
         setError(`Invalid input for ${field}`);
         return;
       }
 
+      // Asegurarse de enviar los arrays correctamente
       await axios.patch(`${process.env.BACKEND_URL}/users/profile`,
-        { [field]: value },
+        { [field]: value },  // Enviar `not_colors` y `not_clothes` como arrays
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setEditMode(prev => ({ ...prev, [field]: false }));
@@ -107,15 +132,15 @@ function Profile() {
       case 'shoe_size':
         return shoeSizeOptions.includes(value);
       case 'not_colors':
-        return value.split(',').length <= 3;
+        return Array.isArray(value) && value.length <= 3;  // Máximo 3 elementos
       case 'stamps':
         return ['estampados', 'lisos'].includes(value);
       case 'fit':
         return ['ajustado', 'holgado'].includes(value);
       case 'not_clothes':
-        return value.split(',').length <= 3;
+        return Array.isArray(value) && value.length <= 3;  // Máximo 3 elementos
       case 'categories':
-        return value.split(',').length <= 5 && value.split(',').length > 0;
+        return Array.isArray(value) && value.length <= 5 && value.length > 0;
       case 'profession':
         return ['Salud', 'Informática', 'Educación', 'Ingeniería', 'Artes', 'Finanzas', 'Ventas', 'Administración', 'Construcción', 'Hostelería', 'Estudiante', 'Otro'].includes(value);
       default:
@@ -124,10 +149,39 @@ function Profile() {
   };
 
   const renderField = (field, icon, label) => {
+    if (!userData || !userData[field]) return null;
+
     const value = userData[field];
     const isListField = ['not_colors', 'not_clothes', 'categories'].includes(field);
 
     const renderInput = () => {
+      if (isListField) {
+        return (
+          <div>
+            {Array.isArray(value) && value.map((item, index) => (
+              <span key={index} className="tag">
+                {item}
+                <button className='btn mx-1' onClick={() => handleRemoveItem(field, item)}>x</button>
+              </span>
+            ))}
+            <select
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleAddItem(field, e.target.value);
+                  e.target.value = '';
+                }
+              }}
+            >
+              <option value="">Seleccionar {field.replace('_', ' ')}...</option>
+              {(field === 'not_colors' ? colorOptions :
+                field === 'not_clothes' ? clothesOptions :
+                  categoryOptions).filter(option => !value.includes(option)).map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+            </select>
+          </div>
+        );
+      }
       switch (field) {
         case 'gender':
           return (
@@ -184,39 +238,7 @@ function Profile() {
               ))}
             </select>
           );
-        case 'not_colors':
-        case 'not_clothes':
-        case 'categories':
-          const options = field === 'not_colors' ? colorOptions :
-            field === 'not_clothes' ? clothesOptions :
-              categoryOptions;
-          const maxItems = field === 'categories' ? 5 : 3;
-          return (
-            <div>
-              {value.map((item, index) => (
-                <span key={index} className="tag">
-                  {item}
-                  <button className='btn mx-1' onClick={() => handleRemoveItem(field, item)}>x</button>
-                </span>
-              ))}
-              {value.length < maxItems && (
-                <select
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      handleAddItem(field, e.target.value);
-                      e.target.value = '';
-                    }
-                  }}
-                >
-                  <option value="">Seleccionar {field.replace('_', ' ')}...</option>
-                  {options.filter(option => !value.includes(option)).map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              )}
-              <p>Máximo {maxItems} {field === 'categories' ? 'categorías' : 'elementos'}</p>
-            </div>
-          );
+
         default:
           return (
             <input
@@ -229,11 +251,11 @@ function Profile() {
     };
 
     return (
-      <div className='col-4 mx-auto'>
+      <div className='col-12 col-md-6 col-lg-4 mb-3'>
         <ProfileField
           icon={icon}
           label={label}
-          value={isListField ? value.join(', ') : value}
+          value={isListField && Array.isArray(value) ? value.join(', ') : value}
           onEdit={() => handleEdit(field)}
           onSave={() => handleSave(field)}
           isEditing={editMode[field]}
@@ -253,7 +275,7 @@ function Profile() {
       }));
     }
   };
-
+  
   const handleRemoveItem = (field, item) => {
     setUserData(prev => ({
       ...prev,
@@ -264,26 +286,84 @@ function Profile() {
   if (error) return <div className="error-message">Error: {error}</div>;
   if (!userData) return <div className="loading-message">Cargando...</div>;
 
+  const renderContent = () => {
+    if (isLoading) return <div>Cargando...</div>;
+    if (error) return <div className="error-message">Error: {error}</div>;
+
+    switch (activeSection) {
+      case 'notifications':
+        return <div>Aquí irían las notificaciones</div>;
+      case 'purchases':
+        return <div>Aquí iría el historial de compras</div>;
+      case 'profile':
+        return (
+          <div className="row my-3">
+            {renderField('name', faUser, 'Nombre')}
+            {renderField('surname', faUser, 'Apellido')}
+            {renderField('email', faEnvelope, 'Email')}
+            {renderField('gender', faVenusMars, 'Género')}
+            {renderField('address', faMapMarkerAlt, 'Dirección')}
+            {renderField('postal_code', faMapPin, 'Código Postal')}
+            {renderField('upper_size', faTshirt, 'Talla Superior')}
+            {renderField('lower_size', faTshirt, 'Talla Inferior')}
+            {renderField('cup_size', faHatCowboy, 'Talla de Gorra o Sombrero')}
+            {renderField('shoe_size', faShoePrints, 'Talla de Zapato')}
+            {renderField('stamps', faPalette, 'Preferencia de Estampado')}
+            {renderField('fit', faTape, 'Preferencia de Ajuste')}
+            {renderField('profession', faBriefcase, 'Profesión')}
+            {renderField('not_colors', faBan, 'Colores no preferidos')}
+            {renderField('not_clothes', faBan, 'Prendas no preferidas')}
+            {renderField('categories', faList, 'Categorías')}
+          </div>
+        );
+      case 'support':
+        return <div>Aquí iría el formulario de contacto con soporte</div>;
+      default:
+        return <div>Selecciona una opción del menú</div>;
+    }
+  };
+
   return (
-    <div className="mx-auto p-6">
-      <h1 className="text-center mb-8">Mi Perfil</h1>
-      <div className="row mx-3">
-        {renderField('name', faUser, 'Nombre')}
-        {renderField('surname', faUser, 'Apellido')}
-        {renderField('email', faEnvelope, 'Email')}
-        {renderField('gender', faVenusMars, 'Género')}
-        {renderField('address', faMapMarkerAlt, 'Dirección')}
-        {renderField('postal_code', faMapPin, 'Código Postal')}
-        {renderField('upper_size', faTshirt, 'Talla Superior')}
-        {renderField('lower_size', faTshirt, 'Talla Inferior')}
-        {renderField('cup_size', faHatCowboy, 'Talla de Gorra o Sombrero')}
-        {renderField('shoe_size', faShoePrints, 'Talla de Zapato')}
-        {renderField('stamps', faPalette, 'Preferencia de Estampado')}
-        {renderField('fit', faTape, 'Preferencia de Ajuste')}
-        {renderField('profession', faBriefcase, 'Profesión')}
-        {renderField('not_colors', faBan, 'Colores no preferidos')}
-        {renderField('not_clothes', faBan, 'Prendas no preferidas')}
-        {renderField('categories', faList, 'Categorías')}
+    <div className={`d-flex wrapper ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+      <div className="bg-light border-right" id="sidebar-wrapper">
+        <div className="sidebar-heading"><strong>Opciones:</strong></div>
+        <div className="list-group list-group-flush">
+          <button
+            className={`list-group-item list-group-item-action ${activeSection === 'notifications' ? 'active' : ''}`}
+            onClick={() => { setActiveSection('notifications'); setIsSidebarOpen(false); }}
+          >
+            <FontAwesomeIcon icon={faBell} className="mr-2" /> Notificaciones
+          </button>
+          <button
+            className={`list-group-item list-group-item-action ${activeSection === 'purchases' ? 'active' : ''}`}
+            onClick={() => { setActiveSection('purchases'); setIsSidebarOpen(false); }}
+          >
+            <FontAwesomeIcon icon={faShoppingBag} className="mr-2" /> Compras
+          </button>
+          <button
+            className={`list-group-item list-group-item-action ${activeSection === 'profile' ? 'active' : ''}`}
+            onClick={() => { setActiveSection('profile'); setIsSidebarOpen(false); }}
+          >
+            <FontAwesomeIcon icon={faUser} className="mr-2" /> Editar Perfil
+          </button>
+          <button
+            className={`list-group-item list-group-item-action ${activeSection === 'support' ? 'active' : ''}`}
+            onClick={() => { setActiveSection('support'); setIsSidebarOpen(false); }}
+          >
+            <FontAwesomeIcon icon={faHeadset} className="mr-2" /> Contacto con Soporte
+          </button>
+        </div>
+      </div>
+      <div id="page-content-wrapper">
+        <nav className="navbar navbar-expand-lg navbar-light bg-light border-bottom px-3">
+          <button className="" id="menu-toggle" onClick={toggleSidebar}>
+            <FontAwesomeIcon icon={faBars} />
+          </button>
+          <h2 className="ml-3 mb-0">Mi Cuenta</h2>
+        </nav>
+        <div className="container-fluid">
+          {renderContent()}
+        </div>
       </div>
     </div>
   );

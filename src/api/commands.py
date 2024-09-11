@@ -107,7 +107,7 @@ def setup_commands(app):
                     size=random.choice(TAMANOS),
                     possible_items=possible_items,
                     image_url=f"https://picsum.photos/seed/{i*10+j}/300/200",
-                    number_of_items=random.randint(3, 10),
+                    number_of_items=random.randint(1, 3),
                     shop_id=shop.id
                 )
                 db.session.add(box)

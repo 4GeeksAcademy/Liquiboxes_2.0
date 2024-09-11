@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 from api.models import db, User
+from marshmallow import Schema, fields, validate
+import json
 
 users = Blueprint('users', __name__)
 
@@ -77,9 +79,40 @@ def update_user_profile():
         return jsonify({"error": "Usuario no encontrado"}), 404
     
     data = request.json
-    
+
+    # Definir un esquema de validación
+    class UserUpdateSchema(Schema):
+        name = fields.Str(validate=validate.Length(min=1, max=120))
+        surname = fields.Str(validate=validate.Length(min=1, max=120))
+        gender = fields.Str(validate=validate.OneOf(['masculino', 'femenino', 'no_especificado']))
+        address = fields.Str(validate=validate.Length(min=1, max=200))
+        postal_code = fields.Str(validate=validate.Regexp(r'^\d{5}$'))
+        upper_size = fields.Str(validate=validate.OneOf(['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']))
+        lower_size = fields.Str(validate=validate.OneOf([str(i) for i in range(26, 61)]))
+        cup_size = fields.Str(validate=validate.OneOf(['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL']))
+        shoe_size = fields.Str(validate=validate.OneOf([str(i) for i in range(28, 55)]))
+        not_colors = fields.List(fields.Str(), validate=validate.Length(max=3))
+        stamps = fields.Str(validate=validate.OneOf(['estampados', 'lisos']))
+        fit = fields.Str(validate=validate.OneOf(['ajustado', 'holgado']))
+        not_clothes = fields.List(fields.Str(), validate=validate.Length(max=3))
+        categories = fields.List(fields.Str(), validate=validate.Length(min=1, max=5))
+        profession = fields.Str(validate=validate.OneOf(['Salud', 'Informática', 'Educación', 'Ingeniería', 'Artes', 'Finanzas', 'Ventas', 'Administración', 'Construcción', 'Hostelería', 'Estudiante', 'Otro']))
+
+    schema = UserUpdateSchema()
+    errors = schema.validate(data)
+    if errors:
+        return jsonify({"error": "Datos de entrada inválidos", "details": errors}), 400
+
     for field, value in data.items():
         if hasattr(user, field) and field not in ['id', 'email', 'password_hash']:
+            if field in ['not_colors', 'not_clothes', 'categories']:
+                if isinstance(value, str):
+                    try:
+                        value = json.loads(value)
+                    except json.JSONDecodeError:
+                        return jsonify({"error": f"Formato inválido para {field}"}), 400
+                if not isinstance(value, list):
+                    return jsonify({"error": f"{field} debe ser una lista"}), 400
             setattr(user, field, value)
     
     try:
