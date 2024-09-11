@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 6be4adc484cc
+Revision ID: 19f870e62392
 Revises: 
-Create Date: 2024-09-11 06:54:48.579191
+Create Date: 2024-09-11 12:57:45.154573
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '6be4adc484cc'
+revision = '19f870e62392'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -150,8 +150,6 @@ def upgrade():
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('sale_detail_id', sa.Integer(), nullable=False),
     sa.Column('item_name', sa.String(length=100), nullable=False),
-    sa.Column('item_size', sa.String(length=20), nullable=False),
-    sa.Column('item_category', sa.String(length=50), nullable=False),
     sa.ForeignKeyConstraint(['sale_detail_id'], ['sale_details.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -162,11 +160,7 @@ def upgrade():
     sa.Column('box_item_id', sa.Integer(), nullable=False),
     sa.Column('shop_id', sa.Integer(), nullable=False),
     sa.Column('original_item_name', sa.String(length=100), nullable=False),
-    sa.Column('original_item_size', sa.String(length=20), nullable=False),
-    sa.Column('original_item_category', sa.String(length=50), nullable=False),
     sa.Column('proposed_item_name', sa.String(length=100), nullable=False),
-    sa.Column('proposed_item_size', sa.String(length=20), nullable=False),
-    sa.Column('proposed_item_category', sa.String(length=50), nullable=False),
     sa.Column('reason', sa.Text(), nullable=False),
     sa.Column('status', sa.String(length=20), nullable=False),
     sa.Column('admin_id', sa.Integer(), nullable=True),
@@ -183,10 +177,12 @@ def upgrade():
     sa.Column('recipient_id', sa.Integer(), nullable=True),
     sa.Column('shop_id', sa.Integer(), nullable=True),
     sa.Column('sale_id', sa.Integer(), nullable=True),
+    sa.Column('admin_id', sa.Integer(), nullable=True),
     sa.Column('type', sa.String(length=50), nullable=False),
     sa.Column('content', sa.Text(), nullable=False),
     sa.Column('is_read', sa.Boolean(), nullable=False),
     sa.Column('item_change_request_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['admin_id'], ['admin_users.id'], ),
     sa.ForeignKeyConstraint(['item_change_request_id'], ['item_change_requests.id'], ),
     sa.ForeignKeyConstraint(['recipient_id'], ['users.id'], ),
     sa.ForeignKeyConstraint(['sale_id'], ['sales.id'], ),
