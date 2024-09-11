@@ -9,7 +9,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-section">
-          <h3>Company Name</h3>
+          <h3>LiquiBoxes</h3>
           <p>Leading the industry with innovative solutions and a passion for excellence.</p>
         </div>
         <div className="footer-section">
@@ -22,7 +22,7 @@ const Footer = () => {
           </ul>
         </div>
         <div className="footer-section">
-          <h3>Follow Us</h3>
+          <h3>Siguenos</h3>
           <div className="social-icons">
             <a href="https://facebook.com" target="_blank" rel="noreferrer">
               <FontAwesomeIcon icon={faFacebookF} />
