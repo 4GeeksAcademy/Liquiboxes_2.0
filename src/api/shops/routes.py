@@ -157,6 +157,16 @@ def get_shop(shop_id):
         return jsonify(shop.serialize_detail()), 200
     else:
         return jsonify({'error': 'Shop not found'}), 404
+    
+@shops.route('/<int:shop_id>/mysteryboxes', methods=['GET'])
+def  get_shop_mystery_boxes(shop_id):
+    shop = Shop.query.get(shop_id)
+    if shop:
+        mystery_boxes = MysteryBox.query.filter_by(shop_id=shop_id).all()
+        return jsonify([box.serialize_detail() for box in mystery_boxes]), 200
+    else:
+        return jsonify({'error': 'Shop not found'}), 404       
+     
 
 @shops.route('/mystery-box/<int:box_id>', methods=['GET'])
 def get_mystery_box(box_id):

@@ -84,6 +84,7 @@
 		"axios": "^1.7.7",
 		"bootstrap": "^5.3.3",
 		"chart.js": "^4.4.4",
+		"chartjs": "^0.3.24",
 		"google-auth-library": "^9.14.1",
 		"jspdf": "^2.5.1",
 		"jspdf-autotable": "^3.8.3",

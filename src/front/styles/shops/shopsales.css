@@ -1,0 +1,37 @@
+.shop-sales {
+    background-color: var(--background-secondary-color);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shop-sales h1 {
+    color: var(--secondary-color);
+    font-weight: 600;
+  }
+  
+  .shop-sales .input-group-text {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+  }
+  
+  .shop-sales .form-select {
+    border-color: var(--primary-color);
+  }
+  
+  .shop-sales .form-select:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(7, 59, 58, 0.25);
+  }
+  
+  .loading, .error {
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.2rem;
+    color: var(--text-color);
+  }
+  
+  .error {
+    color: #dc3545;
+  }
