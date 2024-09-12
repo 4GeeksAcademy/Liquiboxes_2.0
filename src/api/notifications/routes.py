@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from api.models import db, Notification, ItemChangeRequest, BoxItem, User, Shop, Admin_User
+from api.models import db, Notification, ItemChangeRequest, BoxItem, User, Shop, Admin_User, SaleDetail
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 
@@ -92,30 +92,45 @@ def get_all_notifications_backend():
 @jwt_required()
 def create_change_request():
     current_user = get_jwt_identity()
-    shop = Shop.query.get(current_user['id'])
-    if not shop:
+    
+    # Verificar si el usuario es una tienda
+    if current_user['type'] != 'shop':
+        return jsonify({'error': 'You must be logged in as a shop'}), 403
+    
+    # Obtener la tienda usando el ID del usuario actual
+    current_shop = Shop.query.get(current_user['id'])
+    
+    if not current_shop:
         return jsonify({"error": "Shop not found"}), 404
     
-    data = request.json
+    data = request.get_json()
+    
     try:
+        box_item = BoxItem.query.get(data['box_item_id'])
+        if not box_item or box_item.sale_detail.shop_id != current_shop.id:
+            return jsonify({"error": "Invalid box item"}), 400
+
         new_request = ItemChangeRequest(
             box_item_id=data['box_item_id'],
-            shop_id=shop.id,
-            original_item_name=data['original_item_name'],
-            original_item_size=data['original_item_size'],
-            original_item_category=data['original_item_category'],
+            shop_id=current_shop.id,
+            original_item_name=box_item.item_name,
             proposed_item_name=data['proposed_item_name'],
-            proposed_item_size=data['proposed_item_size'],
-            proposed_item_category=data['proposed_item_category'],
             reason=data['reason']
         )
         db.session.add(new_request)
         db.session.commit()
 
+        
+        sale_id = box_item.sale_detail.sale_id
+        if not sale_id:
+            return jsonify({"error": "Sale not found"}), 400
+        
         # Create notification for admins
         admin_notification = Notification(
             type="change_request",
-            content=f"New change request from shop {shop.name}",
+            shop_id=current_shop.id,
+            sale_id=sale_id,
+            content=f"New change request from shop {current_shop.name}",
             item_change_request_id=new_request.id
         )
         db.session.add(admin_notification)

@@ -69,8 +69,13 @@ const ShopNotifications = () => {
         setFilteredNotifications(notifications.filter(n => n.is_read));
         break;
       case 'new_sale':
-      case 'change_request_result':
-        setFilteredNotifications(notifications.filter(n => n.type === filter));
+        setFilteredNotifications(notifications.filter(n => n.type === "new_sale"));
+        break;
+      case 'change_request':
+        setFilteredNotifications(notifications.filter(n => n.type === 'change_request'));
+        break;
+      case 'confirmed':
+        setFilteredNotifications(notifications.filter(n => n.type === 'confirmed'));
         break;
       default:
         setFilteredNotifications(notifications);
@@ -121,6 +126,7 @@ const ShopNotifications = () => {
   };
 
   const fetchUserPreferences = async (userId) => {
+    setLoading(true)
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/users/${userId}`, {
         headers: {
@@ -128,6 +134,8 @@ const ShopNotifications = () => {
         }
       });
       setUserPreferences(response.data);
+      console.log(response.data)
+      setLoading(false)
     } catch (error) {
       console.error('Error fetching user preferences:', error);
       setError('Failed to fetch user preferences. Please try again.');
@@ -139,7 +147,7 @@ const ShopNotifications = () => {
     setItems(items.map(item =>
       item.id === itemId ? { ...item, isConfirmed } : item
     ));
-    
+
   };
 
   const handleItemChange = (item) => {
@@ -153,13 +161,11 @@ const ShopNotifications = () => {
     const changeRequestData = {
       box_item_id: selectedItemForChange.id,
       proposed_item_name: formData.get('proposed_item_name'),
-      proposed_item_size: formData.get('proposed_item_size'),
-      proposed_item_category: formData.get('proposed_item_category'),
       reason: formData.get('reason')
     };
 
     try {
-      const response = await axios.post(`${process.env.BACKEND_URL}/shops/create-change-request`, changeRequestData, {
+      const response = await axios.post(`${process.env.BACKEND_URL}/notifications/change-request`, changeRequestData, {
         headers: {
           Authorization: `Bearer ${sessionStorage.getItem('token')}`
         }
@@ -188,7 +194,7 @@ const ShopNotifications = () => {
     }
   };
 
-  
+
 
   const generatePDF = () => {
     const doc = new jsPDF();
@@ -222,8 +228,19 @@ const ShopNotifications = () => {
     doc.save('order_receipt.pdf');
   };
 
+  // Función auxiliar para capitalizar la primera letra
+  const capitalize = (str) => {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+  };
+
+  // Función auxiliar para formatear arrays
+  const formatArray = (arr) => {
+    return Array.isArray(arr) ? arr.map(capitalize).join(', ') : '';
+  };
+
   const renderNotificationDetails = () => {
     if (!selectedNotification) return null;
+
 
     switch (selectedNotification.type) {
       case 'new_sale':
@@ -233,51 +250,51 @@ const ShopNotifications = () => {
 
         return (
           <div className="order-confirmation">
-            <h2>Order Confirmation:</h2>
+            <h2>Confirmación de la orden:</h2>
             <div className="order-details">
-              <h3>Order Details</h3>
-              <p>ID: {orderDetails.id}</p>
-              <p>Date: {new Date(orderDetails.date).toLocaleString()}</p>
-              <p>Total Amount: {orderDetails.total_amount} €</p>
+              <h3>Detalles de la orden</h3>
+              <p>ID Orden: {orderDetails.id}</p>
+              <p>Fecha de la compra: {new Date(orderDetails.date).toLocaleString()}</p>
+              <p>Cantidad Total: {orderDetails.total_amount} €</p>
             </div>
             {userPreferences && (
               <div className="user-preferences">
-                <h3>User Preferences</h3>
+                <h3>Preferencias del comprador:</h3>
                 <Table striped bordered hover>
                   <tbody>
-                    <tr><td>Gender</td><td>{userPreferences.gender}</td></tr>
-                    <tr><td>Upper Size</td><td>{userPreferences.upper_size}</td></tr>
-                    <tr><td>Lower Size</td><td>{userPreferences.lower_size}</td></tr>
-                    <tr><td>Cap Size</td><td>{userPreferences.cap_size}</td></tr>
-                    <tr><td>Shoe Size</td><td>{userPreferences.shoe_size}</td></tr>
-                    <tr><td>Not Colors</td><td>{userPreferences.not_colors}</td></tr>
-                    <tr><td>Stamps</td><td>{userPreferences.stamps}</td></tr>
-                    <tr><td>Fit</td><td>{userPreferences.fit}</td></tr>
-                    <tr><td>Not Clothes</td><td>{userPreferences.not_clothes}</td></tr>
-                    <tr><td>Categories</td><td>{userPreferences.categories}</td></tr>
-                    <tr><td>Profession</td><td>{userPreferences.profession}</td></tr>
+                    <tr><td>Género</td><td>{userPreferences.gender ? capitalize(userPreferences.gender) : 'No especificado por el usuario'}</td></tr>
+                    <tr><td>Talla Superior</td><td>{userPreferences.upper_size ? userPreferences.upper_size.toUpperCase() : 'No especificada por el usuario'}</td></tr>
+                    <tr><td>Talla Inferior</td><td>{userPreferences.lower_size || 'No especificada por el usuario'}</td></tr>
+                    <tr><td>Talla de Gorra</td><td>{userPreferences.cap_size || 'No especificada por el usuario'}</td></tr>
+                    <tr><td>Talla de Calzado</td><td>{userPreferences.shoe_size || 'No especificada por el usuario'}</td></tr>
+                    <tr><td>Colores menos preferidos</td><td>{userPreferences.not_colors ? formatArray(userPreferences.not_colors) : 'No especificados por el usuario'}</td></tr>
+                    <tr><td>Estampados en la ropa</td><td>{userPreferences.stamps ? capitalize(userPreferences.stamps) : 'No especificados por el usuario'}</td></tr>
+                    <tr><td>Ajuste de la ropa</td><td>{userPreferences.fit ? capitalize(userPreferences.fit) : 'No especificado por el usuario'}</td></tr>
+                    <tr><td>Prendas no deseadas</td><td>{userPreferences.not_clothes ? formatArray(userPreferences.not_clothes) : 'No especificadas por el usuario'}</td></tr>
+                    <tr><td>Categorías</td><td>{userPreferences.categories ? formatArray(userPreferences.categories) : 'No especificadas por el usuario'}</td></tr>
+                    <tr><td>Profesión</td><td>{userPreferences.profession ? capitalize(userPreferences.profession) : 'No especificada por el usuario'}</td></tr>
                   </tbody>
                 </Table>
               </div>
             )}
             <div className="items-list">
-              <h3>Items to Include:</h3>
+              <h3>Artículos a incluir:</h3>
               {items.map(item => (
                 <div key={item.id} className="item">
                   <span>{item.item_name}</span>
-                  <div className="item-actions">
+                  <div className="item-actions my-3">
                     <Button onClick={() => handleItemConfirmation(item.id, true)} disabled={item.isConfirmed === true}>
-                      <FontAwesomeIcon icon={faCheck} /> Confirm Stock
+                      <FontAwesomeIcon icon={faCheck} /> Confirmar Stock
                     </Button>
                     <Button onClick={() => handleItemChange(item)} className='ms-3'>
-                      <FontAwesomeIcon icon={faExchange} /> Change for Another
+                      <FontAwesomeIcon icon={faExchange} /> Cambiar por otro artículo
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
             <Button
-              className="confirm-order"
+              className="confirm-order my-3"
               onClick={handleOrderConfirmation}
               disabled={items.some(item => item.isConfirmed === undefined)}
             >
@@ -324,19 +341,22 @@ const ShopNotifications = () => {
 
       <div className="mb-4">
         <Button onClick={() => setFilter('all')} variant={filter === 'all' ? 'primary' : 'outline-primary'} className="mr-2">
-          All
+          Todas
         </Button>
         <Button onClick={() => setFilter('unread')} variant={filter === 'unread' ? 'primary' : 'outline-primary'} className="mr-2">
-          Unread
+          No Leídas
         </Button>
         <Button onClick={() => setFilter('read')} variant={filter === 'read' ? 'primary' : 'outline-primary'} className="mr-2">
-          Read
+          Leídas
         </Button>
         <Button onClick={() => setFilter('new_sale')} variant={filter === 'new_sale' ? 'primary' : 'outline-primary'} className="mr-2">
-          New Sales
+          Nueva Venta
         </Button>
-        <Button onClick={() => setFilter('change_request_result')} variant={filter === 'change_request_result' ? 'primary' : 'outline-primary'}>
-          Change Requests
+        <Button onClick={() => setFilter('change_request')} variant={filter === 'change_request_result' ? 'primary' : 'outline-primary'}>
+          Propuesta de cambio
+        </Button>
+        <Button onClick={() => setFilter('confirmed')} variant={filter === 'change_request_result' ? 'primary' : 'outline-primary'}>
+          Ventas Confirmadas
         </Button>
       </div>
 
@@ -394,14 +414,6 @@ const ShopNotifications = () => {
             <Form.Group>
               <Form.Label>Proposed Item Name</Form.Label>
               <Form.Control type="text" name="proposed_item_name" required />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Proposed Item Size</Form.Label>
-              <Form.Control type="text" name="proposed_item_size" required />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Proposed Item Category</Form.Label>
-              <Form.Control type="text" name="proposed_item_category" required />
             </Form.Group>
             <Form.Group>
               <Form.Label>Reason for Change</Form.Label>

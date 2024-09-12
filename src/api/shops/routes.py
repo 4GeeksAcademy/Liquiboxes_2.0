@@ -237,40 +237,21 @@ def update_shop_profile():
         logging.error(f"Error updating shop profile: {str(e)}")
         return jsonify({"error": f"An error occurred while updating the profile: {str(e)}"}), 500
     
-@shops.route('/create-change-request', methods=['POST'])
-@jwt_required()
-def create_change_request():
-    current_shop = Shop.query.get(get_jwt_identity())
-    data = request.get_json()
-    
-    try:
-        box_item = BoxItem.query.get(data['box_item_id'])
-        if not box_item or box_item.sale_detail.shop_id != current_shop.id:
-            return jsonify({"error": "Invalid box item"}), 400
-
-        new_request = ItemChangeRequest(
-            box_item_id=data['box_item_id'],
-            shop_id=current_shop.id,
-            original_item_name=box_item.item_name,
-            original_item_size=box_item.item_size,
-            original_item_category=box_item.item_category,
-            proposed_item_name=data['proposed_item_name'],
-            proposed_item_size=data['proposed_item_size'],
-            proposed_item_category=data['proposed_item_category'],
-            reason=data['reason']
-        )
-        db.session.add(new_request)
-        db.session.commit()
-        
-        return jsonify(new_request.serialize()), 201
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
 
 @shops.route('/change-requests', methods=['GET'])
 @jwt_required()
 def get_shop_change_requests():
-    current_shop = Shop.query.get(get_jwt_identity())
+    current_user = get_jwt_identity()
+    
+    # Verificar si el usuario es una tienda
+    if current_user['type'] != 'shop':
+        return jsonify({'error': 'You must be logged in as a shop'}), 403
+    
+    # Obtener la tienda usando el ID del usuario actual
+    current_shop = Shop.query.get(current_user['id'])
+    
+    if not current_shop:
+        return jsonify({"error": "Shop not found"}), 404
     
     try:
         change_requests = ItemChangeRequest.query.filter_by(shop_id=current_shop.id).all()
