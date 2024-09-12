@@ -41,34 +41,34 @@ import React from 'react'
 //  ))
 
 // PARA MODIFICAR ESTOS DATOS MIRAR SHOPHOME =>
-  const handleSave = async (field) => {
-    const token = sessionStorage.getItem('token');
-    try {
-      let value = shopData[field];
-      if (field === 'categories' && Array.isArray(value)) {
-        // Convertir el array de categorías a un formato que el backend pueda procesar
-        value = JSON.stringify(value.map(cat => `"${cat}"`));
-      }
+  // const handleSave = async (field) => {
+  //   const token = sessionStorage.getItem('token');
+  //   try {
+  //     let value = shopData[field];
+  //     if (field === 'categories' && Array.isArray(value)) {
+  //       // Convertir el array de categorías a un formato que el backend pueda procesar
+  //       value = JSON.stringify(value.map(cat => `"${cat}"`));
+  //     }
 
-      const formData = new FormData();
-      formData.append(field, value);
+  //     const formData = new FormData();
+  //     formData.append(field, value);
 
-      await axios.patch(`${process.env.BACKEND_URL}/shops/profile`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      );
-      setEditMode(prev => ({ ...prev, [field]: false }));
-      setError(null);
-    } catch (error) {
-      console.error("Error updating shop data:", error);
-      setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
-    }
-  };
+  //     await axios.patch(`${process.env.BACKEND_URL}/shops/profile`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           'Content-Type': 'multipart/form-data'
+  //         }
+  //       }
+  //     );
+  //     setEditMode(prev => ({ ...prev, [field]: false }));
+  //     setError(null);
+  //   } catch (error) {
+  //     console.error("Error updating shop data:", error);
+  //     setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
+  //   }
+  // };
 
 
 
