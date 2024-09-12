@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from api.models import db, Sale, SaleDetail, ShopSale, MysteryBox, Shop, Notification, BoxItem
+from api.models import db, Sale, SaleDetail, ItemChangeRequest, ShopSale, MysteryBox, Shop, Notification, BoxItem
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import stripe
@@ -274,3 +274,88 @@ def update_shop_sale_status(shop_sale_id):
         db.session.rollback()
         logging.error(f"Unexpected error: {str(e)}")
         return jsonify({'error': 'An unexpected error occurred'}), 500
+    
+@sales.route('/shop/<int:sale_id>/change-request', methods=['POST'])
+@jwt_required()
+def request_item_change(sale_id):
+    current_user = get_jwt_identity()
+    sale = Sale.query.get(sale_id)
+
+    if not sale:
+        return  jsonify({"error": "Unauthorized or Sale not found"}), 403
+    
+    shop_sale = sale.shop_sales.filter_by(shop_id=current_user['id']).first()
+    if not shop_sale:
+        return jsonify({"error": "Unauthorized or ShopSale not found"}), 403
+    
+    if not shop_sale or shop_sale.shop_id != current_user['id']:
+        return jsonify({"error": "Unauthorized or ShopSale not found"}), 403
+    
+    data = request.json
+    box_item_id = data.get('box_item_id')
+    
+    if not box_item_id:
+        return jsonify({"error": "box_item_id is required"}), 400
+    
+    shop_sale.status = 'pending_confirmation'
+    
+    change_request = ItemChangeRequest(
+        box_item_id=box_item_id,
+        shop_id=shop_sale.shop_id,
+        sale_id=shop_sale.sale_id,
+        shop_sale_id=shop_sale.id
+    )
+    
+    db.session.add(change_request)
+    db.session.commit()
+    
+    # Crear notificación para los admins
+    admin_notification = Notification(
+        type='admin_change_request',
+        content=f"Shop {shop_sale.shop.name} has requested a change for order #{shop_sale.sale_id} (ShopSale #{shop_sale.id}).",
+        sale_id=shop_sale.sale_id,
+        shop_sale_id=shop_sale.id
+    )
+    db.session.add(admin_notification)
+    db.session.commit()
+    
+    return jsonify({"message": "Change request submitted successfully"}), 200
+
+@sales.route('/shop/<int:sale_id>/confirm', methods=['POST'])
+@jwt_required()
+def confirm_shop_sale(sale_id):
+    current_user = get_jwt_identity()
+    sale = Sale.query.get(sale_id)
+
+    if not sale:
+        return  jsonify({"error": "Unauthorized or Sale not found"}), 403
+    
+    shop_sale = sale.shop_sales.filter_by(shop_id=current_user['id']).first()
+    if not shop_sale:
+        return jsonify({"error": "Unauthorized or ShopSale not found"}), 403
+    
+    if not shop_sale or shop_sale.shop_id != current_user['id']:
+        return jsonify({"error": "Unauthorized or ShopSale not found"}), 403
+    
+    shop_sale.status = 'confirmed'
+    db.session.commit()
+    
+    # Crear notificaciones para el usuario y los admins
+    user_notification = Notification(
+        recipient_id=shop_sale.sale.user_id,
+        type='order_confirmed',
+        content=f"Your order from {shop_sale.shop.name} has been confirmed.",
+        sale_id=shop_sale.sale_id
+    )
+    
+    admin_notification = Notification(
+        type='admin_order_confirmed',
+        content=f"{shop_sale.shop.name} with ID: {shop_sale.shop_id} has confirmed order #{shop_sale.sale_id} (ShopSale #{shop_sale.id}).",
+        sale_id=shop_sale.sale_id
+    )
+    
+    db.session.add(user_notification)
+    db.session.add(admin_notification)
+    db.session.commit()
+    
+    return jsonify({"message": "ShopSale confirmed successfully"}), 200

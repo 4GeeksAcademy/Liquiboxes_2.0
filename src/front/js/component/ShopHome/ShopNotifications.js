@@ -22,6 +22,7 @@ const ShopNotifications = () => {
   const [showChangeRequestForm, setShowChangeRequestForm] = useState(false);
   const [selectedItemForChange, setSelectedItemForChange] = useState(null);
   const [userPreferences, setUserPreferences] = useState(null);
+  const [shopSaleStatus, setShopSaleStatus] = useState(null);
 
   useEffect(() => {
     fetchNotifications();
@@ -83,6 +84,7 @@ const ShopNotifications = () => {
   };
 
   const handleNotificationClick = async (notification) => {
+    console.log(notification)
     setSelectedNotification(notification);
     setIsModalOpen(true);
     if (!notification.is_read) {
@@ -150,9 +152,21 @@ const ShopNotifications = () => {
 
   };
 
-  const handleItemChange = (item) => {
+  const handleItemChange = async (item) => {
     setSelectedItemForChange(item);
     setShowChangeRequestForm(true);
+    try {
+      await axios.post(`${process.env.BACKEND_URL}/sales/shop/${selectedNotification.sale_id}/change-request`, {
+        box_item_id: item.id
+      }, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+      setShopSaleStatus('pending_confirmation');
+    } catch (error) {
+      console.error('Error al actualizar el estado del pedido:', error);
+    }
   };
 
   const handleChangeRequestSubmit = async (e) => {
@@ -187,45 +201,179 @@ const ShopNotifications = () => {
         }
       });
       setShippingDetails(shipmentResponse.data);
-      alert('Order confirmed successfully!');
+
+      // Actualizar el estado de ShopSale
+      await axios.post(`${process.env.BACKEND_URL}/sales/shop/${selectedNotification.sale_id}/confirm`, {}, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+
+      // Crear notificaciones
+      await axios.post(`${process.env.BACKEND_URL}/notifications/create`, {
+        recipient_id: orderDetails.user_id,
+        type: 'order_confirmed',
+        content: `${orderDetails.shop_name} ha confirmado el stock para tu pedido de la caja ${orderDetails.mystery_box_name}. Te notificaremos cuando tu pedido sea enviado.`,
+        sale_id: orderDetails.sale_id,
+        shop_sale_id: selectedNotification.shop_sale_id
+      }, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+
+      await axios.post(`${process.env.BACKEND_URL}/notifications/create`, {
+        type: 'admin_order_confirmed',
+        content: `${orderDetails.shop_name} ha confirmado el stock para el pedido #${orderDetails.sale_id} (ShopSale #${selectedNotification.shop_sale_id}) del usuario ${orderDetails.user_name}.`,
+        sale_id: orderDetails.sale_id,
+        shop_sale_id: selectedNotification.shop_sale_id
+      }, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+
+      // Actualizar el estado de la notificación:
+      await axios.patch(
+        `${process.env.BACKEND_URL}/notifications/${selectedNotification.sale_id}/change_type`,
+        { type: 'confirmed' }, // Enviar el nuevo tipo de la notificación
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`
+          },
+        }
+      );
+
+
+
+      // Actualizar el estado local
+      setShopSaleStatus('confirmed');
+      setSelectedNotification({
+        ...selectedNotification,
+        type: 'order_confirmed'
+      });
+      generatePDF(shipmentResponse.data)
+      alert('¡Pedido confirmado con éxito!');
     } catch (error) {
-      console.error('Error confirming order:', error);
-      setError('Failed to confirm order. Please try again.');
+      console.error('Error al confirmar el pedido:', error);
+      setError('No se pudo confirmar el pedido. Por favor, inténtalo de nuevo.');
     }
   };
 
 
 
-  const generatePDF = () => {
+  const generatePDF = (shippingDetails) => {
     const doc = new jsPDF();
 
-    // Add title
-    doc.setFontSize(18);
-    doc.text('Order Receipt', 105, 15, null, null, 'center');
+    // Establecer colores basados en variables CSS
+    const primaryColor = '#6a8e7f';
+    const secondaryColor = '#073b3a';
+    const textColor = '#28112b';
 
-    // Add order details
+    // Encabezado
+    doc.setFillColor(primaryColor);
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor('#ffffff');
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Recibo del pedido: ${orderDetails?.id || 'N/A'}`, 105, 25, null, null, 'center');
+
+    // Restablecer color de texto
+    doc.setTextColor(textColor);
+
+    // Detalles del pedido
     doc.setFontSize(12);
-    doc.text(`Order ID: ${orderDetails.id}`, 20, 30);
-    doc.text(`Date: ${new Date(orderDetails.date).toLocaleString()}`, 20, 40);
-    doc.text(`Total Amount: ${orderDetails.total_amount} €`, 20, 50);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`ID de Pedido: ${orderDetails?.id || 'N/A'}`, 20, 50);
+    doc.text(`Fecha: ${orderDetails?.date ? new Date(orderDetails.date).toLocaleString('es-ES') : 'N/A'}`, 20, 60);
+    doc.text(`Importe Total: ${orderDetails?.total_amount ? `${orderDetails.total_amount} €` : 'N/A'}`, 20, 70);
 
-    // Add shipping details
-    doc.text('Shipping Details:', 20, 70);
-    doc.text(`Name: ${shippingDetails.name} ${shippingDetails.surname}`, 30, 80);
-    doc.text(`Email: ${shippingDetails.email}`, 30, 90);
-    doc.text(`Address: ${shippingDetails.address}`, 30, 100);
-    doc.text(`Postal Code: ${shippingDetails.postal_code}`, 30, 110);
+    // Detalles de envío
+    doc.setFillColor(secondaryColor);
+    doc.rect(20, 80, 170, 7, 'F');
+    doc.setTextColor('#ffffff');
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detalles de Envío', 25, 85);
 
-    // Add items table
-    const itemsData = items.map(item => [item.item_name]);
-    doc.autoTable({
-      startY: 130,
-      head: [['Item']],
-      body: itemsData,
-    });
+    doc.setTextColor(textColor);
+    doc.setFont('helvetica', 'normal');
+    if (shippingDetails) {
+      doc.text(`Nombre: ${shippingDetails.name || ''} ${shippingDetails.surname || ''}`, 25, 95);
+      doc.text(`Correo Electrónico: ${shippingDetails.email || 'N/A'}`, 25, 105);
+      doc.text(`Dirección: ${shippingDetails.address || 'N/A'}`, 25, 115);
+      doc.text(`Código Postal: ${shippingDetails.postal_code || 'N/A'}`, 25, 125);
+    } else {
+      doc.text('Información de envío no disponible', 25, 95);
+    }
 
-    // Save the PDF
-    doc.save('order_receipt.pdf');
+    // Preferencias del usuario
+    doc.setFillColor(secondaryColor);
+    doc.rect(20, 135, 170, 7, 'F');
+    doc.setTextColor('#ffffff');
+    doc.setFont('helvetica', 'bold');
+    doc.text('Preferencias del Usuario', 25, 140);
+
+    doc.setTextColor(textColor);
+    doc.setFont('helvetica', 'normal');
+    let yPos = 150;
+    if (userPreferences) {
+      for (const [key, value] of Object.entries(userPreferences)) {
+        doc.text(`${key}: ${value || 'N/A'}`, 25, yPos);
+        yPos += 10;
+      }
+    } else {
+      doc.text('Preferencias del usuario no disponibles', 25, yPos);
+      yPos += 10;
+    }
+
+    // Tabla de artículos
+    if (items && items.length > 0) {
+      // Agrupar items y contar repeticiones
+      const groupedItems = items.reduce((acc, item) => {
+        acc[item.item_name] = (acc[item.item_name] || 0) + 1;
+        return acc;
+      }, {});
+
+      const itemsData = Object.entries(groupedItems).map(([itemName, count]) =>
+        count > 1 ? [itemName, count] : [itemName]
+      );
+
+      doc.autoTable({
+        startY: yPos + 10,
+        head: [['Artículo', 'Cantidad']],
+        body: itemsData,
+        styles: {
+          textColor: [0, 0, 0], // Negro para mejor legibilidad
+          cellPadding: 5,
+        },
+        headStyles: {
+          fillColor: [primaryColor],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+        },
+        alternateRowStyles: {
+          fillColor: [230, 230, 230],
+        },
+        margin: { top: 10 },
+        columnStyles: {
+          0: { cellWidth: 'auto' },
+          1: { cellWidth: 30, halign: 'center' },
+        },
+      });
+    } else {
+      doc.text('No hay artículos disponibles', 20, yPos + 20);
+    }
+
+    // Pie de página
+    const pageCount = doc.internal.getNumberOfPages();
+    doc.setFontSize(10);
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.text(`Página ${i} de ${pageCount}`, 105, 290, null, null, 'center');
+    }
+
+    // Guardar el PDF
+    doc.save(`recibo_pedido_${orderDetails?.id || 'N/A'}.pdf`);
   };
 
   // Función auxiliar para capitalizar la primera letra
@@ -244,9 +392,9 @@ const ShopNotifications = () => {
 
     switch (selectedNotification.type) {
       case 'new_sale':
-        if (loading) return <div>Loading...</div>;
+        if (loading) return <div>Cargando...</div>;
         if (error) return <div className="error">{error}</div>;
-        if (!orderDetails) return <div>No order details found.</div>;
+        if (!orderDetails) return <div>No se encontraron detalles del pedido.</div>;
 
         return (
           <div className="order-confirmation">
@@ -283,34 +431,30 @@ const ShopNotifications = () => {
                 <div key={item.id} className="item">
                   <span>{item.item_name}</span>
                   <div className="item-actions my-3">
-                    <Button onClick={() => handleItemConfirmation(item.id, true)} disabled={item.isConfirmed === true}>
-                      <FontAwesomeIcon icon={faCheck} /> Confirmar Stock
-                    </Button>
-                    <Button onClick={() => handleItemChange(item)} className='ms-3'>
-                      <FontAwesomeIcon icon={faExchange} /> Cambiar por otro artículo
-                    </Button>
+                    {shopSaleStatus !== 'confirmed' && (
+                      <>
+                        <Button onClick={() => handleItemConfirmation(item.id, true)} disabled={item.isConfirmed === true}>
+                          <FontAwesomeIcon icon={faCheck} /> Confirmar Stock
+                        </Button>
+                        {shopSaleStatus !== 'pending_confirmation' && (
+                          <Button onClick={() => handleItemChange(item)} className='ms-3'>
+                            <FontAwesomeIcon icon={faExchange} /> Cambiar Artículo
+                          </Button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
-            <Button
-              className="confirm-order my-3"
-              onClick={handleOrderConfirmation}
-              disabled={items.some(item => item.isConfirmed === undefined)}
-            >
-              <FontAwesomeIcon icon={faTruck} /> Confirm Order and Get Shipping Data
-            </Button>
-            {shippingDetails && (
-              <div className="shipping-details">
-                <h3>Shipping Details</h3>
-                <p>Name: {shippingDetails.name} {shippingDetails.surname}</p>
-                <p>Email: {shippingDetails.email}</p>
-                <p>Address: {shippingDetails.address}</p>
-                <p>Postal Code: {shippingDetails.postal_code}</p>
-                <Button onClick={generatePDF}>
-                  <FontAwesomeIcon icon={faPrint} /> Generate PDF Receipt
-                </Button>
-              </div>
+            {shopSaleStatus !== 'confirmed' && (
+              <Button
+                className="confirm-order my-3"
+                onClick={handleOrderConfirmation}
+                disabled={items.some(item => item.isConfirmed === undefined) || shopSaleStatus === 'pending_confirmation'}
+              >
+                <FontAwesomeIcon icon={faTruck} /> Confirmar Pedido y Obtener Datos de Envío
+              </Button>
             )}
           </div>
         );
@@ -330,11 +474,11 @@ const ShopNotifications = () => {
   return (
     <div className="shop-notifications container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">Notifications</h2>
+        <h2 className="mb-0">Notificaciones</h2>
         <div className="d-flex align-items-center">
           <FontAwesomeIcon icon={faBell} className="mr-2" />
           <span className="badge bg-primary">
-            {notifications.filter(n => !n.is_read).length} Unread
+            {notifications.filter(n => !n.is_read).length} No leídas
           </span>
         </div>
       </div>
@@ -353,7 +497,7 @@ const ShopNotifications = () => {
           Nueva Venta
         </Button>
         <Button onClick={() => setFilter('change_request')} variant={filter === 'change_request_result' ? 'primary' : 'outline-primary'}>
-          Propuesta de cambio
+          Propuesta de Cambio
         </Button>
         <Button onClick={() => setFilter('confirmed')} variant={filter === 'change_request_result' ? 'primary' : 'outline-primary'}>
           Ventas Confirmadas
@@ -363,10 +507,10 @@ const ShopNotifications = () => {
       <table className="table table-hover">
         <thead>
           <tr>
-            <th>Type</th>
-            <th>Content</th>
-            <th>Date</th>
-            <th>Status</th>
+            <th>Tipo</th>
+            <th>Contenido</th>
+            <th>Fecha</th>
+            <th>Estado</th>
           </tr>
         </thead>
         <tbody>
@@ -392,34 +536,34 @@ const ShopNotifications = () => {
 
       <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Notification Details</Modal.Title>
+          <Modal.Title>Detalles de la Notificación</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {renderNotificationDetails()}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Close</Button>
+          <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
         </Modal.Footer>
       </Modal>
 
       <Modal show={showChangeRequestForm} onHide={() => setShowChangeRequestForm(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Change Request</Modal.Title>
+          <Modal.Title>Crear Solicitud de Cambio</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleChangeRequestSubmit}>
             <Form.Group>
-              <Form.Label>Original Item: {selectedItemForChange?.item_name}</Form.Label>
+              <Form.Label>Artículo Original: {selectedItemForChange?.item_name}</Form.Label>
             </Form.Group>
             <Form.Group>
-              <Form.Label>Proposed Item Name</Form.Label>
+              <Form.Label>Nombre del Artículo Propuesto</Form.Label>
               <Form.Control type="text" name="proposed_item_name" required />
             </Form.Group>
             <Form.Group>
-              <Form.Label>Reason for Change</Form.Label>
+              <Form.Label>Razón del Cambio</Form.Label>
               <Form.Control as="textarea" name="reason" required />
             </Form.Group>
-            <Button type="submit">Submit Change Request</Button>
+            <Button type="submit">Enviar Solicitud de Cambio</Button>
           </Form>
         </Modal.Body>
       </Modal>

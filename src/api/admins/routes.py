@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from api.models import db, Admin_User, ItemChangeRequest, BoxItem, Notification, Shop
+from api.models import db, Admin_User, ShopSale, ItemChangeRequest, BoxItem, Notification, Shop
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import check_password_hash
 from sqlalchemy.exc import SQLAlchemyError
@@ -163,18 +163,24 @@ def approve_change():
         change_request.admin_id = current_user.id
         change_request.admin_comment = data.get('comment', '')
         
+        box_item = change_request.box_item
+        
         if data['approved']:
-            box_item = change_request.box_item
+            # Cambiar el nombre del artículo por el nuevo nombre aprobado
+            old_item_name = box_item.item_name
             box_item.item_name = change_request.proposed_item_name
-            box_item.item_size = change_request.proposed_item_size
-            box_item.item_category = change_request.proposed_item_category
             
-            # Crear notificación para la tienda
+            # Actualizar el estado del ShopSale
+            shop_sale = ShopSale.query.get(change_request.shop_sale_id)
+            shop_sale.status = 'item_change_approved'
+        
+            # Notificar a la tienda
             shop_notification = Notification(
-                shop_id=change_request.shop_id,
-                type="item_change_approved",
-                content=f"Item change for order {box_item.sale_detail.sale_id} has been approved",
-                item_change_request_id=change_request.id
+            shop_id=change_request.shop_id,
+            type="item_change_approved",
+            content=f"The change request of the item: {old_item_name} for item: {box_item.item_name} for order #{change_request.sale_id} (ShopSale #{change_request.shop_sale_id}) has been approved. Please confirm the updated order.",
+            sale_id=change_request.sale_id,
+            shop_sale_id=change_request.shop_sale_id
             )
             db.session.add(shop_notification)
         else:
@@ -182,7 +188,7 @@ def approve_change():
             shop_notification = Notification(
                 shop_id=change_request.shop_id,
                 type="item_change_rejected",
-                content=f"Item change for order {change_request.box_item.sale_detail.sale_id} has been rejected",
+                content=f"The change request of the item: {old_item_name} for item: {box_item.item_name}, for order with ID: {box_item.sale_detail.sale_id} has been rejected. Admin message: {change_request.admin_comment}",
                 item_change_request_id=change_request.id
             )
             db.session.add(shop_notification)

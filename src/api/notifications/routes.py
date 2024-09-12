@@ -61,6 +61,27 @@ def mark_notification_as_read(notification_id):
     db.session.commit()
     return jsonify({"success": True, "message": "Notification marked as read"}), 200
 
+@notifications.route('/<int:notification_id>/change_type', methods=['PATCH'])
+@jwt_required()
+def change_notification_type(notification_id):
+    shop = Shop.query.get(get_jwt_identity()['id'])
+    if not shop:
+        return jsonify({"success": False, "error": "You are not a shop"}), 403
+
+    # Extraer el tipo de notificación del cuerpo de la solicitud
+    data = request.json
+    new_type = data.get('type')
+
+    notification = Notification.query.get(notification_id)
+    if not notification:
+        return jsonify({"success": False, "error": "Notification not found"}), 404
+
+    # Asignar el nuevo tipo de notificación
+    notification.type = new_type
+    db.session.commit()
+
+    return jsonify({"success": True, "message": "Notification type updated successfully"}), 200
+
 @notifications.route('/all', methods=['GET'])
 @jwt_required()
 def get_all_notifications():
