@@ -39,7 +39,7 @@ def login():
 
     user = User.query.filter_by(email=email).first()
     if user and user.check_password(password):
-        return create_token_response(user, 'normal')
+        return create_token_response(user, 'user')
     if user and not user.check_password(password):
         return jsonify({'error': 'Contraseña inválida'}), 401
 
@@ -68,7 +68,7 @@ def google_login():
 
         user = User.query.filter_by(email=email).first()
         if user:
-            return create_token_response(user, 'normal')
+            return create_token_response(user, 'user')
 
         shop = Shop.query.filter_by(email=email).first()
         if shop:

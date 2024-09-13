@@ -55,7 +55,7 @@ const AdminNotifications = () => {
       setChangeRequests(response.data);
     } catch (error) {
       console.error('Error fetching change requests:', error);
-      setError('Failed to fetch change requests. Please try again.');
+      setError(error.response?.data?.error || 'Failed to fetch change requests. Please try again.');
     }
   };
 
@@ -139,17 +139,7 @@ const AdminNotifications = () => {
       fetchNotifications();
     } catch (error) {
       console.error('Error processing change request:', error);
-      if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
-        console.error('Response headers:', error.response.headers);
-      } else if (error.request) {
-        console.error('No response received:', error.request);
-      } else {
-        console.error('Error setting up request:', error.message);
-      }
-      // Mostrar un mensaje de error al usuario
-      alert('Error al procesar la solicitud de cambio. Por favor, inténtalo de nuevo.');
+      alert(error.response?.data?.error || 'Error al procesar la solicitud de cambio. Por favor, inténtalo de nuevo.');
     }
   };
 

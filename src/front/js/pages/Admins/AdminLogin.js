@@ -27,15 +27,19 @@ const AdminLogin = () => {
 
     try {
       const response = await axios.post(
-        `${process.env.BACKEND_URL}/admins/login`, 
-        loginData, 
+        `${process.env.BACKEND_URL}/admins/login`,
+        loginData,
         {
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      const { token, user_type } = response.data;
-      sessionStorage.setItem('token', token);
+      const { access_token, user_type } = response.data;
+
+      // Almacenar el token completo
+      sessionStorage.setItem('token', access_token);
+
+      // Almacenar información del usuario
       sessionStorage.setItem('userType', user_type);
       console.log(`Ha entrado como ${user_type}`);
       navigate('/adminhome');

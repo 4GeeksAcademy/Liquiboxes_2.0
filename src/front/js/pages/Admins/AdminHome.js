@@ -10,6 +10,8 @@ const AdminHome = () => {
   const [admins, setAdmins] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState(null);
+  const [error, setError] = useState(null);
+
 
   useEffect(() => {
     fetchAdmins();
@@ -64,15 +66,26 @@ const AdminHome = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const formData = new FormData(event.target);
+    setError(null);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const adminData = Object.fromEntries(formData.entries());
+
+    // Convert checkbox value to boolean
+    adminData.is_superuser = formData.get('is_superuser') === 'on';
+
+    // Only include password if it's provided (for editing)
+    if (!adminData.password) {
+      delete adminData.password;
+    }
 
     try {
       const url = currentAdmin
         ? `${process.env.BACKEND_URL}/admins/${currentAdmin.id}`
         : `${process.env.BACKEND_URL}/admins`;
       const method = currentAdmin ? 'put' : 'post';
-      await axios({
+      
+      const response = await axios({
         method: method,
         url: url,
         data: adminData,
@@ -81,10 +94,19 @@ const AdminHome = () => {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
       });
+
+      console.log('Server response:', response.data);
       setShowModal(false);
       fetchAdmins();
     } catch (error) {
       console.error('Error saving admin:', error);
+      if (error.response) {
+        setError(error.response.data.error || 'An unknown error occurred');
+      } else if (error.request) {
+        setError('No response received from the server. Please try again.');
+      } else {
+        setError('An error occurred while sending the request. Please try again.');
+      }
     }
   };
 
@@ -148,6 +170,7 @@ const AdminHome = () => {
           <Modal.Title>{currentAdmin ? 'Edit Admin' : 'Add New Admin'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {error && <Alert variant="danger">{error}</Alert>}
           <Form onSubmit={handleSubmit}>
             <Form.Group>
               <Form.Label>Name</Form.Label>

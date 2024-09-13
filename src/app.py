@@ -8,8 +8,9 @@ from flask_swagger import swagger
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 
+
 from api.utils import APIException, generate_sitemap
-from api.models import db
+from api.models import db, Admin_User, User, Shop
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
@@ -35,7 +36,22 @@ app.url_map.strict_slashes = False
 CORS(app)
 
 app.config['JWT_SECRET_KEY'] = 'cacahuete1234'
+
 jwt = JWTManager(app)
+
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    return user
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    user_type = identity['type']
+    if user_type in ['User', 'Shop']:
+        return User.query.get(identity['id']) if user_type == 'User' else Shop.query.get(identity['id'])
+    elif user_type in ['Admin', 'SuperAdmin']:
+        return Admin_User.query.get(identity['id'])
+    return None
 
 
 # database condiguration
