@@ -91,13 +91,17 @@ function Profile() {
       let value = userData[field];
 
       if (!validateField(field, value)) {
-        setError(`Invalid input for ${field}`);
+        setError(`Entrada inválida para ${field}`);
         return;
       }
 
-      // Asegurarse de enviar los arrays correctamente
+      if (value === '' || (Array.isArray(value) && value.length === 0)) {
+        setError(`El campo ${field} no puede estar vacío`);
+        return;
+      }
+
       await axios.patch(`${process.env.BACKEND_URL}/users/profile`,
-        { [field]: value },  // Enviar `not_colors` y `not_clothes` como arrays
+        { [field]: value },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setEditMode(prev => ({ ...prev, [field]: false }));
@@ -127,7 +131,7 @@ function Profile() {
         return sizeOptions.includes(value);
       case 'lower_size':
         return lowerSizeOptions.includes(value);
-      case 'cup_size':
+      case 'cap_size':
         return sizeOptions.includes(value);
       case 'shoe_size':
         return shoeSizeOptions.includes(value);
@@ -158,12 +162,16 @@ function Profile() {
       if (isListField) {
         return (
           <div>
-            {Array.isArray(value) && value.map((item, index) => (
-              <span key={index} className="tag">
-                {item}
-                <button className='btn mx-1' onClick={() => handleRemoveItem(field, item)}>x</button>
-              </span>
-            ))}
+            {Array.isArray(value) && value.length > 0 ? (
+              value.map((item, index) => (
+                <span key={index} className="tag">
+                  {item}
+                  <button className='btn mx-1' onClick={() => handleRemoveItem(field, item)}>x</button>
+                </span>
+              ))
+            ) : (
+              <span className="text-muted">No especificado</span>
+            )}
             <select
               onChange={(e) => {
                 if (e.target.value) {
@@ -192,7 +200,7 @@ function Profile() {
             </select>
           );
         case 'upper_size':
-        case 'cup_size':
+        case 'cap_size':
           return (
             <select value={value} onChange={(e) => handleChange(field, e.target.value)}>
               {sizeOptions.map(size => (
@@ -245,6 +253,7 @@ function Profile() {
               type="text"
               value={value}
               onChange={(e) => handleChange(field, e.target.value)}
+              placeholder="No especificado"
             />
           );
       }
@@ -255,16 +264,21 @@ function Profile() {
         <ProfileField
           icon={icon}
           label={label}
-          value={isListField && Array.isArray(value) ? value.join(', ') : value}
+          value={isListField && Array.isArray(value) ? (value.length > 0 ? value.join(', ') : 'No especificado') : (value || 'No especificado')}
           onEdit={() => handleEdit(field)}
-          onSave={() => handleSave(field)}
+          onSave={() => {
+            if (value === '' || (Array.isArray(value) && value.length === 0)) {
+              setError(`El campo ${label} no puede estar vacío`);
+            } else {
+              handleSave(field);
+            }
+          }}
           isEditing={editMode[field]}
         >
           {renderInput()}
         </ProfileField>
       </div>
     );
-
   };
 
   const handleAddItem = (field, item) => {
@@ -275,7 +289,7 @@ function Profile() {
       }));
     }
   };
-  
+
   const handleRemoveItem = (field, item) => {
     setUserData(prev => ({
       ...prev,
@@ -306,7 +320,7 @@ function Profile() {
             {renderField('postal_code', faMapPin, 'Código Postal')}
             {renderField('upper_size', faTshirt, 'Talla Superior')}
             {renderField('lower_size', faTshirt, 'Talla Inferior')}
-            {renderField('cup_size', faHatCowboy, 'Talla de Gorra o Sombrero')}
+            {renderField('cap_size', faHatCowboy, 'Talla de Gorra o Sombrero')}
             {renderField('shoe_size', faShoePrints, 'Talla de Zapato')}
             {renderField('stamps', faPalette, 'Preferencia de Estampado')}
             {renderField('fit', faTape, 'Preferencia de Ajuste')}

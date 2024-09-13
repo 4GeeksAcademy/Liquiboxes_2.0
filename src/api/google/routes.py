@@ -5,17 +5,26 @@ from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
 import logging
+from datetime import timedelta
+
 
 auth = Blueprint('auth', __name__)
 
 GOOGLE_CLIENT_ID = os.getenv("REACT_APP_ID_CLIENTE_GOOGLE")
 
 def create_token_response(user_or_shop, user_type):
-    access_token = create_access_token(identity={
-        'id': user_or_shop.id,
-        'email': user_or_shop.email,
-        'type': user_type
-    })
+    # Configura el tiempo de expiración en horas, se puede hacer en días también.
+    expires_delta = timedelta(hours=24)
+    
+    access_token = create_access_token(
+        identity={
+            'id': user_or_shop.id,
+            'email': user_or_shop.email,
+            'type': user_type
+        },
+        expires_delta=expires_delta
+    )
+    
     return jsonify({
         'access_token': access_token,
         'user_type': user_type,
@@ -31,12 +40,17 @@ def login():
     user = User.query.filter_by(email=email).first()
     if user and user.check_password(password):
         return create_token_response(user, 'normal')
+    if user and not user.check_password(password):
+        return jsonify({'error': 'Contraseña inválida'}), 401
 
     shop = Shop.query.filter_by(email=email).first()
     if shop and shop.check_password(password):
         return create_token_response(shop, 'shop')
+    if shop and not shop.check_password(password):
+        return jsonify({'error': 'Contraseña inválida'}), 401
 
-    return jsonify({'error': 'Credenciales inválidas'}), 401
+
+    return jsonify({'error': 'No tenemos registrado tu email, inténtalo de nuevo o crea una cuenta.'}), 401
 
 @auth.route('/google_login', methods=['POST'])
 def google_login():

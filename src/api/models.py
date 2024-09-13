@@ -434,6 +434,7 @@ class BoxItem(BaseModel):
 
     sale_detail_id = db.Column(db.Integer, db.ForeignKey('sale_details.id'), nullable=False)
     item_name = db.Column(db.String(100), nullable=False)
+    status = db.Column
 
     sale_detail = db.relationship('SaleDetail', back_populates='box_items')
     change_requests = db.relationship('ItemChangeRequest', back_populates='box_item')
