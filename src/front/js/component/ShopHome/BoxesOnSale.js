@@ -3,26 +3,25 @@ import { Modal, Button } from "react-bootstrap";
 
 function BoxesOnSale({ shopData }) {
   const [showModal, setShowModal] = useState(false); // Estado para mostrar/ocultar el modal
-  const [selectedBox, setSelectedBox] = useState(null); // Caja seleccionada para editar
-  const [input1, setInput1] = useState("");
-  const [input2, setInput2] = useState("");
+  const [selectedBox, setSelectedBox] = useState(null); // selecciona la caja a editar 
+  const [mysteryBoxName, setMysteryBoxName] = useState("");
+  const [mysteryBoxPrice, setMysteryBoxPrice] = useState("");
 
   const handleEditClick = (box) => {
-    // Abre el modal y selecciona la caja a editar
+    // abre el modal y selecciona la caja a editar
     setSelectedBox(box);
-    setInput1(box.name); // Asigna el valor de la caja al input
-    setInput2(box.price); // Puedes adaptar esto según lo que necesites
-    setShowModal(true); // Abre el modal
+    setMysteryBoxName(box.name); // asigna el valor de la caja al input
+    setMysteryBoxPrice(box.price); 
+    setShowModal(true); // abre modal
   };
 
   const handleClose = () => {
-    setShowModal(false); // Oculta el modal
+    setShowModal(false); // cierra modal
   };
 
   const handleSave = () => {
-    console.log("Input 1 (Name):", input1);
-    console.log("Input 2 (Price):", input2);
-    setShowModal(false); // Oculta el modal después de guardar
+    //falta la logica para poder guardar los cambios
+    setShowModal(false); // oculta modal despues de guardar
   };
 
   if (!shopData || !shopData.mystery_boxes) {
@@ -72,8 +71,8 @@ function BoxesOnSale({ shopData }) {
                   type="text"
                   className="form-control"
                   id="input1"
-                  value={input1}
-                  onChange={(e) => setInput1(e.target.value)}
+                  value={mysteryBoxName}
+                  onChange={(e) => setMysteryBoxName(e.target.value)}
                 />
               </div>
               <div className="mb-3">
@@ -84,8 +83,8 @@ function BoxesOnSale({ shopData }) {
                   type="text"
                   className="form-control"
                   id="input2"
-                  value={input2}
-                  onChange={(e) => setInput2(e.target.value)}
+                  value={mysteryBoxPrice}
+                  onChange={(e) => setMysteryBoxPrice(e.target.value)}
                 />
               </div>
             </form>
