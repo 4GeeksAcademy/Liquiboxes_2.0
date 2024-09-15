@@ -22,6 +22,9 @@ from api.sales.routes import sales
 from api.admins.routes import admins
 from api.notifications.routes import notifications
 
+from datetime import timedelta
+
+
 
 
 
@@ -35,7 +38,8 @@ app.url_map.strict_slashes = False
 
 CORS(app)
 
-app.config['JWT_SECRET_KEY'] = 'cacahuete1234'
+app.config['JWT_SECRET_KEY'] = 'tu_clave_secreta_aqui'
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=10)
 
 jwt = JWTManager(app)
 
@@ -47,8 +51,8 @@ def user_identity_lookup(user):
 def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
     user_type = identity['type']
-    if user_type in ['User', 'Shop']:
-        return User.query.get(identity['id']) if user_type == 'User' else Shop.query.get(identity['id'])
+    if user_type in ['user', 'shop']:
+        return User.query.get(identity['id']) if user_type == 'user' else Shop.query.get(identity['id'])
     elif user_type in ['Admin', 'SuperAdmin']:
         return Admin_User.query.get(identity['id'])
     return None

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faFilter, faCheck, faTimes, faExchange, faTruck, faPrint } from '@fortawesome/free-solid-svg-icons';
-import { Modal, ProgressBar, Button, Form, Table } from 'react-bootstrap';
+import { faBell, faEnvelope, faEnvelopeOpen, faFilter, faCheck, faTimes, faExchange, faTruck, faPrint, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button, Form, Table } from 'react-bootstrap';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 
@@ -23,6 +23,8 @@ const ShopNotifications = () => {
   const [selectedItemForChange, setSelectedItemForChange] = useState(null);
   const [userPreferences, setUserPreferences] = useState(null);
   const [shopSaleStatus, setShopSaleStatus] = useState(null);
+
+  const delay = ms => new Promise(res => setTimeout(res, ms));
 
   useEffect(() => {
     fetchNotifications();
@@ -119,6 +121,7 @@ const ShopNotifications = () => {
       const allItems = response.data.sale_details.flatMap(detail => detail.box_items);
       setItems(allItems.map(item => ({ ...item, isConfirmed: undefined })));
       fetchUserPreferences(response.data.user_id);
+      await delay(1000);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching order details:', error);
@@ -145,28 +148,17 @@ const ShopNotifications = () => {
   };
 
   const handleItemConfirmation = async (itemId, isConfirmed) => {
-
     setItems(items.map(item =>
       item.id === itemId ? { ...item, isConfirmed } : item
     ));
-
   };
 
   const handleItemChange = async (item) => {
     setSelectedItemForChange(item);
+    setLoading(true);
+    await delay(2000);
+    setLoading(false);
     setShowChangeRequestForm(true);
-    try {
-      await axios.post(`${process.env.BACKEND_URL}/sales/shop/${selectedNotification.sale_id}/change-request`, {
-        box_item_id: item.id
-      }, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('token')}`
-        }
-      });
-      setShopSaleStatus('pending_confirmation');
-    } catch (error) {
-      console.error('Error al actualizar el estado del pedido:', error);
-    }
   };
 
   const handleChangeRequestSubmit = async (e) => {
@@ -195,71 +187,59 @@ const ShopNotifications = () => {
 
   const handleOrderConfirmation = async () => {
     try {
+      // Obtener los detalles de envío
       const shipmentResponse = await axios.get(`${process.env.BACKEND_URL}/users/${orderDetails.user_id}/shipment`, {
         headers: {
           Authorization: `Bearer ${sessionStorage.getItem('token')}`
         }
       });
       setShippingDetails(shipmentResponse.data);
-
-      // Actualizar el estado de ShopSale
-      await axios.post(`${process.env.BACKEND_URL}/sales/shop/${selectedNotification.sale_id}/confirm`, {}, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('token')}`
-        }
-      });
-
-      // Crear notificaciones
-      await axios.post(`${process.env.BACKEND_URL}/notifications/create`, {
-        recipient_id: orderDetails.user_id,
-        type: 'order_confirmed',
-        content: `${orderDetails.shop_name} ha confirmado el stock para tu pedido de la caja ${orderDetails.mystery_box_name}. Te notificaremos cuando tu pedido sea enviado.`,
-        sale_id: orderDetails.sale_id,
-        shop_sale_id: selectedNotification.shop_sale_id
-      }, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('token')}`
-        }
-      });
-
-      await axios.post(`${process.env.BACKEND_URL}/notifications/create`, {
-        type: 'admin_order_confirmed',
-        content: `${orderDetails.shop_name} ha confirmado el stock para el pedido #${orderDetails.sale_id} (ShopSale #${selectedNotification.shop_sale_id}) del usuario ${orderDetails.user_name}.`,
-        sale_id: orderDetails.sale_id,
-        shop_sale_id: selectedNotification.shop_sale_id
-      }, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('token')}`
-        }
-      });
-
-      // Actualizar el estado de la notificación:
-      await axios.patch(
-        `${process.env.BACKEND_URL}/notifications/${selectedNotification.sale_id}/change_type`,
-        { type: 'confirmed' }, // Enviar el nuevo tipo de la notificación
+  
+      // Confirmar el pedido
+      const orderConfirmation = await axios.post(
+        `${process.env.BACKEND_URL}/sales/shop/${orderDetails.id}/confirm`,
+        {}, // Cuerpo vacío, ya que no estamos enviando datos
         {
           headers: {
             Authorization: `Bearer ${sessionStorage.getItem('token')}`
-          },
+          }
         }
       );
-
-
-
-      // Actualizar el estado local
-      setShopSaleStatus('confirmed');
-      setSelectedNotification({
-        ...selectedNotification,
-        type: 'order_confirmed'
-      });
-      generatePDF(shipmentResponse.data)
-      alert('¡Pedido confirmado con éxito!');
+  
+      if (orderConfirmation.status === 200) {
+        // Actualizar el estado local
+        setShopSaleStatus('confirmed');
+        setSelectedNotification(prevNotification => ({
+          ...prevNotification,
+          type: 'confirmed'
+        }));
+  
+        // Generar y descargar el PDF
+        generatePDF(shipmentResponse.data);
+  
+        // Mostrar mensaje de éxito
+        alert('¡Pedido confirmado con éxito!');
+  
+        // Opcionalmente, actualizar la lista de notificaciones
+        fetchNotifications();
+      } else {
+        throw new Error('La confirmación del pedido no fue exitosa');
+      }
     } catch (error) {
       console.error('Error al confirmar el pedido:', error);
-      setError('No se pudo confirmar el pedido. Por favor, inténtalo de nuevo.');
+      
+      let errorMessage = 'No se pudo confirmar el pedido. Por favor, inténtalo de nuevo.';
+      if (error.response) {
+        // El servidor respondió con un estado fuera del rango de 2xx
+        errorMessage = error.response.data.error || errorMessage;
+      } else if (error.request) {
+        // La petición fue hecha pero no se recibió respuesta
+        errorMessage = 'No se pudo conectar con el servidor. Por favor, verifica tu conexión.';
+      }
+      
+      setError(errorMessage);
     }
   };
-
 
 
   const generatePDF = (shippingDetails) => {
@@ -376,12 +356,18 @@ const ShopNotifications = () => {
     doc.save(`recibo_pedido_${orderDetails?.id || 'N/A'}.pdf`);
   };
 
-  // Función auxiliar para capitalizar la primera letra
+  const handlePDFDownload = () => {
+    if (orderDetails && shippingDetails) {
+      generatePDF(shippingDetails);
+    } else {
+      alert('No se pueden obtener los detalles necesarios para generar el PDF.');
+    }
+  };
+
   const capitalize = (str) => {
     return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
   };
 
-  // Función auxiliar para formatear arrays
   const formatArray = (arr) => {
     return Array.isArray(arr) ? arr.map(capitalize).join(', ') : '';
   };
@@ -389,16 +375,21 @@ const ShopNotifications = () => {
   const renderNotificationDetails = () => {
     if (!selectedNotification) return null;
 
-
     switch (selectedNotification.type) {
       case 'new_sale':
+      case 'item_change_approved':
+      case 'confirmed':
         if (loading) return <div>Cargando...</div>;
         if (error) return <div className="error">{error}</div>;
         if (!orderDetails) return <div>No se encontraron detalles del pedido.</div>;
 
         return (
           <div className="order-confirmation">
-            <h2>Confirmación de la orden:</h2>
+            <h2>
+              {selectedNotification.type === 'new_sale' ? 'Nueva Venta:' :
+                selectedNotification.type === 'item_change_approved' ? 'Cambio de Artículo Aprobado:' :
+                  'Venta Confirmada:'}
+            </h2>
             <div className="order-details">
               <h3>Detalles de la orden</h3>
               <p>ID Orden: {orderDetails.id}</p>
@@ -413,7 +404,7 @@ const ShopNotifications = () => {
                     <tr><td>Género</td><td>{userPreferences.gender ? capitalize(userPreferences.gender) : 'No especificado por el usuario'}</td></tr>
                     <tr><td>Talla Superior</td><td>{userPreferences.upper_size ? userPreferences.upper_size.toUpperCase() : 'No especificada por el usuario'}</td></tr>
                     <tr><td>Talla Inferior</td><td>{userPreferences.lower_size || 'No especificada por el usuario'}</td></tr>
-                    <tr><td>Talla de Gorra</td><td>{userPreferences.cap_size || 'No especificada por el usuario'}</td></tr>
+                    <tr><td>Talla de Gorra</td><td>{userPreferences.cap_size ? capitalize(userPreferences.cap_size) : 'No especificado por el usuario'}</td></tr>
                     <tr><td>Talla de Calzado</td><td>{userPreferences.shoe_size || 'No especificada por el usuario'}</td></tr>
                     <tr><td>Colores menos preferidos</td><td>{userPreferences.not_colors ? formatArray(userPreferences.not_colors) : 'No especificados por el usuario'}</td></tr>
                     <tr><td>Estampados en la ropa</td><td>{userPreferences.stamps ? capitalize(userPreferences.stamps) : 'No especificados por el usuario'}</td></tr>
@@ -431,7 +422,7 @@ const ShopNotifications = () => {
                 <div key={item.id} className="item">
                   <span>{item.item_name}</span>
                   <div className="item-actions my-3">
-                    {shopSaleStatus !== 'confirmed' && (
+                    {selectedNotification.type !== 'confirmed' && shopSaleStatus !== 'confirmed' && (
                       <>
                         <Button onClick={() => handleItemConfirmation(item.id, true)} disabled={item.isConfirmed === true}>
                           <FontAwesomeIcon icon={faCheck} /> Confirmar Stock
@@ -447,7 +438,7 @@ const ShopNotifications = () => {
                 </div>
               ))}
             </div>
-            {shopSaleStatus !== 'confirmed' && (
+            {selectedNotification.type !== 'confirmed' && shopSaleStatus !== 'confirmed' ? (
               <Button
                 className="confirm-order my-3"
                 onClick={handleOrderConfirmation}
@@ -455,19 +446,16 @@ const ShopNotifications = () => {
               >
                 <FontAwesomeIcon icon={faTruck} /> Confirmar Pedido y Obtener Datos de Envío
               </Button>
+            ) : (
+              <Button
+                className="download-pdf my-3"
+                onClick={handlePDFDownload}
+              >
+                <FontAwesomeIcon icon={faDownload} /> Descargar PDF del Pedido
+              </Button>
             )}
           </div>
         );
-      case 'change_request_result':
-        return (
-          <div>
-            <h5>Change Request Result</h5>
-            <p>{selectedNotification.content}</p>
-            <p>Request ID: {selectedNotification.item_change_request_id}</p>
-          </div>
-        );
-      default:
-        return <p>{selectedNotification.content}</p>;
     }
   };
 
@@ -499,7 +487,7 @@ const ShopNotifications = () => {
         <Button onClick={() => setFilter('change_request')} variant={filter === 'change_request_result' ? 'primary' : 'outline-primary'}>
           Propuesta de Cambio
         </Button>
-        <Button onClick={() => setFilter('confirmed')} variant={filter === 'change_request_result' ? 'primary' : 'outline-primary'}>
+        <Button onClick={() => setFilter('confirmed')} variant={filter === 'confirmed' ? 'primary' : 'outline-primary'}>
           Ventas Confirmadas
         </Button>
       </div>

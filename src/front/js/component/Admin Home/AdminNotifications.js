@@ -91,7 +91,7 @@ const AdminNotifications = () => {
   const handleNotificationClick = async (notification) => {
     setSelectedNotification(notification);
     setIsModalOpen(true);
-    if (!notification.is_read) {
+    if (notification.recipient_type === 'admin' & !notification.is_read) {
       try {
         await axios.patch(`${process.env.BACKEND_URL}/notifications/${notification.id}/read`, {}, {
           headers: {
@@ -232,6 +232,7 @@ const AdminNotifications = () => {
                 <th>Type</th>
                 <th>Content</th>
                 <th>Date</th>
+                <th>Recipient type</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -245,6 +246,7 @@ const AdminNotifications = () => {
                   <td>{notification.type}</td>
                   <td>{notification.content}</td>
                   <td>{new Date(notification.created_at).toLocaleString()}</td>
+                  <td>{notification.recipient_type}</td>
                   <td>
                     {notification.is_read ?
                       <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" /> :

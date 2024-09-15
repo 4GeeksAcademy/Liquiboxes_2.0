@@ -54,7 +54,7 @@ export default function Login() {
                 sessionStorage.setItem("token", loginResult.access_token);
                 sessionStorage.setItem("userType", loginResult.user_type);
                 console.log(`Ha entrado como ${loginResult.user_type}`);
-                navigate(loginResult.user_type === "normal" ? "/home" : "/shophome");
+                navigate(loginResult.user_type === "user" ? "/home" : "/shophome");
             }
         } catch (error) {
             console.log("Error de autenticación:", error);

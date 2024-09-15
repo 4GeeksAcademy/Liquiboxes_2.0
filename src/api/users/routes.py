@@ -45,7 +45,7 @@ def register_user():
 @jwt_required()
 def get_user_profile():
     current_user = get_jwt_identity()
-    if current_user['type'] != 'normal':
+    if current_user['type'] != 'user':
         return jsonify({'error': 'You are not a normal user'}), 403
     
     user = User.query.get(current_user['id'])
@@ -57,7 +57,7 @@ def get_user_profile():
 @jwt_required()
 def update_user_profile():
     current_user = get_jwt_identity()
-    if current_user['type'] != 'normal':
+    if current_user['type'] != 'user':
         return jsonify({'error': 'You are not a normal user'}), 403
 
     user = User.query.get(current_user['id'])

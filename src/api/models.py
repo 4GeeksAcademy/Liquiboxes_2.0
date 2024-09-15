@@ -3,11 +3,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.dialects.postgresql import ARRAY
 from datetime import datetime
 from sqlalchemy.orm import relationship, foreign
-from sqlalchemy import func, Enum as SQLAlchemyEnum
+from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import and_, cast, Integer, func
 from sqlalchemy.dialects.postgresql import JSONB
-import enum
 
 
 db = SQLAlchemy()
@@ -27,31 +26,35 @@ class BaseModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-class NotificationType(enum.Enum):
-    ITEM_CHANGE_REQUEST = "item_change_request"
-    CHANGE_REQUEST_RESULT = "change_request_result"
-    ITEM_CHANGED = "item_changed"
-    NEW_SALE = "new_sale"
-    CONFIRMATION = "confirmation"
+# type of Notifications:
+#     ITEM_CHANGE_REQUEST = "item_change_request"
+#     CHANGE_REQUEST_RESULT = "change_request_result"
+#     ITEM_CHANGED = "item_changed"
+#     NEW_SALE = "new_sale"
+#     CONFIRMATION = "confirmation"
+#     FRAUDULENT_USE = "fraudulent_use"
+#     PURCHASE_CONFIRMATION = "purchase_confirmation"
+
 
 class Notification(BaseModel):
     __tablename__ = "notifications"
 
-    type = db.Column(SQLAlchemyEnum(NotificationType), nullable=False)
-    recipient_type = db.Column(db.String(50), nullable=False)
-    recipient_id = db.Column(db.Integer, nullable=True)
-    sender_type = db.Column(db.String(50), nullable=False)
-    sender_id = db.Column(db.Integer, nullable=False)
-    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=True)
-    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=True)
+    type = db.Column(db.String(50), nullable=False)
+    recipient_type = db.Column(db.String(50), nullable=False)  # De momento: user, shop y admin
+    sender_type = db.Column(db.String(50), nullable=False)   # De momento: user, shop, admin y platform
     content = db.Column(db.String(500), nullable=False)
     is_read = db.Column(db.Boolean, default=False, nullable=False)
+
+    recipient_id = db.Column(db.Integer, nullable=True)
+    sender_id = db.Column(db.Integer, nullable=True)
+    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=True)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=True)
     extra_data = db.Column(JSONB, nullable=True)
 
     def serialize(self):
         return {
             'id': self.id,
-            'type': self.type.value,
+            'type': self.type,
             'recipient_type': self.recipient_type,
             'recipient_id': self.recipient_id,
             'sender_type': self.sender_type,
@@ -61,6 +64,7 @@ class Notification(BaseModel):
             'content': self.content,
             'is_read': self.is_read,
             'created_at': self.created_at,
+            'updated_at': self.updated_at,
             'extra_data': self.extra_data
         }
 
@@ -477,7 +481,7 @@ class ItemChangeRequest(BaseModel):
         'Notification',
         primaryjoin=lambda: and_(
             foreign(cast(func.jsonb_extract_path_text(Notification.extra_data, 'item_change_request_id'), Integer)) == ItemChangeRequest.id,
-            Notification.type.in_([NotificationType.ITEM_CHANGE_REQUEST.value, NotificationType.CHANGE_REQUEST_RESULT.value])
+            Notification.type.in_(["item_change_request", "change_request_result"])
         ),
         viewonly=True,
         lazy='dynamic'

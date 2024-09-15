@@ -7,23 +7,32 @@ import os
 import logging
 from datetime import timedelta
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 auth = Blueprint('auth', __name__)
 
 GOOGLE_CLIENT_ID = os.getenv("REACT_APP_ID_CLIENTE_GOOGLE")
 
 def create_token_response(user_or_shop, user_type):
-    # Configura el tiempo de expiración en horas, se puede hacer en días también.
-    expires_delta = timedelta(hours=24)
     
-    access_token = create_access_token(
-        identity={
-            'id': user_or_shop.id,
-            'email': user_or_shop.email,
-            'type': user_type
-        },
-        expires_delta=expires_delta
-    )
+    identity = {
+        'id': user_or_shop.id,
+        'email': user_or_shop.email,
+        'type': user_type
+    }
+    
+    logger.debug(f"Creating token with identity: {identity}")
+    
+    try:
+        access_token = create_access_token(
+            identity=identity,
+        )
+        logger.debug("Token created successfully")
+    except Exception as e:
+        logger.error(f"Error creating token: {str(e)}")
+        raise
     
     return jsonify({
         'access_token': access_token,

@@ -6,6 +6,8 @@ import logging
 import stripe
 import os
 import random
+from datetime import datetime
+
 
 
 stripe.api_key = os.getenv('STRIPE_SK')
@@ -86,8 +88,25 @@ def create_sale():
 
         # Verificar que el total calculado coincide con el total enviado por el frontend
         if abs(total_amount - float(data['total_amount'])) > 0.01:  # Permitimos una pequeña diferencia por redondeo
-            return jsonify({'error': 'Total amount mismatch'}), 400
-            ## TODO: Aquí se podría añadir un aviso a los admins para detectar usuarios maliciosos.
+            ## Aviso a los admins para detectar usuarios maliciosos.
+            try:
+                new_notification = Notification(
+                    recipient_type='admin',
+                    sender_type=current_user['type'],
+                    sender_id=current_user['id'],
+                    type="fraudulent_use",
+                    content=f"Fraudulent use of the payment proccess from the user {current_user.name} with the ID: {current_user.id}. The total amount sent was {data[total_amount]} and the total amount calculated was {total_amount}. Check {sale_items.append} for more details.",
+                )
+
+                db.session.add(new_notification)
+                db.session.commit()
+                return jsonify(new_notification.serialize()), 201
+            except SQLAlchemyError as e:
+                db.session.rollback()
+                logging.error(f"Database error: {str(e)}")
+                return jsonify({'error': 'Database error occurred'}), 500
+
+
 
         # Verificar el pago con Stripe
         try:
@@ -159,6 +178,9 @@ def create_sale():
             logging.info(f"Created ShopSale with id: {shop_sale.id}")
 
 
+            # Crear lista de diccionarios para almacenar los items seleccionados
+            box_items_data = []
+
             # Create BoxItem for each selected item
             for selected_item in selected_items:
                 box_item = BoxItem(
@@ -166,23 +188,38 @@ def create_sale():
                     item_name=selected_item,
                 )
                 db.session.add(box_item)
+    
+                # Agregar el BoxItem al extra_data como diccionario
+                box_items_data.append({
+                    'sale_detail_id': sale_detail.id,
+                    'item_name': selected_item
+                })
 
             # Create notification for the shop
             shop_notification = Notification(
+                recipient_type='shop',
+                recipient_id=mystery_box.shop_id,
+                sale_id = new_sale.id,
                 shop_id=mystery_box.shop_id,
-                sale_id=new_sale.id,
+                sender_type='platform',
                 type="new_sale",
-                content=f"New sale of {quantity} {mystery_box.name} box(es)"
-            )
+                content=f'Enhorabuena alguién te ha comprado {quantity} cajas de: {mystery_box.name}, confirma que tienes stock de todos los artículos que le han tocado para poder enviar la caja.',
+                extra_data={
+                    'shop_sale_id' : shop_sale.id
+                }
+            )   
             db.session.add(shop_notification)
 
         # Create notification for the user
         user_notification = Notification(
+            recipient_type=current_user['type'],
             recipient_id=current_user['id'],
+            sender_type='platform',
             sale_id=new_sale.id,
             type="purchase_confirmation",
-            content="Su compra ha sido aprobada"
+            content=f"Su compra con id: {new_sale.id} ha sido aprobada. Cuando la tienda confirme el stock de los elementos que te han tocado volveremos a contactar contigo."
         )
+        
         db.session.add(user_notification)
 
         db.session.commit()
@@ -274,88 +311,90 @@ def update_shop_sale_status(shop_sale_id):
         db.session.rollback()
         logging.error(f"Unexpected error: {str(e)}")
         return jsonify({'error': 'An unexpected error occurred'}), 500
-    
-@sales.route('/shop/<int:sale_id>/change-request', methods=['POST'])
-@jwt_required()
-def request_item_change(sale_id):
-    current_user = get_jwt_identity()
-    sale = Sale.query.get(sale_id)
 
-    if not sale:
-        return  jsonify({"error": "Unauthorized or Sale not found"}), 403
-    
-    shop_sale = sale.shop_sales.filter_by(shop_id=current_user['id']).first()
-    if not shop_sale:
-        return jsonify({"error": "Unauthorized or ShopSale not found"}), 403
-    
-    if not shop_sale or shop_sale.shop_id != current_user['id']:
-        return jsonify({"error": "Unauthorized or ShopSale not found"}), 403
-    
-    data = request.json
-    box_item_id = data.get('box_item_id')
-    
-    if not box_item_id:
-        return jsonify({"error": "box_item_id is required"}), 400
-    
-    shop_sale.status = 'pending_confirmation'
-    
-    change_request = ItemChangeRequest(
-        box_item_id=box_item_id,
-        shop_id=shop_sale.shop_id,
-        sale_id=shop_sale.sale_id,
-        shop_sale_id=shop_sale.id
-    )
-    
-    db.session.add(change_request)
-    db.session.commit()
-    
-    # Crear notificación para los admins
-    admin_notification = Notification(
-        type='admin_change_request',
-        content=f"Shop {shop_sale.shop.name} has requested a change for order #{shop_sale.sale_id} (ShopSale #{shop_sale.id}).",
-        sale_id=shop_sale.sale_id,
-        shop_sale_id=shop_sale.id
-    )
-    db.session.add(admin_notification)
-    db.session.commit()
-    
-    return jsonify({"message": "Change request submitted successfully"}), 200
+from datetime import datetime
+from sqlalchemy.exc import SQLAlchemyError
+
+from datetime import datetime
+from sqlalchemy.exc import SQLAlchemyError
 
 @sales.route('/shop/<int:sale_id>/confirm', methods=['POST'])
 @jwt_required()
 def confirm_shop_sale(sale_id):
     current_user = get_jwt_identity()
-    sale = Sale.query.get(sale_id)
+    
+    if current_user['type'] != 'shop':
+        return jsonify({'error': 'You must be logged in as a shop'}), 403
+    
+    current_shop = Shop.query.get(current_user['id'])
+    
+    if not current_shop:
+        return jsonify({"error": "Shop not found"}), 403
+    
+    try:
+        # Buscar la ShopSale correspondiente
+        shop_sale = ShopSale.query.filter_by(sale_id=sale_id, shop_id=current_shop.id).first()
 
-    if not sale:
-        return  jsonify({"error": "Unauthorized or Sale not found"}), 403
-    
-    shop_sale = sale.shop_sales.filter_by(shop_id=current_user['id']).first()
-    if not shop_sale:
-        return jsonify({"error": "Unauthorized or ShopSale not found"}), 403
-    
-    if not shop_sale or shop_sale.shop_id != current_user['id']:
-        return jsonify({"error": "Unauthorized or ShopSale not found"}), 403
-    
-    shop_sale.status = 'confirmed'
-    db.session.commit()
-    
-    # Crear notificaciones para el usuario y los admins
-    user_notification = Notification(
-        recipient_id=shop_sale.sale.user_id,
-        type='order_confirmed',
-        content=f"Your order from {shop_sale.shop.name} has been confirmed.",
-        sale_id=shop_sale.sale_id
-    )
-    
-    admin_notification = Notification(
-        type='admin_order_confirmed',
-        content=f"{shop_sale.shop.name} with ID: {shop_sale.shop_id} has confirmed order #{shop_sale.sale_id} (ShopSale #{shop_sale.id}).",
-        sale_id=shop_sale.sale_id
-    )
-    
-    db.session.add(user_notification)
-    db.session.add(admin_notification)
-    db.session.commit()
-    
-    return jsonify({"message": "ShopSale confirmed successfully"}), 200
+        if not shop_sale:
+            return jsonify({"error": "Unauthorized or Sale not found"}), 403
+       
+        # Actualizar el estado de ShopSale
+        shop_sale.status = 'confirmed'
+        
+        # Buscar la notificación original
+        original_notification = Notification.query.filter_by(
+            type="new_sale",
+            recipient_type="shop",
+            recipient_id=current_shop.id,
+            sale_id=sale_id
+        ).first()
+
+        if original_notification:
+            original_notification.type = "confirmed"
+            original_notification.is_read = False
+            original_notification.updated_at = datetime.utcnow()
+            original_notification.content = f"Has confirmado la venta con ID: {sale_id}. Por favor, prepara el pedido para su envío."
+        else:
+            # Si no se encuentra la notificación original, crear una nueva
+            new_notification = Notification(
+                type="confirmed",
+                recipient_type="shop",
+                recipient_id=current_shop.id,
+                sender_type="platform",
+                sale_id=sale_id,
+                shop_id=current_shop.id,
+                content=f"Has confirmado la venta con ID: {sale_id}. Por favor, prepara el pedido para su envío."
+            )
+            db.session.add(new_notification)
+
+        # Obtener la Sale completa
+        sale = Sale.query.get(sale_id)
+
+        # Crear notificaciones para el usuario y los admins
+        user_notification = Notification(
+            recipient_type='user',
+            recipient_id=sale.user_id,
+            sender_type='platform',
+            shop_id=current_shop.id,
+            sale_id=sale_id,
+            type="confirmation",
+            content=f"Su compra con id: {sale_id} ha sido confirmada por: {current_shop.name}. Cuando la tienda envíe tu caja volveremos a contactar contigo."
+        )
+        
+        admin_notification = Notification(
+            recipient_type='admin',
+            sender_type='platform',
+            shop_id=current_shop.id,
+            sale_id=sale_id,
+            type="confirmation",
+            content=f"La compra con id: {sale_id} ha sido confirmada por: {current_shop.name}."
+        )
+        
+        db.session.add(user_notification)
+        db.session.add(admin_notification)
+        
+        db.session.commit()
+        return jsonify({"message": "Sale confirmed successfully"}), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({"error": f"Database error: {str(e)}"}), 500

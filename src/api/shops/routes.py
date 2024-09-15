@@ -11,6 +11,9 @@ import logging
 import os
 import json
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 shops = Blueprint('shops', __name__)
 
@@ -181,21 +184,23 @@ def get_mystery_box(box_id):
 def get_shop_profile():
     current_user = get_jwt_identity()
     if current_user['type'] != 'shop':
-        return jsonify({'error': 'You must be logged in as a shop'}), 403
+        return jsonify({"error": "Unauthorized. Only shops can access this profile."}), 403
     
-    shop = Shop.query.get(current_user['id'])
-    if not shop:
-        return jsonify({"error": "Shop not found"}), 404
-    
-    if shop:
+    try:
+        shop = Shop.query.get(current_user['id'])
+        if not shop:
+            return jsonify({"error": "Shop not found"}), 404
         return jsonify(shop.serialize_detail()), 200
-    else:
-        return jsonify({'error': 'Shop not found'}), 404
+    except SQLAlchemyError as e:
+        logging.error(f"Database error: {str(e)}")
+        return jsonify({'error': 'Database error occurred'}), 500
 
 @shops.route('/profile', methods=['PATCH'])
 @jwt_required()
 def update_shop_profile():
     current_user = get_jwt_identity()
+    print(f"Current user from token: {current_user}")  # Add this line for debugging
+
     if current_user['type'] != 'shop':
         return jsonify({'error': 'You must be logged in as a shop'}), 403
 
