@@ -50,6 +50,7 @@ function BoxesOnSale({ shopData }) {
     } catch (error) {
       console.error(error);
     }
+    setShowModal(false); // cierra modal
   };
 
   return (
