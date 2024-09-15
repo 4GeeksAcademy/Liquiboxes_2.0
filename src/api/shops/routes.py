@@ -277,3 +277,44 @@ def get_shop_change_requests():
         return jsonify([request.serialize() for request in change_requests]), 200
     except SQLAlchemyError as e:
         return jsonify({"error": str(e)}), 500
+    
+    
+@shops.route('/mystery-box/<int:box_id>', methods=['PUT']) 
+@jwt_required()
+def update_mystery_box(box_id):
+    current_user = get_jwt_identity()
+    if current_user['type'] != 'shop':
+        return jsonify({'error': 'You must be logged in as a shop'}), 403
+    shop = Shop.query.get(current_user['id'])
+    if not shop:
+        return jsonify({"error": "Shop not found"}), 404
+    
+    data = request.get_json()
+
+    # Validamos que se reciban los datos obligatorios
+    required_fields = ['name', 'description', 'price', 'size', 'possible_items', 'image_url', 'number_of_items']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({'error': f'Missing field: {field}'}), 400
+
+    # Buscamos el "mystery box" en la base de datos
+    mystery_box = MysteryBox.query.get(box_id)
+
+    if not mystery_box:
+        return jsonify({'error': 'Mystery Box not found'}), 404
+
+    # Actualizamos los datos de la caja misteriosa
+    mystery_box.name = data['name']
+    mystery_box.description = data['description']
+    mystery_box.price = data['price']
+    mystery_box.size = data['size']
+    mystery_box.possible_items = data['possible_items']
+    mystery_box.image_url = data['image_url']
+    mystery_box.number_of_items = data['number_of_items']
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Mystery Box updated successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500 

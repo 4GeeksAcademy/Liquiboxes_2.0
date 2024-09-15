@@ -1,17 +1,25 @@
 import React, { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
+import axios from "axios";
 
 function BoxesOnSale({ shopData }) {
   const [showModal, setShowModal] = useState(false); // Estado para mostrar/ocultar el modal
   const [selectedBox, setSelectedBox] = useState(null); // selecciona la caja a editar 
-  const [mysteryBoxName, setMysteryBoxName] = useState("");
-  const [mysteryBoxPrice, setMysteryBoxPrice] = useState("");
 
-  const handleEditClick = (box) => {
+
+  const handleEditClick = async (box) => {
+    try {
+      const response = await axios.get(`${process.env.BACKEND_URL}/shops/mystery-box/${box.id}`)
+      if (response.data) {
+        console.log(response.data)
+        setSelectedBox(response.data);
+      }
+    }
+    catch (error) {
+      console.log('error' + error)
+    }
+
     // abre el modal y selecciona la caja a editar
-    setSelectedBox(box);
-    setMysteryBoxName(box.name); // asigna el valor de la caja al input
-    setMysteryBoxPrice(box.price); 
     setShowModal(true); // abre modal
   };
 
@@ -19,14 +27,30 @@ function BoxesOnSale({ shopData }) {
     setShowModal(false); // cierra modal
   };
 
-  const handleSave = () => {
-    //falta la logica para poder guardar los cambios
-    setShowModal(false); // oculta modal despues de guardar
-  };
-
   if (!shopData || !shopData.mystery_boxes) {
     return <div>No hay cajas disponibles para mostrar</div>;
   }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedBox({
+      ...selectedBox,
+      [name]: value,
+    });
+  };
+
+  const handleSave = async (box) => {
+    const token = sessionStorage.getItem('token')
+    try {
+      const response = await axios.put(`${process.env.BACKEND_URL}/shops/mystery-box/${box.id}`,
+        selectedBox,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log(response)
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <>
@@ -39,6 +63,7 @@ function BoxesOnSale({ shopData }) {
             <h4 className="fw-bold">{box.name}</h4>
             <p>Precio: ${box.price}</p>
             <p>Total de ventas: {box.total_sales}</p>
+
           </div>
 
           <div className="col-sm-12 col-md-4 text-center text-md-end">
@@ -55,7 +80,7 @@ function BoxesOnSale({ shopData }) {
         </div>
       ))}
 
-      {/* Modal */}
+      {/* MODAL */}
       {showModal && (
         <Modal show={showModal} onHide={handleClose}>
           <Modal.Header closeButton>
@@ -64,36 +89,69 @@ function BoxesOnSale({ shopData }) {
           <Modal.Body>
             <form>
               <div className="mb-3">
-                <label htmlFor="input1" className="form-label">
+
+                <img src={selectedBox.image_url} className="img-fluid" /> {/*INPUT DE LA IMAGEN*/}
+                <label htmlFor="mysteryboximg" className="form-label">
+                  Imagen de la mystery Box
+                </label>
+                <input
+                  type="file"
+                  className="form-control"
+                  id="mysteryboximg"
+                  onChange={handleInputChange}
+                  name="image_url"
+                />
+              </div>
+
+              <div className="mb-3">  {/*INPUT DEL NOMBRE DE LA CAJA*/}
+                <label htmlFor="mysteryboxname" className="form-label">
                   Nombre de la caja
                 </label>
                 <input
                   type="text"
                   className="form-control"
-                  id="input1"
-                  value={mysteryBoxName}
-                  onChange={(e) => setMysteryBoxName(e.target.value)}
+                  id="mysteryboxname"
+                  value={selectedBox.name}
+                  onChange={handleInputChange}
+                  name="name"
                 />
               </div>
-              <div className="mb-3">
-                <label htmlFor="input2" className="form-label">
+
+              <div className="mb-3"> {/*INPUT DEL PRECIO*/}
+                <label htmlFor="mysteryboxprice" className="form-label">
                   Precio de la caja
                 </label>
                 <input
                   type="text"
                   className="form-control"
-                  id="input2"
-                  value={mysteryBoxPrice}
-                  onChange={(e) => setMysteryBoxPrice(e.target.value)}
+                  id="mysteryboxprice"
+                  value={selectedBox.price}
+                  onChange={handleInputChange}
+                  name="price"
+                />
+              </div>
+
+              <div className="mb-3"> {/*INPUT DE LA DESCRIPCION*/}
+                <label htmlFor="mysteryboxdescription" className="form-label">
+                  Descripcion de la Mystery Box
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="mysteryboxdescription"
+                  value={selectedBox.description}
+                  onChange={handleInputChange}
+                  name="description"
                 />
               </div>
             </form>
           </Modal.Body>
+
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>
               Cerrar
             </Button>
-            <Button variant="primary" onClick={handleSave}>
+            <Button variant="primary" onClick={() => handleSave(selectedBox)}>
               Guardar cambios
             </Button>
           </Modal.Footer>
@@ -118,7 +176,7 @@ export default BoxesOnSale;
 
 
 
-  // AQUÍ MICHELL!!!!
+// AQUÍ MICHELL!!!!
 
 // {
 //   
@@ -155,36 +213,35 @@ export default BoxesOnSale;
 // PARA TRAERTE LOS DATOS =>
 // const arrayMystery = shopData.mystery_boxes
 // arrayMystery.map((mysterybox) => (
-  //   try { const response = await axios.get(`BACKEND_URL + /shops/shop_id/mysteryboxes)}
+//   try { const response = await axios.get(`BACKEND_URL + /shops/shop_id/mysteryboxes)}
 //  ))
 
 // PARA MODIFICAR ESTOS DATOS MIRAR SHOPHOME =>
-  // const handleSave = async (field) => {
-  //   const token = sessionStorage.getItem('token');
-  //   try {
-  //     let value = shopData[field];
-  //     if (field === 'categories' && Array.isArray(value)) {
-  //       // Convertir el array de categorías a un formato que el backend pueda procesar
-  //       value = JSON.stringify(value.map(cat => `"${cat}"`));
-  //     }
+// const handleSave = async (field) => {
+//   const token = sessionStorage.getItem('token');
+//   try {
+//     let value = shopData[field];
+//     if (field === 'categories' && Array.isArray(value)) {
+//       // Convertir el array de categorías a un formato que el backend pueda procesar
+//       value = JSON.stringify(value.map(cat => `"${cat}"`));
+//     }
 
-  //     const formData = new FormData();
-  //     formData.append(field, value);
+//     const formData = new FormData();
+//     formData.append(field, value);
 
-  //     await axios.patch(`${process.env.BACKEND_URL}/shops/profile`,
-  //       formData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           'Content-Type': 'multipart/form-data'
-  //         }
-  //       }
-  //     );
-  //     setEditMode(prev => ({ ...prev, [field]: false }));
-  //     setError(null);
-  //   } catch (error) {
-  //     console.error("Error updating shop data:", error);
-  //     setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
-  //   }
-  // };
-  
+//     await axios.patch(`${process.env.BACKEND_URL}/shops/profile`,
+//       formData,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           'Content-Type': 'multipart/form-data'
+//         }
+//       }
+//     );
+//     setEditMode(prev => ({ ...prev, [field]: false }));
+//     setError(null);
+//   } catch (error) {
+//     console.error("Error updating shop data:", error);
+//     setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
+//   }
+// };
