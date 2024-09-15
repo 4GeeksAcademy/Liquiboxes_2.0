@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function BoxesOnSale({ shopData }) {
   const [showModal, setShowModal] = useState(false); // Estado para mostrar/ocultar el modal
   const [selectedBox, setSelectedBox] = useState(null); // selecciona la caja a editar 
+  const navigate = useNavigate();
 
 
   const handleEditClick = async (box) => {
@@ -18,13 +20,11 @@ function BoxesOnSale({ shopData }) {
     catch (error) {
       console.log('error' + error)
     }
-
-    // abre el modal y selecciona la caja a editar
-    setShowModal(true); // abre modal
+    setShowModal(true);  // abre el modal cuando se da click en editar
   };
 
-  const handleClose = () => {
-    setShowModal(false); // cierra modal
+  const handleClose = () => { // cierra modal
+    setShowModal(false);
   };
 
   if (!shopData || !shopData.mystery_boxes) {
@@ -32,7 +32,7 @@ function BoxesOnSale({ shopData }) {
   }
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, } = e.target;
     setSelectedBox({
       ...selectedBox,
       [name]: value,
@@ -50,7 +50,7 @@ function BoxesOnSale({ shopData }) {
     } catch (error) {
       console.error(error);
     }
-    setShowModal(false); // cierra modal
+    setShowModal(false); // cierra modal cuando se le da click a guardar cambios
   };
 
   return (
@@ -60,11 +60,12 @@ function BoxesOnSale({ shopData }) {
           key={box.id}
           className="row align-items-center justify-content-between p-3 shadow-sm border rounded w-60 m-3"
         >
-          <div className="col-sm-12 col-md-4 text-center text-md-start mb-3 mb-md-0">
+          <div className="col-sm-12 col-md-4 text-center text-md-start">
             <h4 className="fw-bold">{box.name}</h4>
-            <p>Precio: ${box.price}</p>
             <p>Total de ventas: {box.total_sales}</p>
-
+            <button type="button" className="btn btn-link" 
+            onClick={() => navigate(`/mysterybox/${box.id}`)}>Ir a mystery Box
+            </button>
           </div>
 
           <div className="col-sm-12 col-md-4 text-center text-md-end">
@@ -90,7 +91,6 @@ function BoxesOnSale({ shopData }) {
           <Modal.Body>
             <form>
               <div className="mb-3">
-
                 <img src={selectedBox.image_url} className="img-fluid" /> {/*INPUT DE LA IMAGEN*/}
                 <label htmlFor="mysteryboximg" className="form-label">
                   Imagen de la mystery Box
@@ -115,6 +115,34 @@ function BoxesOnSale({ shopData }) {
                   value={selectedBox.name}
                   onChange={handleInputChange}
                   name="name"
+                />
+              </div>
+
+              <div className="mb-3">  {/*INPUT DE NUMBER OF ITEMS*/}
+                <label htmlFor="mysteryboxnumberofitems" className="form-label">
+                  Numero de items
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="mysteryboxnumberofitems"
+                  value={selectedBox.number_of_items}
+                  onChange={handleInputChange}
+                  name="items"
+                />
+              </div>
+
+              <div className="mb-3">  {/*INPUT POSSIBLE ITEMS*/}
+                <label htmlFor="mysteryboxpossibleitems" className="form-label">
+                  Items posibles
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="mysteryboxpossibleitems"
+                  value={selectedBox.possible_items}
+                  onChange={handleInputChange}
+                  name="items"
                 />
               </div>
 
