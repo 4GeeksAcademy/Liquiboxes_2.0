@@ -44,8 +44,10 @@ function BoxesOnSale({ shopData }) {
     try {
       const response = await axios.put(`${process.env.BACKEND_URL}/shops/mystery-box/${box.id}`,
         selectedBox,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        { headers: { Authorization: `Bearer ${token}`}, 
+      });
+
+
       console.log(response)
     } catch (error) {
       console.error(error);
@@ -70,12 +72,12 @@ function BoxesOnSale({ shopData }) {
 
           <div className="col-sm-12 col-md-4 text-center text-md-end">
             <button
-              className="btn btn-primary me-2"
+              className="mb-2 mx-2"
               onClick={() => handleEditClick(box)}
             >
               <i className="fa-solid fa-pen"></i> Editar
             </button>
-            <button className="btn btn-danger">
+            <button className="">
               <i className="fa-regular fa-trash-can"></i> Eliminar
             </button>
           </div>
@@ -123,12 +125,12 @@ function BoxesOnSale({ shopData }) {
                   Numero de items
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   className="form-control"
                   id="mysteryboxnumberofitems"
                   value={selectedBox.number_of_items}
                   onChange={handleInputChange}
-                  name="items"
+                  name="number_of_items"
                 />
               </div>
 
@@ -142,7 +144,7 @@ function BoxesOnSale({ shopData }) {
                   id="mysteryboxpossibleitems"
                   value={selectedBox.possible_items}
                   onChange={handleInputChange}
-                  name="items"
+                  name="possible_items"
                 />
               </div>
 
@@ -157,6 +159,20 @@ function BoxesOnSale({ shopData }) {
                   value={selectedBox.price}
                   onChange={handleInputChange}
                   name="price"
+                />
+              </div>
+
+              <div className="mb-3"> {/*INPUT DEL TAMAÑO*/}
+                <label htmlFor="mysteryboxsize" className="form-label">
+                  Tamaño de la caja
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="mysteryboxsize"
+                  value={selectedBox.size}
+                  onChange={handleInputChange}
+                  name="size"
                 />
               </div>
 
