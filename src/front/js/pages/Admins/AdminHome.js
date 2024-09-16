@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Tab, Tabs } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faTrash, faStar, faBell } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faStar } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import AdminNotifications from '../../component/Admin Home/AdminNotifications';
 import '../../../styles/admins/adminhome.css';
 
 const AdminHome = () => {
   const [admins, setAdmins] = useState([]);
-  const [notifications, setNotifications] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState(null);
+  const [error, setError] = useState(null);
+
 
   useEffect(() => {
     fetchAdmins();
-    fetchAllNotifications();
   }, []);
 
   const fetchAdmins = async () => {
@@ -23,17 +24,15 @@ const AdminHome = () => {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
       });
-
-      // Verifica si response.data es un array
       if (Array.isArray(response.data)) {
         setAdmins(response.data);
       } else {
-        console.error('La respuesta de la API no es un array:', response.data);
-        setAdmins([]);  // Asegúrate de establecer un array vacío en caso de error
+        console.error('The API response is not an array:', response.data);
+        setAdmins([]);
       }
     } catch (error) {
       console.error('Error fetching admins:', error);
-      setAdmins([]);  // Manejar el error estableciendo un array vacío
+      setAdmins([]);
     }
   };
 
@@ -67,15 +66,26 @@ const AdminHome = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const formData = new FormData(event.target);
+    setError(null);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const adminData = Object.fromEntries(formData.entries());
+
+    // Convert checkbox value to boolean
+    adminData.is_superuser = formData.get('is_superuser') === 'on';
+
+    // Only include password if it's provided (for editing)
+    if (!adminData.password) {
+      delete adminData.password;
+    }
 
     try {
       const url = currentAdmin
         ? `${process.env.BACKEND_URL}/admins/${currentAdmin.id}`
         : `${process.env.BACKEND_URL}/admins`;
       const method = currentAdmin ? 'put' : 'post';
-      await axios({
+      
+      const response = await axios({
         method: method,
         url: url,
         data: adminData,
@@ -84,105 +94,70 @@ const AdminHome = () => {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
       });
+
+      console.log('Server response:', response.data);
       setShowModal(false);
       fetchAdmins();
     } catch (error) {
       console.error('Error saving admin:', error);
-    }
-  };
-
-  const fetchAllNotifications = async () => {
-    try {
-      const response = await axios.get(`${process.env.BACKEND_URL}/notifications/all`, {
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-        }
-      });
-      setNotifications(response.data);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+      if (error.response) {
+        setError(error.response.data.error || 'An unknown error occurred');
+      } else if (error.request) {
+        setError('No response received from the server. Please try again.');
+      } else {
+        setError('An error occurred while sending the request. Please try again.');
+      }
     }
   };
 
   const handleEdit = (admin) => {
-    // Establece el administrador seleccionado como el actual
     setCurrentAdmin(admin);
-    // Muestra el modal para editar
     setShowModal(true);
   };
-
-
 
   return (
     <div className="admin-home">
       <h1>Admin Dashboard</h1>
-      <Tabs defaultActiveKey="admins" id="admin-dashboard-tabs">
-        <Tab eventKey="admins" title="Admins">
+      <Tabs defaultActiveKey="notifications" id="admin-dashboard-tabs">
+        <Tab eventKey="notifications" title="Notifications and Change Requests">
+          <AdminNotifications />
+        </Tab>
+        <Tab eventKey="admins" title="Manage Admins">
           <Button variant="primary" onClick={() => { setCurrentAdmin(null); setShowModal(true); }}>
             Add New Admin
           </Button>
           <Table striped bordered hover>
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Surname</th>
-                  <th>Email</th>
-                  <th>Superuser</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {admins.map((admin) => (
-                  <tr key={admin.id}>
-                    <td>{admin.name}</td>
-                    <td>{admin.surname}</td>
-                    <td>{admin.email}</td>
-                    <td>
-                      <FontAwesomeIcon
-                        icon={faStar}
-                        color={admin.is_superuser ? "gold" : "gray"}
-                        onClick={() => handleToggleSuperuser(admin.id)}
-                        style={{ cursor: 'pointer' }}
-                      />
-                    </td>
-                    <td>
-                      <Button variant="info" onClick={() => handleEdit(admin)}>
-                        <FontAwesomeIcon icon={faEdit} /> Edit
-                      </Button>
-                      <Button variant="danger" onClick={() => handleDelete(admin.id)}>
-                        <FontAwesomeIcon icon={faTrash} /> Delete
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Table>
-        </Tab>
-        <Tab eventKey="notifications" title="All Notifications">
-          <Table striped bordered hover>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Type</th>
-                <th>Content</th>
-                <th>Recipient ID</th>
-                <th>Shop ID</th>
-                <th>Sale ID</th>
-                <th>Created At</th>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Email</th>
+                <th>Superuser</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {notifications.map((notification) => (
-                <tr key={notification.id}>
-                  <td>{notification.id}</td>
-                  <td>{notification.type}</td>
-                  <td>{notification.content}</td>
-                  <td>{notification.recipient_id || 'N/A'}</td>
-                  <td>{notification.shop_id || 'N/A'}</td>
-                  <td>{notification.sale_id || 'N/A'}</td>
-                  <td>{new Date(notification.created_at).toLocaleString()}</td>
+              {admins.map((admin) => (
+                <tr key={admin.id}>
+                  <td>{admin.name}</td>
+                  <td>{admin.surname}</td>
+                  <td>{admin.email}</td>
+                  <td>
+                    <FontAwesomeIcon
+                      icon={faStar}
+                      color={admin.is_superuser ? "gold" : "gray"}
+                      onClick={() => handleToggleSuperuser(admin.id)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </td>
+                  <td>
+                    <Button variant="info" onClick={() => handleEdit(admin)}>
+                      <FontAwesomeIcon icon={faEdit} /> Edit
+                    </Button>
+                    <Button variant="danger" onClick={() => handleDelete(admin.id)}>
+                      <FontAwesomeIcon icon={faTrash} /> Delete
+                    </Button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -195,6 +170,7 @@ const AdminHome = () => {
           <Modal.Title>{currentAdmin ? 'Edit Admin' : 'Add New Admin'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {error && <Alert variant="danger">{error}</Alert>}
           <Form onSubmit={handleSubmit}>
             <Form.Group>
               <Form.Label>Name</Form.Label>

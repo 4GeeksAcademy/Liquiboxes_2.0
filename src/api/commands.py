@@ -76,6 +76,9 @@ def setup_commands(app):
         """Inicializar la base de datos con tiendas y cajas misteriosas de muestra."""
         click.echo("Inicializando la base de datos...")
 
+        # Combina todos los objetos de todas las categorías en una lista única
+        all_items = [item for items in OBJETOS_POR_CATEGORIA.values() for item in items]
+
         # Crear tiendas
         for i in range(10):
             shop_categories = random.sample(CATEGORIES, random.randint(1, 3))
@@ -92,16 +95,17 @@ def setup_commands(app):
                 owner_name=fake.first_name(),
                 owner_surname=fake.last_name()
             )
-            shop.set_password('password123')
+            shop.set_password('12345678')
             db.session.add(shop)
             db.session.commit()
 
             # Crear cajas misteriosas para cada tienda
             for j in range(5):
-                category = random.choice(shop_categories)
-                possible_items = random.sample(OBJETOS_POR_CATEGORIA[category], 5)
+                # Selecciona 10 objetos aleatorios de la lista combinada, sin importar la categoría
+                possible_items = random.sample(all_items, 10)
+
                 box = MysteryBox(
-                    name=f"Caja Misteriosa de {category}",
+                    name=f"Caja Misteriosa {j+1}",
                     description=fake.paragraph(),
                     price=round(random.uniform(10, 100), 2),
                     size=random.choice(TAMANOS),

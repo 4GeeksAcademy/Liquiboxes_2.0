@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from api.models import db, Notification, ItemChangeRequest, BoxItem, User, Shop, Admin_User
+from api.models import db, Notification, ItemChangeRequest, BoxItem, User, Shop, Admin_User, ShopSale
 from sqlalchemy.exc import SQLAlchemyError
 import logging
+from datetime import datetime
 
 notifications = Blueprint('notifications', __name__)
 
@@ -14,12 +15,15 @@ def create_notification():
 
     try:
         new_notification = Notification(
-            recipient_id=data.get('recipient_id'),
-            shop_id=data.get('shop_id'),
-            sale_id=data.get('sale_id'),
+            recipient_type=data['recipient_type'],
+            recipient_id=data['recipient_id'],
+            sender_type=current_user['type'],
+            sender_id=current_user['id'],
             type=data['type'],
-            content=data['content']
+            content=data['content'],
+            extra_data=data.get('extra_data', {})
         )
+
         db.session.add(new_notification)
         db.session.commit()
         return jsonify(new_notification.serialize()), 201
@@ -34,10 +38,10 @@ def get_user_notifications():
     current_user = get_jwt_identity()
     user = User.query.get(current_user['id'])
     if not user:
-        return jsonify({"error": "User not found"}), 404
+        return jsonify({"error": "User not found"}), 403
     
-    notifications = Notification.query.filter_by(recipient_id=user.id).order_by(Notification.created_at.desc()).all()
-    return jsonify([notification.serialize_users() for notification in notifications]), 200
+    notifications = Notification.query.filter_by(recipient_id=user.id, recipient_type='user').order_by(Notification.created_at.desc()).all()
+    return jsonify([notification.serialize() for notification in notifications]), 200
 
 @notifications.route('/shop', methods=['GET'])
 @jwt_required()
@@ -45,10 +49,21 @@ def get_shop_notifications():
     current_user = get_jwt_identity()
     shop = Shop.query.get(current_user['id'])
     if not shop:
-        return jsonify({"error": "Shop not found"}), 404
+        return jsonify({"error": "Shop not found"}), 403
     
-    notifications = Notification.query.filter_by(shop_id=shop.id).order_by(Notification.created_at.desc()).all()
-    return jsonify([notification.serialize_shops() for notification in notifications]), 200
+    notifications = Notification.query.filter_by(recipient_id=shop.id, recipient_type='shop').order_by(Notification.created_at.desc()).all()
+    return jsonify([notification.serialize() for notification in notifications]), 200
+
+@notifications.route('/admin', methods=['GET'])
+@jwt_required()
+def get_amin_notifications():
+    current_user = get_jwt_identity()
+    admin = Admin_User.query.get(current_user['id'])
+    if not admin:
+        return jsonify({"error": "Admin not found"}), 404
+    
+    notifications = Notification.query.filter_by(recipient_type='admin').order_by(Notification.created_at.desc()).all()
+    return jsonify([notification.serialize() for notification in notifications]), 200
 
 @notifications.route('/<int:notification_id>/read', methods=['PATCH'])
 @jwt_required()
@@ -61,26 +76,34 @@ def mark_notification_as_read(notification_id):
     db.session.commit()
     return jsonify({"success": True, "message": "Notification marked as read"}), 200
 
+@notifications.route('/<int:notification_id>/change_type', methods=['PATCH'])
+@jwt_required()
+def change_notification_type(notification_id):
+    current_user = get_jwt_identity()
+    if current_user['type'] != 'admin':
+        return jsonify({"success": False, "error": "Only admins can change notification types"}), 403
+
+    data = request.json
+    new_type = data.get('type')
+
+    notification = Notification.query.get(notification_id)
+    if not notification:
+        return jsonify({"success": False, "error": "Notification not found"}), 404
+
+    try:
+        notification.type = new_type
+        db.session.commit()
+        return jsonify({"success": True, "message": "Notification type updated successfully"}), 200
+    except ValueError:
+        return jsonify({"success": False, "error": "Invalid notification type"}), 400
+
 @notifications.route('/all', methods=['GET'])
 @jwt_required()
 def get_all_notifications():
-    current_user_id = get_jwt_identity()
-    admin = Admin_User.query.get(current_user_id)
-    if not admin:
-        return jsonify({"error": "User not found or not an admin"}), 404
-    if not admin.is_superuser:
-        return jsonify({"error": "Unauthorized. Only superadmins can access all notifications."}), 403
+    current_user = get_jwt_identity()
+    if current_user['type'] not in ['SuperAdmin']:
+        return jsonify({"error": "Unauthorized. Only Super Admins can access all notifications."}), 403
     
-    try:
-        notifications = Notification.query.order_by(Notification.created_at.desc()).all()
-        return jsonify([notification.serialize() for notification in notifications]), 200
-    except SQLAlchemyError as e:
-        logging.error(f"Database error: {str(e)}")
-        return jsonify({'error': 'Database error occurred'}), 500
-    
-@notifications.route('/all/backend', methods=['GET'])
-def get_all_notifications_backend():
-
     try:
         notifications = Notification.query.order_by(Notification.created_at.desc()).all()
         return jsonify([notification.serialize() for notification in notifications]), 200
@@ -92,87 +115,76 @@ def get_all_notifications_backend():
 @jwt_required()
 def create_change_request():
     current_user = get_jwt_identity()
-    shop = Shop.query.get(current_user['id'])
-    if not shop:
+    
+    if current_user['type'] != 'shop':
+        return jsonify({'error': 'You must be logged in as a shop'}), 403
+    
+    current_shop = Shop.query.get(current_user['id'])
+    
+    if not current_shop:
         return jsonify({"error": "Shop not found"}), 404
     
-    data = request.json
+    data = request.get_json()
+    
     try:
+        box_item = BoxItem.query.get(data['box_item_id'])
+        if not box_item or box_item.sale_detail.shop_id != current_shop.id:
+            return jsonify({"error": "Invalid box item"}), 400
+
+        sale_id = box_item.sale_detail.sale_id
+        if not sale_id:
+            return jsonify({"error": "Sale not found"}), 400
+
         new_request = ItemChangeRequest(
             box_item_id=data['box_item_id'],
-            shop_id=shop.id,
-            original_item_name=data['original_item_name'],
-            original_item_size=data['original_item_size'],
-            original_item_category=data['original_item_category'],
+            shop_id=current_shop.id,
+            original_item_name=box_item.item_name,
             proposed_item_name=data['proposed_item_name'],
-            proposed_item_size=data['proposed_item_size'],
-            proposed_item_category=data['proposed_item_category'],
             reason=data['reason']
         )
         db.session.add(new_request)
-        db.session.commit()
-
+        db.session.flush()  # Asigna un ID a new_request sin hacer commit
+        
+        shop_sale = ShopSale.query.filter_by(sale_id=sale_id, shop_id=current_shop.id).first()
+        if shop_sale:
+            shop_sale.status = "changes_requested"
+            db.session.add(shop_sale)
+        
         # Create notification for admins
         admin_notification = Notification(
-            type="change_request",
-            content=f"New change request from shop {shop.name}",
-            item_change_request_id=new_request.id
+            recipient_type='admin',
+            sender_type='shop',
+            sale_id=sale_id,
+            shop_id=current_shop.id,
+            sender_id=current_shop.id,
+            type="item_change_request",
+            content=f"La tienda {current_shop.name} ha solicitado el cambio de {box_item.item_name} por {data['proposed_item_name']} para el pedido #{sale_id} (SaleDetail #{box_item.sale_detail.id}).",
+            extra_data={
+                'item_change_request_id': new_request.id,
+                'original_item_name': box_item.item_name,
+                'proposed_item_name': data['proposed_item_name']
+            }
         )
         db.session.add(admin_notification)
+        
+        # Actualizar la notificación original
+        original_notification = Notification.query.filter_by(       
+            type="new_sale",
+            recipient_type="shop",
+            recipient_id=current_shop.id,
+            sale_id=sale_id
+        ).first()
+
+        if original_notification:
+            original_notification.type = "item_change_requested"
+            original_notification.is_read = False
+            original_notification.updated_at = datetime.utcnow()
+            original_notification.content = f"Has solicitado cambiar el artículo {box_item.item_name} por {data['proposed_item_name']} en el pedido #{sale_id}. Esperando aprobación del administrador."
+            db.session.add(original_notification)
+
         db.session.commit()
 
         return jsonify(new_request.serialize()), 201
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        logging.error(f"Database error: {str(e)}")
-        return jsonify({'error': 'Database error occurred'}), 500
-
-@notifications.route('/change-request/<int:request_id>', methods=['PUT'])
-@jwt_required()
-def approve_change_request(request_id):
-    current_user = get_jwt_identity()
-    admin = Admin_User.query.get(current_user['id'])
-    if not admin or not admin.is_superuser:
-        return jsonify({"error": "Unauthorized"}), 403
-    
-    change_request = ItemChangeRequest.query.get(request_id)
-    if not change_request:
-        return jsonify({"error": "Change request not found"}), 404
-    
-    data = request.json
-    try:
-        change_request.status = data['status']
-        change_request.admin_id = admin.id
-        change_request.admin_comment = data.get('admin_comment')
-        
-        if change_request.status == 'approved':
-            box_item = BoxItem.query.get(change_request.box_item_id)
-            if box_item:
-                box_item.item_name = change_request.proposed_item_name
-                box_item.item_size = change_request.proposed_item_size
-                box_item.item_category = change_request.proposed_item_category
-        
-        db.session.commit()
-
-        # Create notifications for shop and user
-        shop_notification = Notification(
-            shop_id=change_request.shop_id,
-            type="change_request_result",
-            content=f"Your change request has been {change_request.status}",
-            item_change_request_id=change_request.id
-        )
-        db.session.add(shop_notification)
-
-        user_notification = Notification(
-            recipient_id=box_item.sale_detail.sale.user_id,
-            type="item_changed",
-            content=f"An item in your order has been changed",
-            item_change_request_id=change_request.id
-        )
-        db.session.add(user_notification)
-        db.session.commit()
-
-        return jsonify(change_request.serialize()), 200
     except SQLAlchemyError as e:
         db.session.rollback()
         logging.error(f"Database error: {str(e)}")

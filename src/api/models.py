@@ -2,9 +2,11 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.dialects.postgresql import ARRAY
 from datetime import datetime
-from sqlalchemy.orm import column_property
-from sqlalchemy import select, func
+from sqlalchemy.orm import relationship, foreign
+from sqlalchemy import func
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import and_, cast, Integer, func
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 db = SQLAlchemy()
@@ -23,6 +25,48 @@ class BaseModel(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+# type of Notifications:
+#     ITEM_CHANGE_REQUEST = "item_change_request"
+#     CHANGE_REQUEST_RESULT = "change_request_result"
+#     ITEM_CHANGED = "item_changed"
+#     NEW_SALE = "new_sale"
+#     CONFIRMATION = "confirmation"
+#     FRAUDULENT_USE = "fraudulent_use"
+#     PURCHASE_CONFIRMATION = "purchase_confirmation"
+
+
+class Notification(BaseModel):
+    __tablename__ = "notifications"
+
+    type = db.Column(db.String(50), nullable=False)
+    recipient_type = db.Column(db.String(50), nullable=False)  # De momento: user, shop y admin
+    sender_type = db.Column(db.String(50), nullable=False)   # De momento: user, shop, admin y platform
+    content = db.Column(db.String(500), nullable=False)
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+
+    recipient_id = db.Column(db.Integer, nullable=True)
+    sender_id = db.Column(db.Integer, nullable=True)
+    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=True)
+    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=True)
+    extra_data = db.Column(JSONB, nullable=True)
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'type': self.type,
+            'recipient_type': self.recipient_type,
+            'recipient_id': self.recipient_id,
+            'sender_type': self.sender_type,
+            'sender_id': self.sender_id,
+            'sale_id': self.sale_id,
+            'shop_id': self.shop_id,
+            'content': self.content,
+            'is_read': self.is_read,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'extra_data': self.extra_data
+        }
 
 class User(BaseModel):
     __tablename__ = "users"
@@ -48,7 +92,14 @@ class User(BaseModel):
     
     sales = db.relationship('Sale', backref='user', lazy='dynamic')
     ratings = db.relationship('Rating', backref='user', lazy='dynamic')
-    notifications = db.relationship('Notification', backref='recipient', lazy='dynamic', foreign_keys='Notification.recipient_id')
+    notifications_received = db.relationship('Notification', 
+                                             primaryjoin="and_(User.id==Notification.recipient_id, "
+                                                         "Notification.recipient_type=='user')",
+                                             backref='recipient_user', lazy='dynamic', foreign_keys=[Notification.recipient_id])
+    notifications_sent = db.relationship('Notification',
+                                         primaryjoin="and_(User.id==Notification.sender_id, "
+                                                     "Notification.sender_type=='user')",
+                                         backref='sender_user', lazy='dynamic', foreign_keys=[Notification.sender_id])
 
     
     def __repr__(self):
@@ -117,6 +168,7 @@ class Sale(BaseModel):
     sale_details = db.relationship('SaleDetail', backref='sale', lazy='dynamic')
     shop_sales = db.relationship('ShopSale', backref='sale', lazy='dynamic')
     notifications = db.relationship('Notification', backref='sale', lazy='dynamic')
+
 
 
     def serialize(self):
@@ -194,7 +246,14 @@ class Shop(BaseModel):
     shop_sales = db.relationship('ShopSale', backref='shop', lazy='dynamic')
     sale_details = db.relationship('SaleDetail', backref='shop', lazy='dynamic')
     ratings = db.relationship('Rating', backref='shop', lazy='dynamic')
-    notifications = db.relationship('Notification', backref='shop', lazy='dynamic', foreign_keys='Notification.shop_id')
+    notifications_received = db.relationship('Notification', 
+                                             primaryjoin="and_(Shop.id==Notification.recipient_id, "
+                                                         "Notification.recipient_type=='shop')",
+                                             backref='recipient_shop', lazy='dynamic', foreign_keys=[Notification.recipient_id])
+    notifications_sent = db.relationship('Notification',
+                                         primaryjoin="and_(Shop.id==Notification.sender_id, "
+                                                     "Notification.sender_type=='shop')",
+                                         backref='sender_shop', lazy='dynamic', foreign_keys=[Notification.sender_id])
     item_change_requests = db.relationship('ItemChangeRequest', backref='shop', lazy='dynamic')
     sale_details = db.relationship('SaleDetail', back_populates='shop', lazy='dynamic')
 
@@ -356,7 +415,10 @@ class Admin_User(BaseModel):
     last_login = db.Column(db.DateTime)
 
     item_change_requests = db.relationship('ItemChangeRequest', backref='admin_user', lazy='dynamic')
-    notifications = db.relationship('Notification', backref='admin', lazy='dynamic', foreign_keys='Notification.admin_id')
+    notifications = relationship('Notification', backref='user', lazy='dynamic',
+                                 foreign_keys='Notification.recipient_id',
+                                 primaryjoin='and_(Admin_User.id == Notification.recipient_id, '
+                                             'Notification.recipient_type == "admin")')
 
     def __repr__(self):
         return f'<Admin_User {self.email}>'
@@ -380,60 +442,13 @@ class Admin_User(BaseModel):
             "updated_at": self.updated_at
         }
 
-class Notification(BaseModel):
-    __tablename__ = "notifications"
-
-    recipient_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    shop_id = db.Column(db.Integer, db.ForeignKey('shops.id'), nullable=True)
-    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=True)
-    admin_id = db.Column(db.Integer, db.ForeignKey('admin_users.id'), nullable=True)
-    type = db.Column(db.String(50), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    is_read = db.Column(db.Boolean, default=False, nullable=False)
-    item_change_request_id = db.Column(db.Integer, db.ForeignKey('item_change_requests.id'), nullable=True)
-
-    def serialize(self):
-        return {
-            'id': self.id,
-            'recipient_id': self.recipient_id,
-            'shop_id': self.shop_id,
-            'sale_id': self.sale_id,
-            'admin_id': self.admin_id,
-            'type': self.type,
-            'content': self.content,
-            'is_read': self.is_read,
-            'created_at': self.created_at,
-            'item_change_request_id': self.item_change_request_id
-        }
-
-    def serialize_users(self):
-        return {
-            'id': self.id,
-            'recipient_id': self.recipient_id,
-            'sale_id': self.sale_id,
-            'type': self.type,
-            'content': self.content,
-            'is_read': self.is_read,
-            'created_at': self.created_at,
-        }
-    
-    def serialize_shops(self):
-        return {
-            'id': self.id,
-            'shop_id': self.shop_id,
-            'sale_id': self.sale_id,
-            'type': self.type,
-            'content': self.content,
-            'is_read': self.is_read,
-            'created_at': self.created_at,
-            'item_change_request_id': self.item_change_request_id
-        }
 
 class BoxItem(BaseModel):
     __tablename__ = "box_items"
 
     sale_detail_id = db.Column(db.Integer, db.ForeignKey('sale_details.id'), nullable=False)
     item_name = db.Column(db.String(100), nullable=False)
+    status = db.Column
 
     sale_detail = db.relationship('SaleDetail', back_populates='box_items')
     change_requests = db.relationship('ItemChangeRequest', back_populates='box_item')
@@ -461,7 +476,20 @@ class ItemChangeRequest(BaseModel):
     admin_comment = db.Column(db.Text, nullable=True)
 
     box_item = db.relationship('BoxItem', back_populates='change_requests')
-    notifications = db.relationship('Notification', backref='item_change_request', lazy='dynamic')
+    
+    notifications = db.relationship(
+        'Notification',
+        primaryjoin=lambda: and_(
+            foreign(cast(func.jsonb_extract_path_text(Notification.extra_data, 'item_change_request_id'), Integer)) == ItemChangeRequest.id,
+            Notification.type.in_(["item_change_request", "change_request_result"])
+        ),
+        viewonly=True,
+        lazy='dynamic'
+    )
+
+    @hybrid_property
+    def notification_count(self):
+        return self.notifications.count()
 
     def serialize(self):
         return {
@@ -475,5 +503,6 @@ class ItemChangeRequest(BaseModel):
             'admin_id': self.admin_id,
             'admin_comment': self.admin_comment,
             'created_at': self.created_at,
-            'updated_at': self.updated_at
+            'updated_at': self.updated_at,
+            'notification_count': self.notification_count
         }

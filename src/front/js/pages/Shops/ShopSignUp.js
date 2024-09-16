@@ -100,7 +100,7 @@ export default function ShopSignUp() {
         }
       );
       console.log("Tienda registrada:", response.data);
-      navigate("/shophome");
+      navigate("/");
     } catch (error) {
       console.error("Ha habido un error:", error);
       if (error.response) {

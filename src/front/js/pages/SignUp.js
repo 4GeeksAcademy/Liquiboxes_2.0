@@ -29,7 +29,7 @@ export default function SignUp() {
   const [step, setStep] = useState(1);
   const [signupData, setSignUpData] = useState({
     name: "", surname: "", gender: "", address: "", postalCode: "",
-    email: "", password: "", upperSize: "", lowerSize: "", cupSize: "", shoeSize: "",
+    email: "", password: "", upperSize: "", lowerSize: "", capSize: "", shoeSize: "",
     notColors: [], stamps: "", fit: "", notClothes: [], categories: [], profession: "",
   });
   const [errors, setErrors] = useState({});
@@ -87,6 +87,7 @@ export default function SignUp() {
       case 3:
         if (!signupData.upperSize) newErrors.upperSize = "La talla superior es requerida";
         if (!signupData.lowerSize) newErrors.lowerSize = "La talla inferior es requerida";
+        if (!signupData.capSize) newErrors.capSize = "La talla de gorra o sombrero es requerida";
         if (!signupData.shoeSize) newErrors.shoeSize = "La talla de zapato es requerida";
         break;
       case 4:
@@ -182,7 +183,8 @@ export default function SignUp() {
             {errors.upperSize && <span className="error">{errors.upperSize}</span>}
             {renderSelect("lowerSize", SIZES.lower, "Talla Inferior")}
             {errors.lowerSize && <span className="error">{errors.lowerSize}</span>}
-            {renderSelect("cupSize", SIZES.upper, "Talla de Gorra o Sombrero (opcional)")}
+            {renderSelect("capSize", SIZES.upper, "Talla de Gorra o Sombrero")}
+            {errors.capSize && <span className="error">{errors.capSize}</span>}
             {renderSelect("shoeSize", SIZES.shoe, "Talla de Zapato (EU)")}
             {errors.shoeSize && <span className="error">{errors.shoeSize}</span>}
           </>
@@ -253,8 +255,8 @@ export default function SignUp() {
         <div className="navigation-buttons">
           {step > 1 && <button type="button" onClick={() => setStep(prev => prev - 1)}>Anterior</button>}
           {step < 6 ? (
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => {
                 if (validateStep()) setStep(prev => prev + 1);
               }}
