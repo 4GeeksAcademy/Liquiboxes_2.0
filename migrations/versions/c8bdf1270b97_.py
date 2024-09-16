@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: aa6a34d05270
+Revision ID: c8bdf1270b97
 Revises: 
-Create Date: 2024-09-13 20:51:08.386482
+Create Date: 2024-09-16 15:29:07.464052
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'aa6a34d05270'
+revision = 'c8bdf1270b97'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -106,15 +106,15 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.Column('type', sa.Enum('ITEM_CHANGE_REQUEST', 'CHANGE_REQUEST_RESULT', 'ITEM_CHANGED', 'NEW_SALE', 'CONFIRMATION', name='notificationtype'), nullable=False),
+    sa.Column('type', sa.String(length=50), nullable=False),
     sa.Column('recipient_type', sa.String(length=50), nullable=False),
-    sa.Column('recipient_id', sa.Integer(), nullable=True),
     sa.Column('sender_type', sa.String(length=50), nullable=False),
-    sa.Column('sender_id', sa.Integer(), nullable=False),
-    sa.Column('sale_id', sa.Integer(), nullable=True),
-    sa.Column('shop_id', sa.Integer(), nullable=True),
     sa.Column('content', sa.String(length=500), nullable=False),
     sa.Column('is_read', sa.Boolean(), nullable=False),
+    sa.Column('recipient_id', sa.Integer(), nullable=True),
+    sa.Column('sender_id', sa.Integer(), nullable=True),
+    sa.Column('sale_id', sa.Integer(), nullable=True),
+    sa.Column('shop_id', sa.Integer(), nullable=True),
     sa.Column('extra_data', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.ForeignKeyConstraint(['sale_id'], ['sales.id'], ),
     sa.ForeignKeyConstraint(['shop_id'], ['shops.id'], ),
