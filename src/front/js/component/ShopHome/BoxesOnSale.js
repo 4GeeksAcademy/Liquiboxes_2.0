@@ -32,28 +32,49 @@ function BoxesOnSale({ shopData }) {
   }
 
   const handleInputChange = (e) => {
-    const { name, value, } = e.target;
-    setSelectedBox({
-      ...selectedBox,
-      [name]: value,
-    });
+    const { name, value, type } = e.target;
+
+    if (type === 'file') {
+      const file = e.target.files[0]
+    console.log(file)
+      setSelectedBox({
+        ...selectedBox,
+        [name]: file, // Guardamos el archivo como un objeto File
+      });
+    } else {
+      setSelectedBox({
+        ...selectedBox,
+        [name]: value,
+      });
+    }
   };
 
+
   const handleSave = async (box) => {
-    const token = sessionStorage.getItem('token')
+    const token = sessionStorage.getItem('token');
+    const formData = new FormData(); // Usamos FormData para enviar la imagen
+    for (const key in selectedBox) {
+      formData.append(key, selectedBox[key]);
+    }
+
     try {
-      const response = await axios.put(`${process.env.BACKEND_URL}/shops/mystery-box/${box.id}`,
-        selectedBox,
-        { headers: { Authorization: `Bearer ${token}`}, 
-      });
-
-
-      console.log(response)
+      const response = await axios.put(
+        `${process.env.BACKEND_URL}/shops/mystery-box/${box.id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data', // Importante para que el backend procese la imagen
+            'Authorization': `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(response);
     } catch (error) {
       console.error(error);
     }
-    setShowModal(false); // cierra modal cuando se le da click a guardar cambios
+    setShowModal(false); // Cierra el modal al guardar cambios
   };
+
 
   return (
     <>
@@ -65,8 +86,8 @@ function BoxesOnSale({ shopData }) {
           <div className="col-sm-12 col-md-4 text-center text-md-start">
             <h4 className="fw-bold">{box.name}</h4>
             <p>Total de ventas: {box.total_sales}</p>
-            <button type="button" className="btn btn-link" 
-            onClick={() => navigate(`/mysterybox/${box.id}`)}>Ir a mystery Box
+            <button type="button" className="btn btn-link"
+              onClick={() => navigate(`/mysterybox/${box.id}`)}>Ir a mystery Box
             </button>
           </div>
 
@@ -102,7 +123,8 @@ function BoxesOnSale({ shopData }) {
                   className="form-control"
                   id="mysteryboximg"
                   onChange={handleInputChange}
-                  name="image_url"
+                  name="image_url" // Usa el nombre que tu backend espera
+                  accept="image/*" // Solo acepta imágenes
                 />
               </div>
 
