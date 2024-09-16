@@ -23,6 +23,7 @@ import {
 import "../../styles/profile.css";
 import ProfileField from '../component/Profile/ProfileField';
 import { Context } from '../store/appContext'
+import UserNotifications from '../component/Profile/UserNotifications';
 
 function Profile() {
   const [userData, setUserData] = useState(null);
@@ -306,7 +307,7 @@ function Profile() {
 
     switch (activeSection) {
       case 'notifications':
-        return <div>Aquí irían las notificaciones</div>;
+        return <div><UserNotifications data={userData} /></div>;
       case 'purchases':
         return <div>Aquí iría el historial de compras</div>;
       case 'profile':
