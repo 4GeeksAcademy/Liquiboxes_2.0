@@ -36,9 +36,13 @@ def create_notification():
 @jwt_required()
 def get_user_notifications():
     current_user = get_jwt_identity()
+    
+    if current_user['type'] != 'user':
+        return jsonify({'error': 'You must be logged in as a user'}), 403
+    
     user = User.query.get(current_user['id'])
     if not user:
-        return jsonify({"error": "User not found"}), 403
+        return jsonify({"error": "User not found"}), 404
     
     notifications = Notification.query.filter_by(recipient_id=user.id, recipient_type='user').order_by(Notification.created_at.desc()).all()
     return jsonify([notification.serialize() for notification in notifications]), 200
@@ -47,17 +51,26 @@ def get_user_notifications():
 @jwt_required()
 def get_shop_notifications():
     current_user = get_jwt_identity()
-    shop = Shop.query.get(current_user['id'])
-    if not shop:
-        return jsonify({"error": "Shop not found"}), 403
     
-    notifications = Notification.query.filter_by(recipient_id=shop.id, recipient_type='shop').order_by(Notification.created_at.desc()).all()
+    if current_user['type'] != 'shop':
+        return jsonify({'error': 'You must be logged in as a shop'}), 403
+    
+    current_shop = Shop.query.get(current_user['id'])
+    
+    if not current_shop:
+        return jsonify({"error": "Shop not found"}), 404
+    
+    notifications = Notification.query.filter_by(recipient_id=current_shop.id, recipient_type='shop').order_by(Notification.created_at.desc()).all()
     return jsonify([notification.serialize() for notification in notifications]), 200
 
 @notifications.route('/admin', methods=['GET'])
 @jwt_required()
-def get_amin_notifications():
+def get_admin_notifications():
     current_user = get_jwt_identity()
+    
+    if current_user['type'] not in ['SuperAdmin', 'Admin']:
+        return jsonify({'error': 'You must be logged in as a SuperAdmin or Admin'}), 403
+    
     admin = Admin_User.query.get(current_user['id'])
     if not admin:
         return jsonify({"error": "Admin not found"}), 404
@@ -72,9 +85,10 @@ def mark_notification_as_read(notification_id):
     if not notification:
         return jsonify({"success": False, "error": "Notification not found"}), 404
     
-    notification.is_read = True
+    is_read = request.json.get('is_read', True)  # Por defecto, marca como leída si no se especifica
+    notification.is_read = is_read
     db.session.commit()
-    return jsonify({"success": True, "message": "Notification marked as read"}), 200
+    return jsonify({"success": True, "message": f"Notification marked as {'read' if is_read else 'unread'}"}), 200
 
 @notifications.route('/<int:notification_id>/change_type', methods=['PATCH'])
 @jwt_required()
