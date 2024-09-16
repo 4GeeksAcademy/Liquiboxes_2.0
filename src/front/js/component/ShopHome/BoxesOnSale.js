@@ -70,10 +70,10 @@ function BoxesOnSale({ shopData }) {
   const handleSave = async (box) => {
     const token = sessionStorage.getItem('token');
     const formData = new FormData();
-
+    
     for (const key in selectedBox) {
       if (key === 'possible_items') {
-        formData.append(key, JSON.stringify(selectedBox[key]));
+        formData.append(key, selectedBox[key].join(','));
       } else if (key === 'image_url' && selectedBox[key] instanceof File) {
         formData.append(key, selectedBox[key], selectedBox[key].name);
       } else {
