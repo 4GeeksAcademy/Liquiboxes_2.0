@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faFilter, faCheck, faTimes, faExchange, faTruck, faPrint } from '@fortawesome/free-solid-svg-icons';
-import { Modal, ProgressBar, Button, Form, Table } from 'react-bootstrap';
+import { faBell, faEnvelope, faEnvelopeOpen, faFilter, faCheck, faTimes, faExchange, faTruck, faPrint, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button, Form, Table } from 'react-bootstrap';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 
@@ -22,6 +22,9 @@ const ShopNotifications = () => {
   const [showChangeRequestForm, setShowChangeRequestForm] = useState(false);
   const [selectedItemForChange, setSelectedItemForChange] = useState(null);
   const [userPreferences, setUserPreferences] = useState(null);
+  const [shopSaleStatus, setShopSaleStatus] = useState(null);
+
+  const delay = ms => new Promise(res => setTimeout(res, ms));
 
   useEffect(() => {
     fetchNotifications();
@@ -69,8 +72,13 @@ const ShopNotifications = () => {
         setFilteredNotifications(notifications.filter(n => n.is_read));
         break;
       case 'new_sale':
-      case 'change_request_result':
-        setFilteredNotifications(notifications.filter(n => n.type === filter));
+        setFilteredNotifications(notifications.filter(n => n.type === "new_sale"));
+        break;
+      case 'change_request':
+        setFilteredNotifications(notifications.filter(n => n.type === 'change_request'));
+        break;
+      case 'confirmed':
+        setFilteredNotifications(notifications.filter(n => n.type === 'confirmed'));
         break;
       default:
         setFilteredNotifications(notifications);
@@ -78,6 +86,7 @@ const ShopNotifications = () => {
   };
 
   const handleNotificationClick = async (notification) => {
+    console.log(notification)
     setSelectedNotification(notification);
     setIsModalOpen(true);
     if (!notification.is_read) {
@@ -112,6 +121,7 @@ const ShopNotifications = () => {
       const allItems = response.data.sale_details.flatMap(detail => detail.box_items);
       setItems(allItems.map(item => ({ ...item, isConfirmed: undefined })));
       fetchUserPreferences(response.data.user_id);
+      await delay(1000);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching order details:', error);
@@ -121,6 +131,7 @@ const ShopNotifications = () => {
   };
 
   const fetchUserPreferences = async (userId) => {
+    setLoading(true)
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/users/${userId}`, {
         headers: {
@@ -128,6 +139,8 @@ const ShopNotifications = () => {
         }
       });
       setUserPreferences(response.data);
+      console.log(response.data)
+      setLoading(false)
     } catch (error) {
       console.error('Error fetching user preferences:', error);
       setError('Failed to fetch user preferences. Please try again.');
@@ -135,15 +148,16 @@ const ShopNotifications = () => {
   };
 
   const handleItemConfirmation = async (itemId, isConfirmed) => {
-
     setItems(items.map(item =>
       item.id === itemId ? { ...item, isConfirmed } : item
     ));
-    
   };
 
-  const handleItemChange = (item) => {
+  const handleItemChange = async (item) => {
     setSelectedItemForChange(item);
+    setLoading(true);
+    await delay(2000);
+    setLoading(false);
     setShowChangeRequestForm(true);
   };
 
@@ -153,13 +167,11 @@ const ShopNotifications = () => {
     const changeRequestData = {
       box_item_id: selectedItemForChange.id,
       proposed_item_name: formData.get('proposed_item_name'),
-      proposed_item_size: formData.get('proposed_item_size'),
-      proposed_item_category: formData.get('proposed_item_category'),
       reason: formData.get('reason')
     };
 
     try {
-      const response = await axios.post(`${process.env.BACKEND_URL}/shops/create-change-request`, changeRequestData, {
+      const response = await axios.post(`${process.env.BACKEND_URL}/notifications/change-request`, changeRequestData, {
         headers: {
           Authorization: `Bearer ${sessionStorage.getItem('token')}`
         }
@@ -175,51 +187,189 @@ const ShopNotifications = () => {
 
   const handleOrderConfirmation = async () => {
     try {
+      // Obtener los detalles de envío
       const shipmentResponse = await axios.get(`${process.env.BACKEND_URL}/users/${orderDetails.user_id}/shipment`, {
         headers: {
           Authorization: `Bearer ${sessionStorage.getItem('token')}`
         }
       });
       setShippingDetails(shipmentResponse.data);
-      alert('Order confirmed successfully!');
+  
+      // Confirmar el pedido
+      const orderConfirmation = await axios.post(
+        `${process.env.BACKEND_URL}/sales/shop/${orderDetails.id}/confirm`,
+        {}, // Cuerpo vacío, ya que no estamos enviando datos
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`
+          }
+        }
+      );
+  
+      if (orderConfirmation.status === 200) {
+        // Actualizar el estado local
+        setShopSaleStatus('confirmed');
+        setSelectedNotification(prevNotification => ({
+          ...prevNotification,
+          type: 'confirmed'
+        }));
+  
+        // Generar y descargar el PDF
+        generatePDF(shipmentResponse.data);
+  
+        // Mostrar mensaje de éxito
+        alert('¡Pedido confirmado con éxito!');
+  
+        // Opcionalmente, actualizar la lista de notificaciones
+        fetchNotifications();
+      } else {
+        throw new Error('La confirmación del pedido no fue exitosa');
+      }
     } catch (error) {
-      console.error('Error confirming order:', error);
-      setError('Failed to confirm order. Please try again.');
+      console.error('Error al confirmar el pedido:', error);
+      
+      let errorMessage = 'No se pudo confirmar el pedido. Por favor, inténtalo de nuevo.';
+      if (error.response) {
+        // El servidor respondió con un estado fuera del rango de 2xx
+        errorMessage = error.response.data.error || errorMessage;
+      } else if (error.request) {
+        // La petición fue hecha pero no se recibió respuesta
+        errorMessage = 'No se pudo conectar con el servidor. Por favor, verifica tu conexión.';
+      }
+      
+      setError(errorMessage);
     }
   };
 
-  
 
-  const generatePDF = () => {
+  const generatePDF = (shippingDetails) => {
     const doc = new jsPDF();
 
-    // Add title
-    doc.setFontSize(18);
-    doc.text('Order Receipt', 105, 15, null, null, 'center');
+    // Establecer colores basados en variables CSS
+    const primaryColor = '#6a8e7f';
+    const secondaryColor = '#073b3a';
+    const textColor = '#28112b';
 
-    // Add order details
+    // Encabezado
+    doc.setFillColor(primaryColor);
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor('#ffffff');
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Recibo del pedido: ${orderDetails?.id || 'N/A'}`, 105, 25, null, null, 'center');
+
+    // Restablecer color de texto
+    doc.setTextColor(textColor);
+
+    // Detalles del pedido
     doc.setFontSize(12);
-    doc.text(`Order ID: ${orderDetails.id}`, 20, 30);
-    doc.text(`Date: ${new Date(orderDetails.date).toLocaleString()}`, 20, 40);
-    doc.text(`Total Amount: ${orderDetails.total_amount} €`, 20, 50);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`ID de Pedido: ${orderDetails?.id || 'N/A'}`, 20, 50);
+    doc.text(`Fecha: ${orderDetails?.date ? new Date(orderDetails.date).toLocaleString('es-ES') : 'N/A'}`, 20, 60);
+    doc.text(`Importe Total: ${orderDetails?.total_amount ? `${orderDetails.total_amount} €` : 'N/A'}`, 20, 70);
 
-    // Add shipping details
-    doc.text('Shipping Details:', 20, 70);
-    doc.text(`Name: ${shippingDetails.name} ${shippingDetails.surname}`, 30, 80);
-    doc.text(`Email: ${shippingDetails.email}`, 30, 90);
-    doc.text(`Address: ${shippingDetails.address}`, 30, 100);
-    doc.text(`Postal Code: ${shippingDetails.postal_code}`, 30, 110);
+    // Detalles de envío
+    doc.setFillColor(secondaryColor);
+    doc.rect(20, 80, 170, 7, 'F');
+    doc.setTextColor('#ffffff');
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detalles de Envío', 25, 85);
 
-    // Add items table
-    const itemsData = items.map(item => [item.item_name]);
-    doc.autoTable({
-      startY: 130,
-      head: [['Item']],
-      body: itemsData,
-    });
+    doc.setTextColor(textColor);
+    doc.setFont('helvetica', 'normal');
+    if (shippingDetails) {
+      doc.text(`Nombre: ${shippingDetails.name || ''} ${shippingDetails.surname || ''}`, 25, 95);
+      doc.text(`Correo Electrónico: ${shippingDetails.email || 'N/A'}`, 25, 105);
+      doc.text(`Dirección: ${shippingDetails.address || 'N/A'}`, 25, 115);
+      doc.text(`Código Postal: ${shippingDetails.postal_code || 'N/A'}`, 25, 125);
+    } else {
+      doc.text('Información de envío no disponible', 25, 95);
+    }
 
-    // Save the PDF
-    doc.save('order_receipt.pdf');
+    // Preferencias del usuario
+    doc.setFillColor(secondaryColor);
+    doc.rect(20, 135, 170, 7, 'F');
+    doc.setTextColor('#ffffff');
+    doc.setFont('helvetica', 'bold');
+    doc.text('Preferencias del Usuario', 25, 140);
+
+    doc.setTextColor(textColor);
+    doc.setFont('helvetica', 'normal');
+    let yPos = 150;
+    if (userPreferences) {
+      for (const [key, value] of Object.entries(userPreferences)) {
+        doc.text(`${key}: ${value || 'N/A'}`, 25, yPos);
+        yPos += 10;
+      }
+    } else {
+      doc.text('Preferencias del usuario no disponibles', 25, yPos);
+      yPos += 10;
+    }
+
+    // Tabla de artículos
+    if (items && items.length > 0) {
+      // Agrupar items y contar repeticiones
+      const groupedItems = items.reduce((acc, item) => {
+        acc[item.item_name] = (acc[item.item_name] || 0) + 1;
+        return acc;
+      }, {});
+
+      const itemsData = Object.entries(groupedItems).map(([itemName, count]) =>
+        count > 1 ? [itemName, count] : [itemName]
+      );
+
+      doc.autoTable({
+        startY: yPos + 10,
+        head: [['Artículo', 'Cantidad']],
+        body: itemsData,
+        styles: {
+          textColor: [0, 0, 0], // Negro para mejor legibilidad
+          cellPadding: 5,
+        },
+        headStyles: {
+          fillColor: [primaryColor],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+        },
+        alternateRowStyles: {
+          fillColor: [230, 230, 230],
+        },
+        margin: { top: 10 },
+        columnStyles: {
+          0: { cellWidth: 'auto' },
+          1: { cellWidth: 30, halign: 'center' },
+        },
+      });
+    } else {
+      doc.text('No hay artículos disponibles', 20, yPos + 20);
+    }
+
+    // Pie de página
+    const pageCount = doc.internal.getNumberOfPages();
+    doc.setFontSize(10);
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.text(`Página ${i} de ${pageCount}`, 105, 290, null, null, 'center');
+    }
+
+    // Guardar el PDF
+    doc.save(`recibo_pedido_${orderDetails?.id || 'N/A'}.pdf`);
+  };
+
+  const handlePDFDownload = () => {
+    if (orderDetails && shippingDetails) {
+      generatePDF(shippingDetails);
+    } else {
+      alert('No se pueden obtener los detalles necesarios para generar el PDF.');
+    }
+  };
+
+  const capitalize = (str) => {
+    return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
+  };
+
+  const formatArray = (arr) => {
+    return Array.isArray(arr) ? arr.map(capitalize).join(', ') : '';
   };
 
   const renderNotificationDetails = () => {
@@ -227,126 +377,128 @@ const ShopNotifications = () => {
 
     switch (selectedNotification.type) {
       case 'new_sale':
-        if (loading) return <div>Loading...</div>;
+      case 'item_change_approved':
+      case 'confirmed':
+        if (loading) return <div>Cargando...</div>;
         if (error) return <div className="error">{error}</div>;
-        if (!orderDetails) return <div>No order details found.</div>;
+        if (!orderDetails) return <div>No se encontraron detalles del pedido.</div>;
 
         return (
           <div className="order-confirmation">
-            <h2>Order Confirmation:</h2>
+            <h2>
+              {selectedNotification.type === 'new_sale' ? 'Nueva Venta:' :
+                selectedNotification.type === 'item_change_approved' ? 'Cambio de Artículo Aprobado:' :
+                  'Venta Confirmada:'}
+            </h2>
             <div className="order-details">
-              <h3>Order Details</h3>
-              <p>ID: {orderDetails.id}</p>
-              <p>Date: {new Date(orderDetails.date).toLocaleString()}</p>
-              <p>Total Amount: {orderDetails.total_amount} €</p>
+              <h3>Detalles de la orden</h3>
+              <p>ID Orden: {orderDetails.id}</p>
+              <p>Fecha de la compra: {new Date(orderDetails.date).toLocaleString()}</p>
+              <p>Cantidad Total: {orderDetails.total_amount} €</p>
             </div>
             {userPreferences && (
               <div className="user-preferences">
-                <h3>User Preferences</h3>
+                <h3>Preferencias del comprador:</h3>
                 <Table striped bordered hover>
                   <tbody>
-                    <tr><td>Gender</td><td>{userPreferences.gender}</td></tr>
-                    <tr><td>Upper Size</td><td>{userPreferences.upper_size}</td></tr>
-                    <tr><td>Lower Size</td><td>{userPreferences.lower_size}</td></tr>
-                    <tr><td>Cap Size</td><td>{userPreferences.cap_size}</td></tr>
-                    <tr><td>Shoe Size</td><td>{userPreferences.shoe_size}</td></tr>
-                    <tr><td>Not Colors</td><td>{userPreferences.not_colors}</td></tr>
-                    <tr><td>Stamps</td><td>{userPreferences.stamps}</td></tr>
-                    <tr><td>Fit</td><td>{userPreferences.fit}</td></tr>
-                    <tr><td>Not Clothes</td><td>{userPreferences.not_clothes}</td></tr>
-                    <tr><td>Categories</td><td>{userPreferences.categories}</td></tr>
-                    <tr><td>Profession</td><td>{userPreferences.profession}</td></tr>
+                    <tr><td>Género</td><td>{userPreferences.gender ? capitalize(userPreferences.gender) : 'No especificado por el usuario'}</td></tr>
+                    <tr><td>Talla Superior</td><td>{userPreferences.upper_size ? userPreferences.upper_size.toUpperCase() : 'No especificada por el usuario'}</td></tr>
+                    <tr><td>Talla Inferior</td><td>{userPreferences.lower_size || 'No especificada por el usuario'}</td></tr>
+                    <tr><td>Talla de Gorra</td><td>{userPreferences.cap_size ? capitalize(userPreferences.cap_size) : 'No especificado por el usuario'}</td></tr>
+                    <tr><td>Talla de Calzado</td><td>{userPreferences.shoe_size || 'No especificada por el usuario'}</td></tr>
+                    <tr><td>Colores menos preferidos</td><td>{userPreferences.not_colors ? formatArray(userPreferences.not_colors) : 'No especificados por el usuario'}</td></tr>
+                    <tr><td>Estampados en la ropa</td><td>{userPreferences.stamps ? capitalize(userPreferences.stamps) : 'No especificados por el usuario'}</td></tr>
+                    <tr><td>Ajuste de la ropa</td><td>{userPreferences.fit ? capitalize(userPreferences.fit) : 'No especificado por el usuario'}</td></tr>
+                    <tr><td>Prendas no deseadas</td><td>{userPreferences.not_clothes ? formatArray(userPreferences.not_clothes) : 'No especificadas por el usuario'}</td></tr>
+                    <tr><td>Categorías</td><td>{userPreferences.categories ? formatArray(userPreferences.categories) : 'No especificadas por el usuario'}</td></tr>
+                    <tr><td>Profesión</td><td>{userPreferences.profession ? capitalize(userPreferences.profession) : 'No especificada por el usuario'}</td></tr>
                   </tbody>
                 </Table>
               </div>
             )}
             <div className="items-list">
-              <h3>Items to Include:</h3>
+              <h3>Artículos a incluir:</h3>
               {items.map(item => (
                 <div key={item.id} className="item">
                   <span>{item.item_name}</span>
-                  <div className="item-actions">
-                    <Button onClick={() => handleItemConfirmation(item.id, true)} disabled={item.isConfirmed === true}>
-                      <FontAwesomeIcon icon={faCheck} /> Confirm Stock
-                    </Button>
-                    <Button onClick={() => handleItemChange(item)} className='ms-3'>
-                      <FontAwesomeIcon icon={faExchange} /> Change for Another
-                    </Button>
+                  <div className="item-actions my-3">
+                    {selectedNotification.type !== 'confirmed' && shopSaleStatus !== 'confirmed' && (
+                      <>
+                        <Button onClick={() => handleItemConfirmation(item.id, true)} disabled={item.isConfirmed === true}>
+                          <FontAwesomeIcon icon={faCheck} /> Confirmar Stock
+                        </Button>
+                        {shopSaleStatus !== 'pending_confirmation' && (
+                          <Button onClick={() => handleItemChange(item)} className='ms-3'>
+                            <FontAwesomeIcon icon={faExchange} /> Cambiar Artículo
+                          </Button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
-            <Button
-              className="confirm-order"
-              onClick={handleOrderConfirmation}
-              disabled={items.some(item => item.isConfirmed === undefined)}
-            >
-              <FontAwesomeIcon icon={faTruck} /> Confirm Order and Get Shipping Data
-            </Button>
-            {shippingDetails && (
-              <div className="shipping-details">
-                <h3>Shipping Details</h3>
-                <p>Name: {shippingDetails.name} {shippingDetails.surname}</p>
-                <p>Email: {shippingDetails.email}</p>
-                <p>Address: {shippingDetails.address}</p>
-                <p>Postal Code: {shippingDetails.postal_code}</p>
-                <Button onClick={generatePDF}>
-                  <FontAwesomeIcon icon={faPrint} /> Generate PDF Receipt
-                </Button>
-              </div>
+            {selectedNotification.type !== 'confirmed' && shopSaleStatus !== 'confirmed' ? (
+              <Button
+                className="confirm-order my-3"
+                onClick={handleOrderConfirmation}
+                disabled={items.some(item => item.isConfirmed === undefined) || shopSaleStatus === 'pending_confirmation'}
+              >
+                <FontAwesomeIcon icon={faTruck} /> Confirmar Pedido y Obtener Datos de Envío
+              </Button>
+            ) : (
+              <Button
+                className="download-pdf my-3"
+                onClick={handlePDFDownload}
+              >
+                <FontAwesomeIcon icon={faDownload} /> Descargar PDF del Pedido
+              </Button>
             )}
           </div>
         );
-      case 'change_request_result':
-        return (
-          <div>
-            <h5>Change Request Result</h5>
-            <p>{selectedNotification.content}</p>
-            <p>Request ID: {selectedNotification.item_change_request_id}</p>
-          </div>
-        );
-      default:
-        return <p>{selectedNotification.content}</p>;
     }
   };
 
   return (
     <div className="shop-notifications container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="mb-0">Notifications</h2>
+        <h2 className="mb-0">Notificaciones</h2>
         <div className="d-flex align-items-center">
           <FontAwesomeIcon icon={faBell} className="mr-2" />
           <span className="badge bg-primary">
-            {notifications.filter(n => !n.is_read).length} Unread
+            {notifications.filter(n => !n.is_read).length} No leídas
           </span>
         </div>
       </div>
 
       <div className="mb-4">
         <Button onClick={() => setFilter('all')} variant={filter === 'all' ? 'primary' : 'outline-primary'} className="mr-2">
-          All
+          Todas
         </Button>
         <Button onClick={() => setFilter('unread')} variant={filter === 'unread' ? 'primary' : 'outline-primary'} className="mr-2">
-          Unread
+          No Leídas
         </Button>
         <Button onClick={() => setFilter('read')} variant={filter === 'read' ? 'primary' : 'outline-primary'} className="mr-2">
-          Read
+          Leídas
         </Button>
         <Button onClick={() => setFilter('new_sale')} variant={filter === 'new_sale' ? 'primary' : 'outline-primary'} className="mr-2">
-          New Sales
+          Nueva Venta
         </Button>
-        <Button onClick={() => setFilter('change_request_result')} variant={filter === 'change_request_result' ? 'primary' : 'outline-primary'}>
-          Change Requests
+        <Button onClick={() => setFilter('change_request')} variant={filter === 'change_request_result' ? 'primary' : 'outline-primary'}>
+          Propuesta de Cambio
+        </Button>
+        <Button onClick={() => setFilter('confirmed')} variant={filter === 'confirmed' ? 'primary' : 'outline-primary'}>
+          Ventas Confirmadas
         </Button>
       </div>
 
       <table className="table table-hover">
         <thead>
           <tr>
-            <th>Type</th>
-            <th>Content</th>
-            <th>Date</th>
-            <th>Status</th>
+            <th>Tipo</th>
+            <th>Contenido</th>
+            <th>Fecha</th>
+            <th>Estado</th>
           </tr>
         </thead>
         <tbody>
@@ -372,42 +524,34 @@ const ShopNotifications = () => {
 
       <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Notification Details</Modal.Title>
+          <Modal.Title>Detalles de la Notificación</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {renderNotificationDetails()}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Close</Button>
+          <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
         </Modal.Footer>
       </Modal>
 
       <Modal show={showChangeRequestForm} onHide={() => setShowChangeRequestForm(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Create Change Request</Modal.Title>
+          <Modal.Title>Crear Solicitud de Cambio</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleChangeRequestSubmit}>
             <Form.Group>
-              <Form.Label>Original Item: {selectedItemForChange?.item_name}</Form.Label>
+              <Form.Label>Artículo Original: {selectedItemForChange?.item_name}</Form.Label>
             </Form.Group>
             <Form.Group>
-              <Form.Label>Proposed Item Name</Form.Label>
+              <Form.Label>Nombre del Artículo Propuesto</Form.Label>
               <Form.Control type="text" name="proposed_item_name" required />
             </Form.Group>
             <Form.Group>
-              <Form.Label>Proposed Item Size</Form.Label>
-              <Form.Control type="text" name="proposed_item_size" required />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Proposed Item Category</Form.Label>
-              <Form.Control type="text" name="proposed_item_category" required />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Reason for Change</Form.Label>
+              <Form.Label>Razón del Cambio</Form.Label>
               <Form.Control as="textarea" name="reason" required />
             </Form.Group>
-            <Button type="submit">Submit Change Request</Button>
+            <Button type="submit">Enviar Solicitud de Cambio</Button>
           </Form>
         </Modal.Body>
       </Modal>

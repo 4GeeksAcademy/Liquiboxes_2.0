@@ -41,29 +41,13 @@ def register_user():
         db.session.rollback()
         return jsonify({'error': 'Error al crear el usuario: ' + str(e)}), 500
 
-@users.route('/login', methods=['POST'])
-def user_login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-
-    user = User.query.filter_by(email=email).first()
-    if user and user.check_password(password):
-        access_token = create_access_token(identity={
-            'id': user.id,
-            'email': user.email,
-            'type': 'normal'
-        })
-        return jsonify({
-            'access_token': access_token,
-            'user': user.serialize()
-        }), 200
-    return jsonify({'error': 'Credenciales inválidas'}), 401
-
 @users.route('/profile', methods=['GET'])
 @jwt_required()
 def get_user_profile():
     current_user = get_jwt_identity()
+    if current_user['type'] != 'user':
+        return jsonify({'error': 'You are not a normal user'}), 403
+    
     user = User.query.get(current_user['id'])
     if not user:
         return jsonify({"error": "Usuario no encontrado"}), 404
@@ -73,6 +57,9 @@ def get_user_profile():
 @jwt_required()
 def update_user_profile():
     current_user = get_jwt_identity()
+    if current_user['type'] != 'user':
+        return jsonify({'error': 'You are not a normal user'}), 403
+
     user = User.query.get(current_user['id'])
     
     if not user:
@@ -139,6 +126,11 @@ def get_user_sizes(user_id):
 @users.route('/<int:user_id>/shipment', methods=['GET'])
 @jwt_required()
 def get_user_shipment(user_id):
+    current_user = get_jwt_identity()
+    if current_user['type'] != 'shop':
+        ## TODO: Manejar avisos y registro de usuarios maliciosos.
+        return jsonify({'error': 'You must be logged in as a shop'}), 403
+    
     user = User.query.get(user_id)
     if user:
         return jsonify(user.serialize_shipment()), 200

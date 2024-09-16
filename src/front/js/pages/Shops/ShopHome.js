@@ -42,8 +42,7 @@ function ShopHome() {
       try {
         const response = await axios.get(`${process.env.BACKEND_URL}/shops/profile`, {
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
+            'Authorization': `Bearer ${token}`
           }
         });
 
@@ -85,7 +84,7 @@ function ShopHome() {
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
           }
         }
@@ -207,12 +206,12 @@ function ShopHome() {
         );
       case 'support':
         return <div>
-          <ContactSupport shopData = {shopData} />
+          <ContactSupport shopData={shopData} />
         </div>;
       case 'sales':
         return <div>
           <h2>Estas son tus ventas:</h2>
-          <ShopSales shopData = {shopData}/>
+          <ShopSales shopData={shopData} />
         </div>;
       case 'createBox':
         return <div>
@@ -221,7 +220,7 @@ function ShopHome() {
         </div>;
       case 'boxesOnSale':
         return <div>
-          <BoxesOnSale shopData = {shopData}/>
+          <BoxesOnSale shopData={shopData} />
         </div>;
       default:
         return <div>Selecciona una opción del menú</div>;
