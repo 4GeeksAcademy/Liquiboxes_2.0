@@ -191,6 +191,7 @@ def get_shop_profile():
         if not shop:
             return jsonify({"error": "Shop not found"}), 404
         return jsonify(shop.serialize_detail()), 200
+    
     except SQLAlchemyError as e:
         logging.error(f"Database error: {str(e)}")
         return jsonify({'error': 'Database error occurred'}), 500
@@ -277,6 +278,8 @@ def update_mystery_box(box_id):
         return jsonify({"error": "Shop not found"}), 404
 
     mystery_box = MysteryBox.query.get(box_id)
+    # mystery_box = MysteryBox.query.filter_by(id=box_id, shop_id=current_user.id).first()
+
     if not mystery_box:
         return jsonify({'error': 'Mystery Box not found'}), 404
 

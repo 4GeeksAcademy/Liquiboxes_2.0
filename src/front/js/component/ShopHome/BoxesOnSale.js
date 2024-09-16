@@ -4,57 +4,81 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function BoxesOnSale({ shopData }) {
-  const [showModal, setShowModal] = useState(false); // Estado para mostrar/ocultar el modal
-  const [selectedBox, setSelectedBox] = useState(null); // selecciona la caja a editar 
+  const [showModal, setShowModal] = useState(false);
+  const [selectedBox, setSelectedBox] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [newItem, setNewItem] = useState("");
   const navigate = useNavigate();
-
 
   const handleEditClick = async (box) => {
     try {
-      const response = await axios.get(`${process.env.BACKEND_URL}/shops/mystery-box/${box.id}`)
+      const response = await axios.get(`${process.env.BACKEND_URL}/shops/mystery-box/${box.id}`);
       if (response.data) {
-        console.log(response.data)
+        console.log(response.data);
         setSelectedBox(response.data);
+        setPreviewImage(response.data.image_url);
       }
+    } catch (error) {
+      console.log('error' + error);
     }
-    catch (error) {
-      console.log('error' + error)
-    }
-    setShowModal(true);  // abre el modal cuando se da click en editar
+    setShowModal(true);
   };
 
-  const handleClose = () => { // cierra modal
+  const handleClose = () => {
     setShowModal(false);
+    setPreviewImage(null);
+    setNewItem("");
   };
 
-  if (!shopData || !shopData.mystery_boxes) {
-    return <div>No hay cajas disponibles para mostrar</div>;
-  }
-
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value, type } = e.target;
+    setSelectedBox(prevState => ({
+      ...prevState,
+      [name]: type === 'number' ? parseFloat(value) || '' : value
+    }));
+  };
 
-    if (type === 'file') {
-      const file = e.target.files[0]
-    console.log(file)
-      setSelectedBox({
-        ...selectedBox,
-        [name]: file, // Guardamos el archivo como un objeto File
-      });
-    } else {
-      setSelectedBox({
-        ...selectedBox,
-        [name]: value,
-      });
+  const handleAddItem = (e) => {
+    e.preventDefault();
+    if (newItem.trim() !== "") {
+      setSelectedBox(prevState => ({
+        ...prevState,
+        possible_items: [...prevState.possible_items, newItem.trim()]
+      }));
+      setNewItem("");
     }
   };
 
+  const handleRemoveItem = (index) => {
+    setSelectedBox(prevState => ({
+      ...prevState,
+      possible_items: prevState.possible_items.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setSelectedBox(prevState => ({
+        ...prevState,
+        image_url: file
+      }));
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
 
   const handleSave = async (box) => {
     const token = sessionStorage.getItem('token');
-    const formData = new FormData(); // Usamos FormData para enviar la imagen
+    const formData = new FormData();
+
     for (const key in selectedBox) {
-      formData.append(key, selectedBox[key]);
+      if (key === 'possible_items') {
+        formData.append(key, JSON.stringify(selectedBox[key]));
+      } else if (key === 'image_url' && selectedBox[key] instanceof File) {
+        formData.append(key, selectedBox[key], selectedBox[key].name);
+      } else {
+        formData.append(key, selectedBox[key]);
+      }
     }
 
     try {
@@ -63,16 +87,18 @@ function BoxesOnSale({ shopData }) {
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data', // Importante para que el backend procese la imagen
-            'Authorization': `Bearer ${token}`,
-          },
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+          }
         }
       );
-      console.log(response);
+      console.log('Caja misteriosa actualizada:', response.data);
+      alert('Caja misteriosa actualizada con éxito!');
+      setShowModal(false);
     } catch (error) {
-      console.error(error);
+      console.error('Error al actualizar la caja misteriosa:', error);
+      alert('Hubo un error al actualizar la caja misteriosa. Por favor, inténtalo de nuevo.');
     }
-    setShowModal(false); // Cierra el modal al guardar cambios
   };
 
 
@@ -114,7 +140,9 @@ function BoxesOnSale({ shopData }) {
           <Modal.Body>
             <form>
               <div className="mb-3">
-                <img src={selectedBox.image_url} className="img-fluid" /> {/*INPUT DE LA IMAGEN*/}
+                {previewImage && (
+                  <img src={previewImage} className="img-fluid mb-2" alt="Preview" />
+                )}
                 <label htmlFor="mysteryboximg" className="form-label">
                   Imagen de la mystery Box
                 </label>
@@ -122,9 +150,9 @@ function BoxesOnSale({ shopData }) {
                   type="file"
                   className="form-control"
                   id="mysteryboximg"
-                  onChange={handleInputChange}
-                  name="image_url" // Usa el nombre que tu backend espera
-                  accept="image/*" // Solo acepta imágenes
+                  onChange={handleImageChange}
+                  name="image_url"
+                  accept="image/*"
                 />
               </div>
 
@@ -137,7 +165,7 @@ function BoxesOnSale({ shopData }) {
                   className="form-control"
                   id="mysteryboxname"
                   value={selectedBox.name}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   name="name"
                 />
               </div>
@@ -151,23 +179,41 @@ function BoxesOnSale({ shopData }) {
                   className="form-control"
                   id="mysteryboxnumberofitems"
                   value={selectedBox.number_of_items}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   name="number_of_items"
                 />
               </div>
 
-              <div className="mb-3">  {/*INPUT POSSIBLE ITEMS*/}
+              <div className="mb-3">
                 <label htmlFor="mysteryboxpossibleitems" className="form-label">
                   Items posibles
                 </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="mysteryboxpossibleitems"
-                  value={selectedBox.possible_items}
-                  onChange={handleInputChange}
-                  name="possible_items"
-                />
+                <div className="input-group mb-2">
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newItem}
+                    onChange={(e) => setNewItem(e.target.value)}
+                    placeholder="Añadir nuevo item"
+                  />
+                  <button className="btn btn-outline-secondary" type="button" onClick={handleAddItem}>
+                    Añadir
+                  </button>
+                </div>
+                <ul className="list-group">
+                  {selectedBox.possible_items.map((item, index) => (
+                    <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                      {item}
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleRemoveItem(index)}
+                      >
+                        Eliminar
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
               <div className="mb-3"> {/*INPUT DEL PRECIO*/}
@@ -179,7 +225,7 @@ function BoxesOnSale({ shopData }) {
                   className="form-control"
                   id="mysteryboxprice"
                   value={selectedBox.price}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   name="price"
                 />
               </div>
@@ -193,7 +239,7 @@ function BoxesOnSale({ shopData }) {
                   className="form-control"
                   id="mysteryboxsize"
                   value={selectedBox.size}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   name="size"
                 />
               </div>
@@ -207,7 +253,7 @@ function BoxesOnSale({ shopData }) {
                   className="form-control"
                   id="mysteryboxdescription"
                   value={selectedBox.description}
-                  onChange={handleInputChange}
+                  onChange={handleChange}
                   name="description"
                 />
               </div>
