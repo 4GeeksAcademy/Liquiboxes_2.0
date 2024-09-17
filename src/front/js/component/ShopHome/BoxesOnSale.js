@@ -49,7 +49,6 @@ function BoxesOnSale({ shopData }) {
     }
   };
 
-
   const handleSave = async (box) => {
     const token = sessionStorage.getItem('token');
     const formData = new FormData(); // Usamos FormData para enviar la imagen
