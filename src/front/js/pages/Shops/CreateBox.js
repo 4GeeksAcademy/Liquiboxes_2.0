@@ -121,7 +121,6 @@ const CreateMysteryBox = () => {
         }
     
         const token = sessionStorage.getItem('token');
-        const shopId = sessionStorage.getItem('shopId');
     
         try {
             const response = await axios.post(

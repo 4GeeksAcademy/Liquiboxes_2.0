@@ -26,22 +26,14 @@ class BaseModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-# type of Notifications:
-#     ITEM_CHANGE_REQUEST = "item_change_request"
-#     CHANGE_REQUEST_RESULT = "change_request_result"
-#     ITEM_CHANGED = "item_changed"
-#     NEW_SALE = "new_sale"
-#     CONFIRMATION = "confirmation"
-#     FRAUDULENT_USE = "fraudulent_use"
-#     PURCHASE_CONFIRMATION = "purchase_confirmation"
 
 
 class Notification(BaseModel):
     __tablename__ = "notifications"
 
     type = db.Column(db.String(50), nullable=False)
-    recipient_type = db.Column(db.String(50), nullable=False)  # De momento: user, shop y admin
-    sender_type = db.Column(db.String(50), nullable=False)   # De momento: user, shop, admin y platform
+    recipient_type = db.Column(db.String(50), nullable=False)  # De momento: user, shop o admin
+    sender_type = db.Column(db.String(50), nullable=False)   # De momento: user, shop, admin o platform
     content = db.Column(db.String(500), nullable=False)
     is_read = db.Column(db.Boolean, default=False, nullable=False)
 

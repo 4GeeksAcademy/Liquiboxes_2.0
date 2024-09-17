@@ -16,6 +16,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             userData: null,
             shopDetail: {},
             showError: true,
+            token: ""
         },
         actions: {
             getMessage: async () => {
