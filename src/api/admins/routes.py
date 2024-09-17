@@ -225,22 +225,6 @@ def approve_change():
             else:
                 shop_sale.status = 'changes_requested'
             
-            shop_notification = Notification(
-                type="item_change_approved",
-                recipient_type="shop",
-                recipient_id=change_request.shop_id,
-                sender_type="admin",
-                sender_id=admin_id,
-                content=f"La solicitud de cambio del artículo: {old_item_name} por el artículo: {box_item.item_name} para la venta #{sale.id} ha sido aprobada. Por favor, confirme el pedido actualizado.",
-                sale_id=sale.id,
-                shop_id=change_request.shop_id,
-                extra_data={
-                    'item_change_request_id': change_request.id,
-                    'shop_sale_id': shop_sale.id if shop_sale else None
-                }
-            )
-            db.session.add(shop_notification)
-
             admin_notification = Notification(
                 type="item_change_approved",
                 recipient_type="super_admin",
@@ -273,24 +257,11 @@ def approve_change():
             if original_notification:
                 original_notification.type = "item_change_rejected"
                 original_notification.is_read = False
+                original_notification.content = f"La solicitud de cambio del artículo: {change_request.original_item_name} por el artículo: {change_request.proposed_item_name}, para la venta #{box_item.sale_detail.sale_id} ha sido rechazada. Mensaje del administrador: {change_request.admin_comment}"
                 original_notification.updated_at = datetime.utcnow()
                 db.session.add(original_notification)
 
-            shop_notification = Notification(
-                type="item_change_rejected",
-                recipient_type="shop",
-                recipient_id=change_request.shop_id,
-                sender_type="admin",
-                sender_id=admin_id,
-                content=f"La solicitud de cambio del artículo: {change_request.original_item_name} por el artículo: {change_request.proposed_item_name}, para la venta #{box_item.sale_detail.sale_id} ha sido rechazada. Mensaje del administrador: {change_request.admin_comment}",
-                sale_id=box_item.sale_detail.sale_id,
-                shop_id=change_request.shop_id,
-                extra_data={
-                    'item_change_request_id': change_request.id
-                }
-            )
-            db.session.add(shop_notification)
-
+            
             admin_notification = Notification(
                 type="item_change_rejected",
                 recipient_type="super_admin",

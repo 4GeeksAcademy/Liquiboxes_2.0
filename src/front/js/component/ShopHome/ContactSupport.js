@@ -31,6 +31,13 @@ const ContactSupport = () => {
           }
         }
       )
+      alert('Notificación de contacto enviada a soporte, contactaremos lo antes posible.')
+      // Limpiar el formulario de contacto.
+      setNewForm({
+        saleId: null,
+        subjectAffair: "",
+        content: ""
+      })
     } catch (error) {
       console.error(error);
     }

@@ -101,8 +101,8 @@ const UserNotifications = (data) => {
         } else {
             console.error('Some notifications could not be marked as read');
             // Optionally, refresh notifications from the server here
-            fetchNotifications();
         }
+        fetchNotifications();
     };
 
     const handleMarkAllUnread = async () => {
@@ -114,8 +114,8 @@ const UserNotifications = (data) => {
         } else {
             console.error('Some notifications could not be marked as unread');
             // Optionally, refresh notifications from the server here
-            fetchNotifications();
         }
+        fetchNotifications();
     };
 
     const handleConfirmReceipt = async (notificationId) => {
