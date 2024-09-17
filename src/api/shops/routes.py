@@ -120,7 +120,7 @@ def create_mystery_box():
             return jsonify({'error': 'Failed to upload image to Cloudinary'}), 500
 
         new_box = MysteryBox(
-            name=data['name'],
+            name=data['name'], 
             description=data['description'],
             price=float(data['price']),
             size=data['size'],
