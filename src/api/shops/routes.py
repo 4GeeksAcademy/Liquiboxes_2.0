@@ -191,6 +191,7 @@ def get_shop_profile():
         if not shop:
             return jsonify({"error": "Shop not found"}), 404
         return jsonify(shop.serialize_detail()), 200
+    
     except SQLAlchemyError as e:
         logging.error(f"Database error: {str(e)}")
         return jsonify({'error': 'Database error occurred'}), 500
@@ -276,12 +277,12 @@ def update_mystery_box(box_id):
     if not shop:
         return jsonify({"error": "Shop not found"}), 404
 
-    mystery_box = MysteryBox.query.get(box_id)
+    mystery_box = MysteryBox.query.filter_by(id=box_id, shop_id=current_user['id']).first()
     if not mystery_box:
         return jsonify({'error': 'Mystery Box not found'}), 404
 
-    data = request.form  # Usamos form para recibir los campos de texto
-    image_file = request.files.get('image_url')  # Recibimos la imagen
+    data = request.form
+    image_file = request.files.get('image_url')
 
     # Validamos los campos requeridos
     required_fields = ['name', 'description', 'price', 'size', 'possible_items', 'number_of_items']
@@ -292,23 +293,25 @@ def update_mystery_box(box_id):
     # Subimos la imagen a Cloudinary si existe
     if image_file:
         try:
-            image_url = upload_image_to_cloudinary(image_file)  # Llamamos a la función que sube la imagen
+            image_url = upload_image_to_cloudinary(image_file)
             mystery_box.image_url = image_url
         except Exception as e:
-            return jsonify({'error': 'Failed to upload image to Cloudinary'}), 500
+            return jsonify({'error': f'Failed to upload image to Cloudinary: {str(e)}'}), 500
 
     # Actualizamos el resto de los datos de la caja misteriosa
-    mystery_box.name = data.get('name')
-    mystery_box.description = data.get('description')
-    mystery_box.price = data.get('price')
-    mystery_box.size = data.get('size')
-    mystery_box.possible_items = data.get('possible_items')
-    mystery_box.number_of_items = data.get('number_of_items')
-
     try:
+        mystery_box.name = data.get('name')
+        mystery_box.description = data.get('description')
+        mystery_box.price = float(data.get('price'))
+        mystery_box.size = data.get('size')
+        mystery_box.possible_items = data.get('possible_items').split(',')
+        mystery_box.number_of_items = int(data.get('number_of_items'))
+
         db.session.commit()
         return jsonify({'message': 'Mystery Box updated successfully'}), 200
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': f'Invalid data format: {str(e)}'}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
- 
+        return jsonify({'error': f'Error updating Mystery Box: {str(e)}'}), 500
