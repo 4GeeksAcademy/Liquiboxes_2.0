@@ -203,3 +203,44 @@ def create_change_request():
         db.session.rollback()
         logging.error(f"Database error: {str(e)}")
         return jsonify({'error': 'Database error occurred'}), 500
+    
+@notifications.route('/shop/contactsupport', methods=['POST'])
+@jwt_required()
+def  shop_contact_support():
+    current_shop=get_jwt_identity()
+    if current_shop['type'] != 'shop':
+        return jsonify({"error": "Unauthorished: You should logging as a shop"}), 403
+    
+    shop = Shop.query.get(current_shop['id'])
+    if not shop:
+        return jsonify({"error": "Shop not found"}), 404
+
+    data = request.get_json()
+    sale_id = data.get('saleId') or None
+
+    try:
+        new_message = Notification(
+            type = 'contact_support',
+            recipient_type = 'admin',
+            sender_type = current_shop['type'],
+            content = data.get('content'),
+            sender_id = current_shop['id'],
+            sale_id=sale_id,
+            shop_id=current_shop['id'],
+            extra_data={
+                'shop_name': shop.name,
+                'shop_email': shop.email,
+                'subjectAffair': data.get('subjectAffair')
+            }
+        )
+
+        db.session.add(new_message)
+        db.session.commit()
+        return jsonify(new_message.serialize()), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logging.error(f"Database error: {str(e)}")
+        return jsonify({'error': 'Database error occurred'}), 500
+
+
+

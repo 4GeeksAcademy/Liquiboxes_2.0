@@ -1,44 +1,56 @@
 // ContactSupport.js
 import React, { useState } from 'react';
+import axios from 'axios';
 import "../../../styles/shops/contactsupport.css";
 
 const ContactSupport = () => {
-  const [asunto, setAsunto] = useState("");
-  const [contenido, setContenido] = useState("");
-  const [ventaId, setVentaId] = useState("");
-  const [isVenta, setIsVenta] = useState(false);
+  const [newform, setNewForm] = useState({
+    saleId: null,
+    subjectAffair: "",
+    content: ""
+  })
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (isVenta && !ventaId) {
-      alert("Por favor, ingrese el ID de la venta.");
-      return;
-    }
-    alert(`Formulario enviado:
-    Asunto: ${asunto}
-    Contenido: ${contenido}
-    ${isVenta ? `ID de Venta: ${ventaId}` : ""}`);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewForm(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
   };
 
-  const handleVentaIdChange = (e) => {
-    const value = e.target.value;
-    setVentaId(value);
-    setIsVenta(value.trim() !== "");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = sessionStorage.getItem('token');
+
+    try {
+      const response = await axios.post(`${process.env.BACKEND_URL}/notifications/shop/contactsupport`,
+        newform,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      )
+    } catch (error) {
+      console.error(error);
+    }
+
   };
 
   return (
     <div className="contact-support-container">
       <h2>Contacto con Soporte</h2>
       <form onSubmit={handleSubmit} className="contact-support-form">
-        
+
         {/* Campo opcional para ID de Venta */}
         <div className="form-group">
           <label htmlFor="ventaId">ID de Venta (Opcional)</label>
           <input
-            type="text"
+            type="number"
             id="ventaId"
-            value={ventaId}
-            onChange={handleVentaIdChange}
+            name='saleId'
+            value={newform.saleId}
+            onChange={handleChange}
             placeholder="Ingrese el ID de la venta si aplica"
           />
         </div>
@@ -49,8 +61,9 @@ const ContactSupport = () => {
           <input
             type="text"
             id="asunto"
-            value={asunto}
-            onChange={(e) => setAsunto(e.target.value)}
+            name='subjectAffair'
+            value={newform.subjectAffair}
+            onChange={handleChange}
             placeholder="Escriba el asunto"
             required
           />
@@ -61,8 +74,9 @@ const ContactSupport = () => {
           <label htmlFor="contenido">Contenido *</label>
           <textarea
             id="contenido"
-            value={contenido}
-            onChange={(e) => setContenido(e.target.value)}
+            name='content'
+            value={newform.content}
+            onChange={handleChange}
             placeholder="Describa su consulta"
             required
           />

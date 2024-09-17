@@ -51,6 +51,7 @@ export default function Login() {
         try {
             const loginResult = await attemptLogin(loginData);
             if (loginResult && loginResult.access_token) {
+                store.token = loginResult.access_token
                 sessionStorage.setItem("token", loginResult.access_token);
                 sessionStorage.setItem("userType", loginResult.user_type);
                 console.log(`Ha entrado como ${loginResult.user_type}`);
