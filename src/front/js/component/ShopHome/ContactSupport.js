@@ -1,75 +1,79 @@
-import React from 'react'
+// ContactSupport.js
+import React, { useState } from 'react';
+import "../../../styles/shops/contactsupport.css";
 
-// AQUÍ ELIIIIIIIIIIS!!  <3
+const ContactSupport = () => {
+  const [asunto, setAsunto] = useState("");
+  const [contenido, setContenido] = useState("");
+  const [ventaId, setVentaId] = useState("");
+  const [isVenta, setIsVenta] = useState(false);
 
-// {
-//   "address": "Avenida, Miguel, 1", 
-//   "average_rating": 0, 
-//   "business_core": "Este es el core de la tienda de Miguel", 
-//   "categories": [
-//     "Moda", 
-//     "Ropa de Trabajo", 
-//     "Tecnolog\u00eda", 
-//     "Carpinter\u00eda", 
-//     "Outdoor", 
-//     "Deporte", 
-//     "Arte", 
-//     "Cocina", 
-//     "Jardiner\u00eda", 
-//     "M\u00fasica", 
-//     "Viajes", 
-//     "Lectura", 
-//     "Cine", 
-//     "Fotograf\u00eda", 
-//     "Yoga"
-//   ], 
-//   "email": "tiendamiguel@gmail.com", 
-//   "id": 1, 
-//   "image_shop_url": "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726059603/i4uzrqfxwj8rfytftxuq.jpg", 
-//   "mystery_boxes": [
-//     {
-//       "id": 1, 
-//       "image_url": "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726059679/jkkoqsyrsjkpigy43f9d.webp", 
-//       "name": "Caja Misteriosa de Miguel", 
-//       "price": 50.0, 
-//       "shop_categories": [
-//         "Moda", 
-//         "Ropa de Trabajo", 
-//         "Tecnolog\u00eda", 
-//         "Carpinter\u00eda", 
-//         "Outdoor", 
-//         "Deporte", 
-//         "Arte", 
-//         "Cocina", 
-//         "Jardiner\u00eda", 
-//         "M\u00fasica", 
-//         "Viajes", 
-//         "Lectura", 
-//         "Cine", 
-//         "Fotograf\u00eda", 
-//         "Yoga"
-//       ], 
-//       "shop_id": 1, 
-//       "shop_name": "Tienda de Miguel", 
-//       "total_sales": 10
-//     }
-//   ], 
-//   "name": "Tienda de Miguel", 
-//   "owner_name": "Miguel", 
-//   "owner_surname": "Toyas Pernichi", 
-//   "postal_code": "14004", 
-//   "ratings": [], 
-//   "shop_description": "Esta es la descripci\u00f3n de la tienda de Miguel en profundidad.", 
-//   "shop_summary": "Resumen de la tienda de Miguel", 
-//   "total_orders": 2, 
-//   "total_sales": 500.0
-// }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isVenta && !ventaId) {
+      alert("Por favor, ingrese el ID de la venta.");
+      return;
+    }
+    alert(`Formulario enviado:
+    Asunto: ${asunto}
+    Contenido: ${contenido}
+    ${isVenta ? `ID de Venta: ${ventaId}` : ""}`);
+  };
 
+  const handleVentaIdChange = (e) => {
+    const value = e.target.value;
+    setVentaId(value);
+    setIsVenta(value.trim() !== "");
+  };
 
-function ContactSupport(shopData) {
   return (
-    <div>ContactSupport</div>
-  )
-}
+    <div className="contact-support-container">
+      <h2>Contacto con Soporte</h2>
+      <form onSubmit={handleSubmit} className="contact-support-form">
+        
+        {/* Campo opcional para ID de Venta */}
+        <div className="form-group">
+          <label htmlFor="ventaId">ID de Venta (Opcional)</label>
+          <input
+            type="text"
+            id="ventaId"
+            value={ventaId}
+            onChange={handleVentaIdChange}
+            placeholder="Ingrese el ID de la venta si aplica"
+          />
+        </div>
 
-export default ContactSupport
+        {/* Campo de Asunto */}
+        <div className="form-group">
+          <label htmlFor="asunto">Asunto *</label>
+          <input
+            type="text"
+            id="asunto"
+            value={asunto}
+            onChange={(e) => setAsunto(e.target.value)}
+            placeholder="Escriba el asunto"
+            required
+          />
+        </div>
+
+        {/* Campo de Contenido */}
+        <div className="form-group">
+          <label htmlFor="contenido">Contenido *</label>
+          <textarea
+            id="contenido"
+            value={contenido}
+            onChange={(e) => setContenido(e.target.value)}
+            placeholder="Describa su consulta"
+            required
+          />
+        </div>
+
+        {/* Botón para enviar */}
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  );
+};
+
+export default ContactSupport;
+
