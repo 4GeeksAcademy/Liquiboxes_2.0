@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faFilter, faCheck, faTimes, faExchange, faTruck, faPrint, faDownload } from '@fortawesome/free-solid-svg-icons';
-import { Modal, Button, Form, Table } from 'react-bootstrap';
+import { faBell, faEnvelope, faEnvelopeOpen, faFilter, faCheck, faTimes, faExchange, faTruck, faPrint, faDownload, faCaretDown, faList, faShoppingCart, faComment } from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button, Form, Table, Tabs, Tab, Dropdown } from 'react-bootstrap';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
+import '../../../styles/shops/shopnotifications.css';
 
 const ShopNotifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -23,6 +24,12 @@ const ShopNotifications = () => {
   const [selectedItemForChange, setSelectedItemForChange] = useState(null);
   const [userPreferences, setUserPreferences] = useState(null);
   const [shopSaleStatus, setShopSaleStatus] = useState(null);
+  const [activeTab, setActiveTab] = useState('sales');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [notificationsPerPage] = useState(10);
+  const [replyMessage, setReplyMessage] = useState('');
+  const unreadNotifications = notifications.filter(n => !n.is_read);
+  const hasUnreadNotifications = unreadNotifications.length > 0;
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
 
@@ -35,7 +42,7 @@ const ShopNotifications = () => {
 
   useEffect(() => {
     filterNotifications();
-  }, [notifications, filter]);
+  }, [notifications, filter, activeTab]);
 
   const fetchNotifications = async () => {
     try {
@@ -64,48 +71,110 @@ const ShopNotifications = () => {
   };
 
   const filterNotifications = () => {
+    let filtered = notifications.filter(n => {
+      if (activeTab === 'sales') {
+        return ['new_sale', 'item_change_approved', 'item_change_rejected', 'confirmed'].includes(n.type);
+      } else {
+        return ['contact_support', 'contact_shop', 'contact_user'].includes(n.type);
+      }
+    });
+
     switch (filter) {
       case 'unread':
-        setFilteredNotifications(notifications.filter(n => !n.is_read));
+        filtered = filtered.filter(n => !n.is_read);
         break;
       case 'read':
-        setFilteredNotifications(notifications.filter(n => n.is_read));
+        filtered = filtered.filter(n => n.is_read);
         break;
       case 'new_sale':
-        setFilteredNotifications(notifications.filter(n => n.type === "new_sale"));
+        filtered = filtered.filter(n => n.type === 'new_sale');
         break;
-      case 'change_request':
-        setFilteredNotifications(notifications.filter(n => n.type === 'change_request'));
+      case 'item_change_approved':
+        filtered = filtered.filter(n => n.type === 'item_change_approved');
+        break;
+      case 'item_change_rejected':
+        filtered = filtered.filter(n => n.type === 'item_change_rejected');
         break;
       case 'confirmed':
-        setFilteredNotifications(notifications.filter(n => n.type === 'confirmed'));
+        filtered = filtered.filter(n => n.type === 'confirmed');
         break;
+      case 'contact_support':
+        filtered = filtered.filter(n => n.type === 'contact_support');
+        break;
+      case 'contact_shop':
+        filtered = filtered.filter(n => n.type === 'contact_shop');
+        break;
+      case 'contact_user':
+        filtered = filtered.filter(n => n.type === 'contact_user');
+        break;
+      case 'all':
       default:
-        setFilteredNotifications(notifications);
+        // No additional filtering needed
+        break;
+    }
+    setFilteredNotifications(filtered);
+  };
+
+  const markNotificationAsRead = async (notificationId, isRead) => {
+    try {
+      await axios.patch(`${process.env.BACKEND_URL}/notifications/${notificationId}/read`,
+        { is_read: isRead },
+        {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`
+          }
+        }
+      );
+      return true;
+    } catch (error) {
+      console.error(`Error marking notification ${notificationId} as ${isRead ? 'read' : 'unread'}:`, error);
+      return false;
     }
   };
 
   const handleNotificationClick = async (notification) => {
-    console.log(notification)
     setSelectedNotification(notification);
     setIsModalOpen(true);
     if (!notification.is_read) {
-      try {
-        await axios.patch(`${process.env.BACKEND_URL}/notifications/${notification.id}/read`, {}, {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.getItem('token')}`
-          }
-        });
+      const success = await markNotificationAsRead(notification.id, true);
+      if (success) {
         setNotifications(notifications.map(n =>
           n.id === notification.id ? { ...n, is_read: true } : n
         ));
-      } catch (error) {
-        console.error('Error marking notification as read:', error);
+      } else {
+        console.error('Failed to mark notification as read');
+
       }
     }
-    if (notification.type === 'new_sale') {
+    if (['new_sale', 'item_change_approved', 'item_change_rejected', 'confirmed'].includes(notification.type)) {
       fetchOrderDetails(notification.sale_id);
     }
+  };
+
+  const handleMarkAllRead = async () => {
+    const results = await Promise.all(
+      notifications.filter(n => !n.is_read).map(n => markNotificationAsRead(n.id, true))
+    );
+    if (results.every(result => result)) {
+      setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+    } else {
+      console.error('Some notifications could not be marked as read');
+      // Optionally, refresh notifications from the server here
+    }
+    fetchNotifications();
+  };
+
+  const handleMarkSaleNotificationUnread = async (notificationId) => {
+    const success = await markNotificationAsRead(notificationId, false);
+    if (success) {
+      setNotifications(notifications.map(n =>
+        n.id === notificationId ? { ...n, is_read: false } : n
+      ));
+    } else {
+      console.error('Failed to mark notification as read');
+      fetchNotifications();
+    }
+
   };
 
   const fetchOrderDetails = async (saleId) => {
@@ -194,7 +263,7 @@ const ShopNotifications = () => {
         }
       });
       setShippingDetails(shipmentResponse.data);
-  
+
       // Confirmar el pedido
       const orderConfirmation = await axios.post(
         `${process.env.BACKEND_URL}/sales/shop/${orderDetails.id}/confirm`,
@@ -205,7 +274,7 @@ const ShopNotifications = () => {
           }
         }
       );
-  
+
       if (orderConfirmation.status === 200) {
         // Actualizar el estado local
         setShopSaleStatus('confirmed');
@@ -213,13 +282,13 @@ const ShopNotifications = () => {
           ...prevNotification,
           type: 'confirmed'
         }));
-  
+
         // Generar y descargar el PDF
         generatePDF(shipmentResponse.data);
-  
+
         // Mostrar mensaje de éxito
         alert('¡Pedido confirmado con éxito!');
-  
+
         // Opcionalmente, actualizar la lista de notificaciones
         fetchNotifications();
       } else {
@@ -227,7 +296,7 @@ const ShopNotifications = () => {
       }
     } catch (error) {
       console.error('Error al confirmar el pedido:', error);
-      
+
       let errorMessage = 'No se pudo confirmar el pedido. Por favor, inténtalo de nuevo.';
       if (error.response) {
         // El servidor respondió con un estado fuera del rango de 2xx
@@ -236,7 +305,7 @@ const ShopNotifications = () => {
         // La petición fue hecha pero no se recibió respuesta
         errorMessage = 'No se pudo conectar con el servidor. Por favor, verifica tu conexión.';
       }
-      
+
       setError(errorMessage);
     }
   };
@@ -249,6 +318,7 @@ const ShopNotifications = () => {
     const primaryColor = '#6a8e7f';
     const secondaryColor = '#073b3a';
     const textColor = '#28112b';
+    
 
     // Encabezado
     doc.setFillColor(primaryColor);
@@ -256,7 +326,7 @@ const ShopNotifications = () => {
     doc.setTextColor('#ffffff');
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Recibo del pedido: ${orderDetails?.id || 'N/A'}`, 105, 25, null, null, 'center');
+    doc.text(`Detalles de envío del pedido: ${orderDetails?.id || 'N/A'}`, 105, 25, null, null, 'center');
 
     // Restablecer color de texto
     doc.setTextColor(textColor);
@@ -265,7 +335,7 @@ const ShopNotifications = () => {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     doc.text(`ID de Pedido: ${orderDetails?.id || 'N/A'}`, 20, 50);
-    doc.text(`Fecha: ${orderDetails?.date ? new Date(orderDetails.date).toLocaleString('es-ES') : 'N/A'}`, 20, 60);
+    doc.text(`Fecha: ${orderDetails?.date ? new Date(orderDetails.date).toLocaleString() : 'N/A'}`, 20, 60);
     doc.text(`Importe Total: ${orderDetails?.total_amount ? `${orderDetails.total_amount} €` : 'N/A'}`, 20, 70);
 
     // Detalles de envío
@@ -277,14 +347,12 @@ const ShopNotifications = () => {
 
     doc.setTextColor(textColor);
     doc.setFont('helvetica', 'normal');
-    if (shippingDetails) {
-      doc.text(`Nombre: ${shippingDetails.name || ''} ${shippingDetails.surname || ''}`, 25, 95);
-      doc.text(`Correo Electrónico: ${shippingDetails.email || 'N/A'}`, 25, 105);
-      doc.text(`Dirección: ${shippingDetails.address || 'N/A'}`, 25, 115);
-      doc.text(`Código Postal: ${shippingDetails.postal_code || 'N/A'}`, 25, 125);
-    } else {
-      doc.text('Información de envío no disponible', 25, 95);
-    }
+
+    doc.text(`Nombre: ${shippingDetails.name || ''} ${shippingDetails.surname || ''}`, 25, 95);
+    doc.text(`Correo Electrónico: ${shippingDetails.email || 'N/A'}`, 25, 105);
+    doc.text(`Dirección: ${shippingDetails.address || 'N/A'}`, 25, 115);
+    doc.text(`Código Postal: ${shippingDetails.postal_code || 'N/A'}`, 25, 125);
+
 
     // Preferencias del usuario
     doc.setFillColor(secondaryColor);
@@ -296,15 +364,11 @@ const ShopNotifications = () => {
     doc.setTextColor(textColor);
     doc.setFont('helvetica', 'normal');
     let yPos = 150;
-    if (userPreferences) {
-      for (const [key, value] of Object.entries(userPreferences)) {
-        doc.text(`${key}: ${value || 'N/A'}`, 25, yPos);
-        yPos += 10;
-      }
-    } else {
-      doc.text('Preferencias del usuario no disponibles', 25, yPos);
+    for (const [key, value] of Object.entries(userPreferences)) {
+      doc.text(`${key}: ${value || 'N/A'}`, 25, yPos);
       yPos += 10;
     }
+
 
     // Tabla de artículos
     if (items && items.length > 0) {
@@ -341,7 +405,7 @@ const ShopNotifications = () => {
         },
       });
     } else {
-      doc.text('No hay artículos disponibles', 20, yPos + 20);
+      doc.text('No hay artículos disponibles, pongase en contacto con soporte lo antes posible', 20, yPos + 20);
     }
 
     // Pie de página
@@ -353,7 +417,7 @@ const ShopNotifications = () => {
     }
 
     // Guardar el PDF
-    doc.save(`recibo_pedido_${orderDetails?.id || 'N/A'}.pdf`);
+    doc.save(`Detalle de envio pedido ${orderDetails?.id || 'N/A'}.pdf`);
   };
 
   const handlePDFDownload = () => {
@@ -372,83 +436,110 @@ const ShopNotifications = () => {
     return Array.isArray(arr) ? arr.map(capitalize).join(', ') : '';
   };
 
+  const handleReplySubmit = async (e) => {
+    e.preventDefault();
+    try {
+      console.log('Recipient Type:', selectedNotification.sender_type);
+      await axios.post(`${process.env.BACKEND_URL}/notifications/contactsupport/reply`, {
+        subjectAffair: selectedNotification.extra_data.subject_affair,
+        saleId: selectedNotification.sale_id || null,
+        recipientId: selectedNotification.extra_data.user_id || selectedNotification.shop_id || null,
+        recipientType: selectedNotification.sender_type,
+        message: replyMessage
+      }, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+      setReplyMessage('');
+      setIsModalOpen(false);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error sending reply:', error);
+    }
+  };
+
   const renderNotificationDetails = () => {
     if (!selectedNotification) return null;
 
     switch (selectedNotification.type) {
       case 'new_sale':
       case 'item_change_approved':
+      case 'item_change_rejected':
       case 'confirmed':
-        if (loading) return <div>Cargando...</div>;
-        if (error) return <div className="error">{error}</div>;
-        if (!orderDetails) return <div>No se encontraron detalles del pedido.</div>;
+        if (loading) return <div className="loading-spinner">Cargando...</div>;
+        if (error) return <div className="error-message">{error}</div>;
+        if (!orderDetails) return <div className="no-data-message">No se encontraron detalles del pedido.</div>;
 
         return (
           <div className="order-confirmation">
-            <h2>
-              {selectedNotification.type === 'new_sale' ? 'Nueva Venta:' :
-                selectedNotification.type === 'item_change_approved' ? 'Cambio de Artículo Aprobado:' :
-                  'Venta Confirmada:'}
-            </h2>
+            <h3 className="notification-title">
+              {selectedNotification.type === 'new_sale' ? 'Nueva Venta' :
+                selectedNotification.type === 'item_change_approved' ? 'Cambio de Artículo Aprobado' :
+                  selectedNotification.type === 'item_change_rejected' ? 'Cambio de Artículo Rechazado' :
+                    'Venta Confirmada'}
+            </h3>
             <div className="order-details">
-              <h3>Detalles de la orden</h3>
-              <p>ID Orden: {orderDetails.id}</p>
-              <p>Fecha de la compra: {new Date(orderDetails.date).toLocaleString()}</p>
-              <p>Cantidad Total: {orderDetails.total_amount} €</p>
+              <h4>Detalles de la orden</h4>
+              <p><strong>ID Orden:</strong> {orderDetails.id}</p>
+              <p><strong>Fecha de la compra:</strong> {new Date(orderDetails.date).toLocaleString()}</p>
+              <p><strong>Cantidad Total:</strong> {orderDetails.total_amount} €</p>
             </div>
             {userPreferences && (
               <div className="user-preferences">
-                <h3>Preferencias del comprador:</h3>
+                <h4>Preferencias del comprador:</h4>
                 <Table striped bordered hover>
                   <tbody>
-                    <tr><td>Género</td><td>{userPreferences.gender ? capitalize(userPreferences.gender) : 'No especificado por el usuario'}</td></tr>
-                    <tr><td>Talla Superior</td><td>{userPreferences.upper_size ? userPreferences.upper_size.toUpperCase() : 'No especificada por el usuario'}</td></tr>
-                    <tr><td>Talla Inferior</td><td>{userPreferences.lower_size || 'No especificada por el usuario'}</td></tr>
-                    <tr><td>Talla de Gorra</td><td>{userPreferences.cap_size ? capitalize(userPreferences.cap_size) : 'No especificado por el usuario'}</td></tr>
-                    <tr><td>Talla de Calzado</td><td>{userPreferences.shoe_size || 'No especificada por el usuario'}</td></tr>
-                    <tr><td>Colores menos preferidos</td><td>{userPreferences.not_colors ? formatArray(userPreferences.not_colors) : 'No especificados por el usuario'}</td></tr>
-                    <tr><td>Estampados en la ropa</td><td>{userPreferences.stamps ? capitalize(userPreferences.stamps) : 'No especificados por el usuario'}</td></tr>
-                    <tr><td>Ajuste de la ropa</td><td>{userPreferences.fit ? capitalize(userPreferences.fit) : 'No especificado por el usuario'}</td></tr>
-                    <tr><td>Prendas no deseadas</td><td>{userPreferences.not_clothes ? formatArray(userPreferences.not_clothes) : 'No especificadas por el usuario'}</td></tr>
-                    <tr><td>Categorías</td><td>{userPreferences.categories ? formatArray(userPreferences.categories) : 'No especificadas por el usuario'}</td></tr>
-                    <tr><td>Profesión</td><td>{userPreferences.profession ? capitalize(userPreferences.profession) : 'No especificada por el usuario'}</td></tr>
+                    {Object.entries(userPreferences).map(([key, value]) => (
+                      <tr key={key}>
+                        <td>{key}</td>
+                        <td>{Array.isArray(value) ? value.join(', ') : value}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </Table>
               </div>
             )}
             <div className="items-list">
-              <h3>Artículos a incluir:</h3>
+              <h4>Artículos a incluir:</h4>
               {items.map(item => (
-                <div key={item.id} className="item">
-                  <span>{item.item_name}</span>
-                  <div className="item-actions my-3">
-                    {selectedNotification.type !== 'confirmed' && shopSaleStatus !== 'confirmed' && (
-                      <>
-                        <Button onClick={() => handleItemConfirmation(item.id, true)} disabled={item.isConfirmed === true}>
-                          <FontAwesomeIcon icon={faCheck} /> Confirmar Stock
+                <div key={item.id} className="item-card">
+                  <span className="item-name">{item.item_name}</span>
+                  {selectedNotification.type !== 'confirmed' && shopSaleStatus !== 'confirmed' && (
+                    <div className="item-actions">
+                      <Button
+                        onClick={() => handleItemConfirmation(item.id, true)}
+                        disabled={item.isConfirmed === true}
+                        className={`action-button confirm-button ${item.isConfirmed ? 'confirmed' : ''}`}
+                      >
+                        <FontAwesomeIcon icon={faCheck} /> {item.isConfirmed ? 'Stock Confirmado' : 'Confirmar Stock'}
+                      </Button>
+                      {shopSaleStatus !== 'pending_confirmation' && (
+                        <Button
+                          onClick={() => handleItemChange(item)}
+                          className="action-button change-button"
+                          disabled={item.isConfirmed === true}
+                        >
+                          <FontAwesomeIcon icon={faExchange} /> Cambiar Artículo
                         </Button>
-                        {shopSaleStatus !== 'pending_confirmation' && (
-                          <Button onClick={() => handleItemChange(item)} className='ms-3'>
-                            <FontAwesomeIcon icon={faExchange} /> Cambiar Artículo
-                          </Button>
-                        )}
-                      </>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
-            {selectedNotification.type !== 'confirmed' && shopSaleStatus !== 'confirmed' ? (
+            {selectedNotification.type !== 'confirmed' && shopSaleStatus !== 'confirmed' && (
               <Button
-                className="confirm-order my-3"
+                className="confirm-order-button"
                 onClick={handleOrderConfirmation}
-                disabled={items.some(item => item.isConfirmed === undefined) || shopSaleStatus === 'pending_confirmation'}
+                disabled={items.some(item => item.isConfirmed !== true) || shopSaleStatus === 'pending_confirmation'}
               >
                 <FontAwesomeIcon icon={faTruck} /> Confirmar Pedido y Obtener Datos de Envío
               </Button>
-            ) : (
+            )}
+            {selectedNotification.type === 'confirmed' && (
               <Button
-                className="download-pdf my-3"
+                className="download-pdf-button"
                 onClick={handlePDFDownload}
               >
                 <FontAwesomeIcon icon={faDownload} /> Descargar PDF del Pedido
@@ -456,7 +547,77 @@ const ShopNotifications = () => {
             )}
           </div>
         );
+      case 'contact_support':
+      case 'contact_shop':
+      case 'contact_user':
+        return (
+          <div className="message-details">
+            <h3 className="notification-title">
+              {selectedNotification.type === 'contact_support' ? 'Mensaje de Soporte' : 'Mensaje del Usuario'}
+            </h3>
+            <p className="message-content">{selectedNotification.content}</p>
+            <Form onSubmit={handleReplySubmit} className="message-reply-form">
+              <Form.Group>
+                <Form.Label>Responder:</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                  placeholder="Escribe tu respuesta aquí..."
+                />
+              </Form.Group>
+              <Button type="submit" className="send-reply-button">
+                <FontAwesomeIcon icon={faEnvelope} /> Enviar Respuesta
+              </Button>
+            </Form>
+          </div>
+        );
+      default:
+        return <p className="unknown-notification">Tipo de notificación desconocido.</p>;
     }
+  };
+
+  const indexOfLastNotification = currentPage * notificationsPerPage;
+  const indexOfFirstNotification = indexOfLastNotification - notificationsPerPage;
+  const currentNotifications = filteredNotifications.slice(indexOfFirstNotification, indexOfLastNotification);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const FilterButtons = ({ currentFilter, setFilter, activeTab }) => {
+    const filters = activeTab === 'sales'
+      ? [
+        { key: 'all', label: 'Todas', icon: faList },
+        { key: 'unread', label: 'No leídas', icon: faEnvelope },
+        { key: 'read', label: 'Leídas', icon: faEnvelopeOpen },
+        { key: 'new_sale', label: 'Nuevas ventas', icon: faShoppingCart },
+        { key: 'item_change_approved', label: 'Cambios aprobados', icon: faCheck },
+        { key: 'item_change_rejected', label: 'Cambios rechazados', icon: faTimes },
+        { key: 'confirmed', label: 'Ventas confirmadas', icon: faCheck },
+      ]
+      : [
+        { key: 'all', label: 'Todos', icon: faList },
+        { key: 'unread', label: 'No leídos', icon: faEnvelope },
+        { key: 'read', label: 'Leídos', icon: faEnvelopeOpen },
+        { key: 'contact_support', label: 'Soporte', icon: faComment },
+        { key: 'contact_shop', label: 'Tienda', icon: faShoppingCart },
+        { key: 'contact_user', label: 'Usuario', icon: faEnvelope },
+      ];
+
+    return (
+      <div className="filter-buttons mb-4">
+        {filters.map(({ key, label, icon }) => (
+          <button
+            key={key}
+            onClick={() => setFilter(key)}
+            className={`filter-button ${currentFilter === key ? 'active' : ''}`}
+          >
+            <FontAwesomeIcon icon={icon} className="me-2" />
+            {label}
+          </button>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -464,67 +625,142 @@ const ShopNotifications = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Notificaciones</h2>
         <div className="d-flex align-items-center">
-          <FontAwesomeIcon icon={faBell} className="mr-2" />
-          <span className="badge bg-primary">
-            {notifications.filter(n => !n.is_read).length} No leídas
-          </span>
+          <FontAwesomeIcon icon={faBell} className="mr-2 me-3" />
+          {hasUnreadNotifications ? (
+            <span className="badge bg-primary">
+              {unreadNotifications.length} No leídas
+            </span>
+          ) : (
+            <span className="text-muted">Nada nuevo por aquí</span>
+          )}
         </div>
       </div>
 
-      <div className="mb-4">
-        <Button onClick={() => setFilter('all')} variant={filter === 'all' ? 'primary' : 'outline-primary'} className="mr-2">
-          Todas
-        </Button>
-        <Button onClick={() => setFilter('unread')} variant={filter === 'unread' ? 'primary' : 'outline-primary'} className="mr-2">
-          No Leídas
-        </Button>
-        <Button onClick={() => setFilter('read')} variant={filter === 'read' ? 'primary' : 'outline-primary'} className="mr-2">
-          Leídas
-        </Button>
-        <Button onClick={() => setFilter('new_sale')} variant={filter === 'new_sale' ? 'primary' : 'outline-primary'} className="mr-2">
-          Nueva Venta
-        </Button>
-        <Button onClick={() => setFilter('change_request')} variant={filter === 'change_request_result' ? 'primary' : 'outline-primary'}>
-          Propuesta de Cambio
-        </Button>
-        <Button onClick={() => setFilter('confirmed')} variant={filter === 'confirmed' ? 'primary' : 'outline-primary'}>
-          Ventas Confirmadas
-        </Button>
+      <Tabs
+        activeKey={activeTab}
+        onSelect={(k) => {
+          setActiveTab(k);
+          setFilter('all');
+        }}
+        className="mb-3"
+      >
+        <Tab eventKey="sales" title="Ventas">
+          <FilterButtons currentFilter={filter} setFilter={setFilter} activeTab={activeTab} />
+
+          <div className="mb-4 d-flex justify-content-end">
+            <Button onClick={handleMarkAllRead} variant="secondary">
+              Marcar todas como leídas
+            </Button>
+          </div>
+
+          <table className="notifications-table">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Contenido</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentNotifications.map((notification) => (
+                <tr
+                  key={notification.id}
+                  onClick={() => handleNotificationClick(notification)}
+                  className={`cursor-pointer ${notification.type === 'item_change_approved' || notification.type === 'item_change_rejected' ? 'table-warning' : ''}`}
+                >
+                  <td>{notification.type}</td>
+                  <td>{notification.content}</td>
+                  <td>{new Date(notification.created_at).toLocaleString()}</td>
+                  <td>
+                    {notification.is_read ?
+                      <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" /> :
+                      <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
+                    }
+                  </td>
+                  <td>
+                    {notification.is_read && (
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkSaleNotificationUnread(notification.id);
+                        }}
+                      >
+                        Marcar como no leída
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Tab>
+
+        <Tab eventKey="messages" title="Mensajes">
+          <div className="mb-4">
+            <Button onClick={handleMarkAllRead} variant="secondary">
+              Marcar todos como leídos
+            </Button>
+          </div>
+
+          <table className="notifications-table">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Contenido</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentNotifications.map((notification) => (
+                <tr
+                  key={notification.id}
+                  onClick={() => handleNotificationClick(notification)}
+                  className="cursor-pointer"
+                >
+                  <td>{notification.type}</td>
+                  <td>{notification.content}</td>
+                  <td>{new Date(notification.created_at).toLocaleString()}</td>
+                  <td>
+                    {notification.is_read ?
+                      <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" /> :
+                      <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
+                    }
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Tab>
+      </Tabs>
+
+      <div className="pagination">
+        {[...Array(Math.ceil(filteredNotifications.length / notificationsPerPage)).keys()].map(number => (
+          <button
+            key={number + 1}
+            onClick={() => paginate(number + 1)}
+            className={currentPage === number + 1 ? 'active' : ''}
+          >
+            {number + 1}
+          </button>
+        ))}
       </div>
 
-      <table className="table table-hover">
-        <thead>
-          <tr>
-            <th>Tipo</th>
-            <th>Contenido</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredNotifications.map((notification) => (
-            <tr
-              key={notification.id}
-              onClick={() => handleNotificationClick(notification)}
-              className={`cursor-pointer ${notification.type === 'change_request_result' ? 'table-warning' : ''}`}
-            >
-              <td>{notification.type}</td>
-              <td>{notification.content}</td>
-              <td>{new Date(notification.created_at).toLocaleString()}</td>
-              <td>
-                {notification.is_read ?
-                  <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" /> :
-                  <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
-                }
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} size="lg">
+      <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} size="lg" className="custom-modal">
         <Modal.Header closeButton>
-          <Modal.Title>Detalles de la Notificación</Modal.Title>
+          <Modal.Title>{
+            selectedNotification?.type === 'new_sale' ? 'Nueva Venta' :
+              selectedNotification?.type === 'item_change_approved' ? 'Cambio de Artículo Aprobado' :
+                selectedNotification?.type === 'item_change_rejected' ? 'Cambio de Artículo Rechazado' :
+                  selectedNotification?.type === 'confirmed' ? 'Venta Confirmada' :
+                    selectedNotification?.type === 'contact_support' ? 'Mensaje de Soporte' :
+                      selectedNotification?.type === 'contact_shop' || selectedNotification?.type === 'contact_user' ? 'Mensaje del Usuario' :
+                        'Detalles de la Notificación'
+          }</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {renderNotificationDetails()}
@@ -534,24 +770,25 @@ const ShopNotifications = () => {
         </Modal.Footer>
       </Modal>
 
-      <Modal show={showChangeRequestForm} onHide={() => setShowChangeRequestForm(false)}>
+      <Modal show={showChangeRequestForm} onHide={() => setShowChangeRequestForm(false)} className="custom-modal">
         <Modal.Header closeButton>
           <Modal.Title>Crear Solicitud de Cambio</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleChangeRequestSubmit}>
-            <Form.Group>
-              <Form.Label>Artículo Original: {selectedItemForChange?.item_name}</Form.Label>
+            <Form.Group className="mb-3">
+              <Form.Label>Artículo Original</Form.Label>
+              <Form.Control type="text" value={selectedItemForChange?.item_name || ''} disabled />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Nombre del Artículo Propuesto</Form.Label>
-              <Form.Control type="text" name="proposed_item_name" required />
+              <Form.Control type="text" name="proposed_item_name" required placeholder="Ingrese el nombre del nuevo artículo" />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label>Razón del Cambio</Form.Label>
-              <Form.Control as="textarea" name="reason" required />
+              <Form.Control as="textarea" name="reason" required rows={3} placeholder="Explique la razón del cambio" />
             </Form.Group>
-            <Button type="submit">Enviar Solicitud de Cambio</Button>
+            <Button type="submit" className="w-100">Enviar Solicitud de Cambio</Button>
           </Form>
         </Modal.Body>
       </Modal>

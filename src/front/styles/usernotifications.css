@@ -1,17 +1,56 @@
 .user-notifications {
   max-width: 800px;
-  margin: 0 auto;
+  margin: 0 auto !important;
+  padding: 2rem !important;
 }
 
 .user-notifications h2 {
-  color: var(--text-color);
+  color: var(--text-color) !important;
+  font-weight: 600 !important;
+  margin-bottom: 1.5rem !important;
 }
 
 .user-notifications .badge {
-  background-color: var(--primary-color);
-  color: var(--background-color);
-  padding: 0.5rem;
-  border-radius: 5px;
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 20px !important;
+  font-size: 0.9rem !important;
+}
+
+.user-notifications .filter-buttons {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.user-notifications .filter-button {
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 20px !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.user-notifications .filter-button:hover {
+  background-color: var(--background-secondary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.user-notifications .filter-button.active {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.user-notifications .filter-button .fa-icon {
+  margin-right: 0.5rem !important;
 }
 
 .custom-dropdown-toggle {
@@ -30,9 +69,9 @@
 }
 
 .custom-dropdown-toggle:focus {
-    outline: none !important;
-    box-shadow: 0 0 0 3px var(--primary-color) !important;
-  }
+  outline: none !important;
+  box-shadow: 0 0 0 3px var(--primary-color) !important;
+}
 
 .dropdown-menu {
   background-color: var(--background-color);
@@ -129,6 +168,14 @@
 }
 
 @media (max-width: 768px) {
+  .user-notifications .filter-buttons {
+    flex-direction: column !important;
+  }
+
+  .user-notifications .filter-button {
+    width: 100% !important;
+  }
+
   .user-notifications {
     padding: 1rem;
   }
