@@ -129,15 +129,24 @@ function BoxesOnSale({ shopData }) {
           key={box.id}
           className="row align-items-center justify-content-between p-3 shadow-sm border rounded w-60 m-3"
         >
-          <div className="col-sm-12 col-md-4 text-center text-md-start">
+          <div className="col-sm-12 col-md-6 text-center text-md-start">
             <h4 className="fw-bold">{box.name}</h4>
-            <p>Total de ventas: {box.total_sales}</p>
-            <button type="button" className="btn btn-link"
+            {box.image_url ? (    //MUESTRA LA PREVISUALIZACION DE LA IMAGEN
+              <img
+                src={box.image_url}
+                alt={`Imagen de ${box.name}`}
+                className="img-fluid mb-2 rounded"
+                style={{ maxWidth: "40%", height: "auto" }}
+              />
+            ) : (
+              <p>No hay imagen disponible</p>
+            )}
+            <button type="button" className="btn btn-link"  //NAVIGATE PARA IR A MYSTERY BOX
               onClick={() => navigate(`/mysterybox/${box.id}`)}>Ir a mystery Box
             </button>
           </div>
 
-          <div className="col-sm-12 col-md-4 text-center text-md-end">
+          <div className="col-sm-12 col-md-6 text-center text-md-end">
             <button
               className="mb-2 mx-2"
               onClick={() => handleEditClick(box)}
@@ -213,15 +222,15 @@ function BoxesOnSale({ shopData }) {
                 <label htmlFor="mysteryboxpossibleitems" className="form-label">
                   Items posibles
                 </label>
-                <div className="input-group mb-2">
+                <div className="input-group mb-2 justify-content-center align-items-center">
                   <input
                     type="text"
-                    className="form-control"
+                    className="form-control my-auto"
                     value={newItem}
                     onChange={(e) => setNewItem(e.target.value)}
                     placeholder="Añadir nuevo item"
                   />
-                  <button className="btn btn-outline-secondary" type="button" onClick={handleAddItem}>
+                  <button type="button " onClick={handleAddItem}>
                     Añadir
                   </button>
                 </div>
@@ -231,7 +240,6 @@ function BoxesOnSale({ shopData }) {
                       {item}
                       <button
                         type="button"
-                        className="btn btn-danger btn-sm"
                         onClick={() => handleRemoveItem(index)}
                       >
                         Eliminar
@@ -246,7 +254,6 @@ function BoxesOnSale({ shopData }) {
                   Precio de la caja
                 </label>
                 <div className="input-group">
-                  <span className="input-group-text">€</span>
                   <input
                     type="number"
                     className="form-control"
@@ -257,6 +264,8 @@ function BoxesOnSale({ shopData }) {
                     min="0"
                     step="0.01"
                   />
+                  <span className="input-group-text">€</span>
+
                 </div>
               </div>
 
