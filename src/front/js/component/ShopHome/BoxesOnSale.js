@@ -111,10 +111,9 @@ function BoxesOnSale({ shopData }) {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
-      });
-      alert('Mystery Box eliminada con éxito!');
+      });      
       setShowDeleteModal(false);  // Cierra el modal después de eliminar
-      window.location.reload();//actualizar la lista de mystery boxes después de la eliminación
+      window.location.reload(); //actualiza la lista de mystery boxes después de la eliminación
     } catch (error) {
       console.error('Error al eliminar la Mystery Box:', error);
       alert('Hubo un error al eliminar la Mystery Box. Inténtalo de nuevo.');
@@ -331,7 +330,6 @@ function BoxesOnSale({ shopData }) {
           </Modal.Footer>
         </Modal>
       )}
-
     </>
   );
 }
