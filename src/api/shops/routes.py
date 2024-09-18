@@ -315,3 +315,35 @@ def update_mystery_box(box_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Error updating Mystery Box: {str(e)}'}), 500
+    
+@shops.route('/mystery-box/<int:box_id>', methods=['DELETE'])
+@jwt_required()
+def delete_mystery_box(box_id):
+    current_user = get_jwt_identity()
+
+    # Verificar que el usuario autenticado es de tipo 'shop'
+    if current_user['type'] != 'shop':
+        return jsonify({'error': 'You must be logged in as a shop'}), 403
+
+    # Verificar que la tienda del usuario existe
+    shop = Shop.query.get(current_user['id'])
+    if not shop:
+        return jsonify({'error': 'Shop not found'}), 404
+
+    # Verificar que la mystery box existe y pertenece a la tienda del usuario
+    mystery_box = MysteryBox.query.filter_by(id=box_id, shop_id=shop.id).first()
+    if not mystery_box:
+        return jsonify({'error': 'Mystery Box not found'}), 404
+
+    try:
+        # Eliminar la mystery box
+        db.session.delete(mystery_box)
+        db.session.commit()
+
+        return jsonify({'message': 'Mystery Box deleted successfully'}), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500

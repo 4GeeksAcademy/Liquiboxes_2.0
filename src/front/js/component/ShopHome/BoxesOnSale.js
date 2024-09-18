@@ -8,6 +8,9 @@ function BoxesOnSale({ shopData }) {
   const [selectedBox, setSelectedBox] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [newItem, setNewItem] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);  // Estado para el modal que elimina la caja misteriosa
+  const [boxToDelete, setBoxToDelete] = useState(null);  // Almacena la mystery box seleccionada para eliminar
+
   const navigate = useNavigate();
 
   const handleEditClick = async (box) => {
@@ -67,10 +70,10 @@ function BoxesOnSale({ shopData }) {
     }
   };
 
-  const handleSave = async (box) => {
+  const handleSave = async (box) => {  //FUCION "GUARDAR CAMBIOS" CUANDO SE MODIFICAN
     const token = sessionStorage.getItem('token');
     const formData = new FormData();
-    
+
     for (const key in selectedBox) {
       if (key === 'possible_items') {
         formData.append(key, selectedBox[key].join(','));
@@ -101,6 +104,23 @@ function BoxesOnSale({ shopData }) {
     }
   };
 
+  const handleDelete = async () => {  //FUNCION PARA ELIMINAR MYSTERYBOX
+    const token = sessionStorage.getItem('token');
+    try {
+      await axios.delete(`${process.env.BACKEND_URL}/shops/mystery-box/${boxToDelete.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      alert('Mystery Box eliminada con éxito!');
+      setShowDeleteModal(false);  // Cierra el modal después de eliminar
+      window.location.reload();//actualizar la lista de mystery boxes después de la eliminación
+    } catch (error) {
+      console.error('Error al eliminar la Mystery Box:', error);
+      alert('Hubo un error al eliminar la Mystery Box. Inténtalo de nuevo.');
+    }
+  };
+
 
   return (
     <>
@@ -124,7 +144,12 @@ function BoxesOnSale({ shopData }) {
             >
               <i className="fa-solid fa-pen"></i> Editar
             </button>
-            <button className="">
+            <button
+              onClick={() => {
+                setShowDeleteModal(true);
+                setBoxToDelete(box);
+              }}
+            >
               <i className="fa-regular fa-trash-can"></i> Eliminar
             </button>
           </div>
@@ -139,7 +164,7 @@ function BoxesOnSale({ shopData }) {
           </Modal.Header>
           <Modal.Body>
             <form>
-              <div className="mb-3">
+              <div className="mb-3">   {/*INPUT DE LA IMAGEN*/}
                 {previewImage && (
                   <img src={previewImage} className="img-fluid mb-2" alt="Preview" />
                 )}
@@ -184,7 +209,7 @@ function BoxesOnSale({ shopData }) {
                 />
               </div>
 
-              <div className="mb-3">
+              <div className="mb-3"> {/*INPUT POSSIBLE ITEMS*/}
                 <label htmlFor="mysteryboxpossibleitems" className="form-label">
                   Items posibles
                 </label>
@@ -220,28 +245,37 @@ function BoxesOnSale({ shopData }) {
                 <label htmlFor="mysteryboxprice" className="form-label">
                   Precio de la caja
                 </label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="mysteryboxprice"
-                  value={selectedBox.price}
-                  onChange={handleChange}
-                  name="price"
-                />
+                <div className="input-group">
+                  <span className="input-group-text">€</span>
+                  <input
+                    type="number"
+                    className="form-control"
+                    id="mysteryboxprice"
+                    value={selectedBox.price}
+                    onChange={handleChange}
+                    name="price"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
               </div>
 
-              <div className="mb-3"> {/*INPUT DEL TAMAÑO*/}
+              <div className="mb-3"> {/* INPUT DEL TAMAÑO */}
                 <label htmlFor="mysteryboxsize" className="form-label">
                   Tamaño de la caja
                 </label>
-                <input
-                  type="text"
-                  className="form-control"
+                <select
+                  className="form-select"
                   id="mysteryboxsize"
                   value={selectedBox.size}
                   onChange={handleChange}
                   name="size"
-                />
+                >
+                  <option value="">Selecciona un tamaño</option>
+                  <option value="Pequeño">Pequeño</option>
+                  <option value="Mediano">Mediano</option>
+                  <option value="Grande">Grande</option>
+                </select>
               </div>
 
               <div className="mb-3"> {/*INPUT DE LA DESCRIPCION*/}
@@ -259,7 +293,6 @@ function BoxesOnSale({ shopData }) {
               </div>
             </form>
           </Modal.Body>
-
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>
               Cerrar
@@ -270,91 +303,28 @@ function BoxesOnSale({ shopData }) {
           </Modal.Footer>
         </Modal>
       )}
+
+      {showDeleteModal && (    //MODAL PARA ELIMINAR MYSTERY BOX
+        <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirmar eliminación</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            ¿Estás seguro de que deseas eliminar la Mystery Box <strong>{boxToDelete?.name}</strong>? Esta acción no se puede deshacer.
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+              Cancelar
+            </Button>
+            <Button variant="danger" onClick={handleDelete}>
+              Eliminar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      )}
+
     </>
   );
 }
 
 export default BoxesOnSale;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// AQUÍ MICHELL!!!!
-
-// {
-//   
-//   "mystery_boxes": [
-//     {
-//       "id": 1, 
-//       "image_url": "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726059679/jkkoqsyrsjkpigy43f9d.webp", 
-//       "name": "Caja Misteriosa de Miguel", 
-//       "price": 50.0, 
-//       "shop_categories": [
-//         "Moda", 
-//         "Ropa de Trabajo", 
-//         "Tecnolog\u00eda", 
-//         "Carpinter\u00eda", 
-//         "Outdoor", 
-//         "Deporte", 
-//         "Arte", 
-//         "Cocina", 
-//         "Jardiner\u00eda", 
-//         "M\u00fasica", 
-//         "Viajes", 
-//         "Lectura", 
-//         "Cine", 
-//         "Fotograf\u00eda", 
-//         "Yoga"
-//       ], 
-//       "shop_id": 1, 
-//       "shop_name": "Tienda de Miguel", 
-//       "total_sales": 10
-//     }
-// }
-
-
-// PARA TRAERTE LOS DATOS =>
-// const arrayMystery = shopData.mystery_boxes
-// arrayMystery.map((mysterybox) => (
-//   try { const response = await axios.get(`BACKEND_URL + /shops/shop_id/mysteryboxes)}
-//  ))
-
-// PARA MODIFICAR ESTOS DATOS MIRAR SHOPHOME =>
-// const handleSave = async (field) => {
-//   const token = sessionStorage.getItem('token');
-//   try {
-//     let value = shopData[field];
-//     if (field === 'categories' && Array.isArray(value)) {
-//       // Convertir el array de categorías a un formato que el backend pueda procesar
-//       value = JSON.stringify(value.map(cat => `"${cat}"`));
-//     }
-
-//     const formData = new FormData();
-//     formData.append(field, value);
-
-//     await axios.patch(`${process.env.BACKEND_URL}/shops/profile`,
-//       formData,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           'Content-Type': 'multipart/form-data'
-//         }
-//       }
-//     );
-//     setEditMode(prev => ({ ...prev, [field]: false }));
-//     setError(null);
-//   } catch (error) {
-//     console.error("Error updating shop data:", error);
-//     setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
-//   }
-// };
