@@ -242,6 +242,44 @@ def  shop_contact_support():
         logging.error(f"Database error: {str(e)}")
         return jsonify({'error': 'Database error occurred'}), 500
     
+@notifications.route('/user/contactsupport', methods=['POST'])
+@jwt_required()
+def  user_contact_support():
+    current_user=get_jwt_identity()
+    if current_user['type'] != 'user':
+        return jsonify({"error": "Unauthorished: You should logging as a user"}), 403
+    
+    user = User.query.get(current_user['id'])
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    data = request.get_json()
+    sale_id = data.get('saleId') or None
+
+    try:
+        new_message = Notification(
+            type = 'contact_support',
+            recipient_type = 'admin',
+            sender_type = current_user['type'],
+            content = data.get('content'),
+            sender_id = user.id,
+            sale_id=sale_id,
+            shop_id=user.id,
+            extra_data={
+                'shop_name': user.name,
+                'shop_email': user.email,
+                'subject_affair': data.get('subjectAffair')
+            }
+        )
+
+        db.session.add(new_message)
+        db.session.commit()
+        return jsonify(new_message.serialize()), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logging.error(f"Database error: {str(e)}")
+        return jsonify({'error': 'Database error occurred'}), 500
+    
 @notifications.route('/adminreply', methods=['POST'])
 @jwt_required()
 def  admin_repply_message():

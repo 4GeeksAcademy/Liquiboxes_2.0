@@ -212,33 +212,33 @@ const AdminNotifications = () => {
             </Button>
           </div>
         );
-        case 'contact_support':
-          return (
-            <div>
-              <h5>{selectedNotification.extra_data.subject_affair}</h5>
-              <p><strong>From:</strong> {selectedNotification.extra_data.shop_name || selectedNotification.extra_data.user_name}</p>
-              <p><strong>Date:</strong> {new Date(selectedNotification.updated_at).toLocaleString()}</p>
-              {selectedNotification.sale_id && <p><strong>Sale ID:</strong> {selectedNotification.sale_id}</p>}
-              <p>{selectedNotification.content}</p>
-              <Form onSubmit={handleReplySubmit}>
-                <Form.Group>
-                  <Form.Label>Reply:</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={replyMessage}
-                    onChange={(e) => setReplyMessage(e.target.value)}
-                  />
-                </Form.Group>
-                <Button type="submit" className="mt-2">Send Reply</Button>
-              </Form>
-              {/* AQUÍ SE PUEDE AGREGAR MÁS INFORMACIÓN SI ES NECESARIO */}
-            </div>
-          );
-        default:
-          return <p>{selectedNotification.content}</p>;
-      }
-    };
+      case 'contact_support':
+        return (
+          <div>
+            <h5>{selectedNotification.extra_data.subject_affair}</h5>
+            <p><strong>From:</strong> {selectedNotification.extra_data.shop_name || selectedNotification.extra_data.user_name}</p>
+            <p><strong>Date:</strong> {new Date(selectedNotification.updated_at).toLocaleString()}</p>
+            {selectedNotification.sale_id && <p><strong>Sale ID:</strong> {selectedNotification.sale_id}</p>}
+            <p>{selectedNotification.content}</p>
+            <Form onSubmit={handleReplySubmit}>
+              <Form.Group>
+                <Form.Label>Reply:</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                />
+              </Form.Group>
+              <Button type="submit" className="mt-2">Send Reply</Button>
+            </Form>
+            {/* AQUÍ SE PUEDE AGREGAR MÁS INFORMACIÓN SI ES NECESARIO */}
+          </div>
+        );
+      default:
+        return <p>{selectedNotification.content}</p>;
+    }
+  };
 
   const renderChangeRequestDetails = () => {
     if (!selectedRequest) return null;
@@ -364,7 +364,7 @@ const AdminNotifications = () => {
         </Tab>
         <Tab eventKey="changeRequests" title="Change Requests">
           <h2>Change Requests</h2>
-          
+
           <StatsButton onClick={() => setShowStatsModal(true)} />
 
 

@@ -25,6 +25,7 @@ import ProfileField from '../component/Profile/ProfileField';
 import { Context } from '../store/appContext'
 import UserNotifications from '../component/Profile/UserNotifications';
 import UserMessages from '../component/Profile/UserMessages';
+import ContactSupport from '../component/ShopHome/ContactSupport';
 
 function Profile() {
   const [userData, setUserData] = useState(null);
@@ -335,7 +336,7 @@ function Profile() {
           </div>
         );
       case 'support':
-        return <div>Aquí iría el formulario de contacto con soporte</div>;
+        return <div><ContactSupport /></div>;
       default:
         return <div>Selecciona una opción del menú</div>;
     }

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faList, faUser, faStore } from '@fortawesome/free-solid-svg-icons';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { faBell, faEnvelope, faEnvelopeOpen, faList, faUser, faStore, faHeadset, faComments } from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button, Form, Table } from 'react-bootstrap';
 import '../../../styles/usermessages.css';
 
 const UserMessages = () => {
@@ -14,6 +14,25 @@ const UserMessages = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [messagesPerPage] = useState(10);
     const [replyMessage, setReplyMessage] = useState('');
+
+    const messageConfig = {
+        contact_support: {
+            label: 'Soporte',
+            icon: faHeadset,
+        },
+        contact_shop: {
+            label: 'Tienda',
+            icon: faStore,
+        },
+        contact_user: {
+            label: 'Usuario',
+            icon: faUser,
+        },
+    };
+
+    const getMessageConfig = (type) => {
+        return messageConfig[type] || { label: 'Mensaje', icon: faComments };
+    };
 
     useEffect(() => {
         fetchMessages();
@@ -27,7 +46,7 @@ const UserMessages = () => {
 
     const fetchMessages = async () => {
         try {
-            const response = await axios.get(`${process.env.BACKEND_URL}/notifications/user/messages`, {
+            const response = await axios.get(`${process.env.BACKEND_URL}/notifications/user`, {
                 headers: {
                     Authorization: `Bearer ${sessionStorage.getItem('token')}`
                 }
@@ -48,14 +67,12 @@ const UserMessages = () => {
                 filtered = messages.filter(m => m.is_read);
                 break;
             case 'contact_support':
-                filtered = messages.filter(m => m.type === 'contact_support');
-                break;
             case 'contact_shop':
-                filtered = messages.filter(m => m.type === 'contact_shop');
-                break;
             case 'contact_user':
-                filtered = messages.filter(m => m.type === 'contact_user');
+                filtered = messages.filter(m => m.type === filter);
                 break;
+            default:
+                filtered = messages;
         }
         setFilteredMessages(filtered);
     };
@@ -86,8 +103,6 @@ const UserMessages = () => {
                 setMessages(messages.map(m =>
                     m.id === message.id ? { ...m, is_read: true } : m
                 ));
-            } else {
-                console.error('Failed to mark message as read');
             }
         }
     };
@@ -107,8 +122,9 @@ const UserMessages = () => {
     const handleReplySubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${process.env.BACKEND_URL}/notifications/reply`, {
+            await axios.post(`${process.env.BACKEND_URL}/notifications/user/contactsupport`, {
                 messageId: selectedMessage.id,
+                subjectAffair: selectedMessage.extra_data.subject_affair,
                 content: replyMessage
             }, {
                 headers: {
@@ -126,9 +142,13 @@ const UserMessages = () => {
     const renderMessageDetails = () => {
         if (!selectedMessage) return null;
 
+        const config = getMessageConfig(selectedMessage.type);
         return (
             <div className="message-details">
-                <h3 className="message-title">{selectedMessage.type === 'contact_support' ? 'Mensaje de Soporte' : 'Mensaje'}</h3>
+                <h3 className="message-title">
+                    <FontAwesomeIcon icon={config.icon} className="me-2" />
+                    {config.label}
+                </h3>
                 <p className="message-content">{selectedMessage.content}</p>
                 <Form onSubmit={handleReplySubmit} className="message-reply-form">
                     <Form.Group>
@@ -154,14 +174,15 @@ const UserMessages = () => {
     const currentMessages = filteredMessages.slice(indexOfFirstMessage, indexOfLastMessage);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
     const FilterButtons = ({ currentFilter, setFilter }) => {
         const filters = [
-            { key: 'all', label: 'All', icon: faList },
-            { key: 'unread', label: 'Unread', icon: faEnvelope },
-            { key: 'read', label: 'Read', icon: faEnvelopeOpen },
-            { key: 'contact_support', label: 'Support', icon: faBell },
-            { key: 'contact_shop', label: 'Shop', icon: faStore },
-            { key: 'contact_user', label: 'User', icon: faUser },
+            { key: 'all', label: 'Todos', icon: faList },
+            { key: 'unread', label: 'No leídos', icon: faEnvelope },
+            { key: 'read', label: 'Leídos', icon: faEnvelopeOpen },
+            { key: 'contact_support', label: 'Soporte', icon: faHeadset },
+            { key: 'contact_shop', label: 'Tienda', icon: faStore },
+            { key: 'contact_user', label: 'Usuario', icon: faUser },
         ];
 
         return (
@@ -172,7 +193,7 @@ const UserMessages = () => {
                         onClick={() => setFilter(key)}
                         className={`filter-button ${currentFilter === key ? 'active' : ''}`}
                     >
-                        <FontAwesomeIcon icon={icon} className="mr-2 me-2" />
+                        <FontAwesomeIcon icon={icon} className="me-2" />
                         {label}
                     </Button>
                 ))}
@@ -183,22 +204,33 @@ const UserMessages = () => {
     return (
         <div className="user-messages container mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="mb-0">Messages</h2>
+                <h2>Mensajes</h2>
                 <div className="d-flex align-items-center">
-                    <FontAwesomeIcon icon={faBell} className="mr-2 me-2" />
-                    <span className="badge bg-primary">
-                        {messages.filter(m => !m.is_read).length} Unread
+                    <FontAwesomeIcon icon={faBell} className="me-2" />
+                    <span className="badge">
+                        {messages.filter(m => !m.is_read).length} No leídos
                     </span>
                 </div>
             </div>
 
-            <FilterButtons currentFilter={filter} setFilter={setFilter} />
+            <div className="filter-buttons mb-4">
+                {['all', 'unread', 'read', 'contact_support', 'contact_shop', 'contact_user'].map((filterType) => (
+                    <Button
+                        key={filterType}
+                        onClick={() => setFilter(filterType)}
+                        className={`filter-button ${filter === filterType ? 'active' : ''}`}
+                    >
+                        <FontAwesomeIcon icon={getMessageConfig(filterType).icon} className="me-2" />
+                        {getMessageConfig(filterType).label}
+                    </Button>
+                ))}
+            </div>
 
-            <Button onClick={handleMarkAllRead} variant="secondary" className="mb-4">
-                Mark all as read
+            <Button onClick={handleMarkAllRead} variant="secondary" className="mb-4 custom-dropdown-toggle">
+                Marcar todos como leídos
             </Button>
 
-            <table className="messages-table">
+            <Table className="messages-table">
                 <thead>
                     <tr>
                         <th>Tipo</th>
@@ -208,35 +240,40 @@ const UserMessages = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {currentMessages.map((message) => (
-                        <tr
-                            key={message.id}
-                            onClick={() => handleMessageClick(message)}
-                            className="cursor-pointer"
-                        >
-                            <td>{message.type}</td>
-                            <td>{message.content}</td>
-                            <td>{new Date(message.created_at).toLocaleString()}</td>
-                            <td>
-                                {message.is_read ?
-                                    <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" /> :
-                                    <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
-                                }
-                            </td>
-                        </tr>
-                    ))}
+                    {currentMessages.map((message) => {
+                        const config = getMessageConfig(message.type);
+                        return (
+                            <tr
+                                key={message.id}
+                                onClick={() => handleMessageClick(message)}
+                            >
+                                <td data-label="Tipo">
+                                    <FontAwesomeIcon icon={config.icon} className="me-2" />
+                                    {config.label}
+                                </td>
+                                <td data-label="Contenido">{message.content}</td>
+                                <td data-label="Fecha">{new Date(message.created_at).toLocaleString()}</td>
+                                <td data-label="Estado">
+                                    {message.is_read ?
+                                        <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" /> :
+                                        <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
+                                    }
+                                </td>
+                            </tr>
+                        )}
+                    )}
                 </tbody>
-            </table>
+            </Table>
 
             <div className="pagination">
                 {[...Array(Math.ceil(filteredMessages.length / messagesPerPage)).keys()].map(number => (
-                    <button
+                    <Button
                         key={number + 1}
                         onClick={() => paginate(number + 1)}
                         className={currentPage === number + 1 ? 'active' : ''}
                     >
                         {number + 1}
-                    </button>
+                    </Button>
                 ))}
             </div>
 
@@ -245,7 +282,29 @@ const UserMessages = () => {
                     <Modal.Title>Detalles del Mensaje</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {renderMessageDetails()}
+                    <div className="message-details">
+                        <h3>
+                            <FontAwesomeIcon icon={getMessageConfig(selectedMessage?.type).icon} className="me-2" />
+                            {getMessageConfig(selectedMessage?.type).label}
+                        </h3>
+                        <p>{selectedMessage?.content}</p>
+                        <Form onSubmit={handleReplySubmit} className="message-reply-form">
+                            <Form.Group>
+                                <Form.Label>Responder:</Form.Label>
+                                <Form.Control
+                                    as="textarea"
+                                    rows={3}
+                                    value={replyMessage}
+                                    onChange={(e) => setReplyMessage(e.target.value)}
+                                    placeholder="Escribe tu respuesta aquí..."
+                                />
+                            </Form.Group>
+                            <Button type="submit" className="send-reply-button">
+                                <FontAwesomeIcon icon={faEnvelope} className="me-2" />
+                                Enviar Respuesta
+                            </Button>
+                        </Form>
+                    </div>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
