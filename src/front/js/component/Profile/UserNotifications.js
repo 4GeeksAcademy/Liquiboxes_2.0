@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faList, faShoppingCart, faComment, faExclamationCircle, faCheck, faCaretDown } from '@fortawesome/free-solid-svg-icons';
-import { Modal, Dropdown } from 'react-bootstrap';
-import '../../../styles/usernotifications.css';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBell, faEnvelope, faEnvelopeOpen, faList, faShoppingCart, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button, Table } from 'react-bootstrap';
+import '../../../styles/usernotifications.css';
 
 const UserNotifications = () => {
     const [notifications, setNotifications] = useState([]);
     const [filteredNotifications, setFilteredNotifications] = useState([]);
     const [selectedNotification, setSelectedNotification] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [filter, setFilter] = useState('unread');
+    const [filter, setFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [notificationsPerPage] = useState(10);
 
     useEffect(() => {
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 15000); // Poll every 15 seconds
+        const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
         return () => clearInterval(interval);
     }, []);
 
@@ -31,7 +31,7 @@ const UserNotifications = () => {
                     Authorization: `Bearer ${sessionStorage.getItem('token')}`
                 }
             });
-            setNotifications(response.data);
+            setNotifications(response.data.filter(n => !['contact_support', 'contact_user', 'contact_shop'].includes(n.type)));
         } catch (error) {
             console.error('Error fetching notifications:', error);
         }
@@ -55,7 +55,6 @@ const UserNotifications = () => {
             case 'sale_sent':
                 filtered = notifications.filter(n => n.type === 'sale_sent');
                 break;
-            case 'all':
             default:
                 filtered = notifications;
                 break;
@@ -89,8 +88,6 @@ const UserNotifications = () => {
                 setNotifications(notifications.map(n =>
                     n.id === notification.id ? { ...n, is_read: true } : n
                 ));
-            } else {
-                console.error('Failed to mark notification as read');
             }
         }
     };
@@ -107,28 +104,6 @@ const UserNotifications = () => {
         fetchNotifications();
     };
 
-    const handleMarkAllUnread = async () => {
-        const results = await Promise.all(
-            notifications.filter(n => n.is_read).map(n => markNotificationAsRead(n.id, false))
-        );
-        if (results.every(result => result)) {
-            setNotifications(notifications.map(n => ({ ...n, is_read: false })));
-        } else {
-            console.error('Some notifications could not be marked as unread');
-        }
-        fetchNotifications();
-    };
-
-    function formatearFechaPersonalizada(fecha) {
-        const d = new Date(fecha);
-        const dia = d.getDate().toString().padStart(2, '0');
-        const mes = (d.getMonth() + 1).toString().padStart(2, '0');
-        const anio = d.getFullYear();
-        const horas = d.getHours().toString().padStart(2, '0');
-        const minutos = d.getMinutes().toString().padStart(2, '0');
-        return `Recibida a las ${horas}:${minutos} del día ${dia}/${mes}/${anio}`;
-    }
-
     const renderNotificationDetails = () => {
         if (!selectedNotification) return null;
 
@@ -136,13 +111,7 @@ const UserNotifications = () => {
             <div className="notification-details">
                 <h3>{getNotificationConfig(selectedNotification.type).label}</h3>
                 <p>{selectedNotification.content}</p>
-                <hr className='w-75 mx-auto' />
-                <p className='text-center'>{formatearFechaPersonalizada(selectedNotification.created_at)}</p>
-                {selectedNotification.type === 'sale_sent' && (
-                    <button onClick={() => handleConfirmReceipt(selectedNotification.id)} className="confirm-button">
-                        <FontAwesomeIcon icon={faCheck} /> Confirmar Recepción
-                    </button>
-                )}
+                <p>{formatDate(selectedNotification.created_at)}</p>
             </div>
         );
     };
@@ -160,14 +129,16 @@ const UserNotifications = () => {
             label: 'Pedido enviado',
             icon: faShoppingCart,
         },
-        default: {
-            label: 'Notificación',
-            icon: faExclamationCircle,
-        }
+        // Add more types as needed
     };
 
     const getNotificationConfig = (type) => {
-        return notificationConfig[type] || notificationConfig.default;
+        return notificationConfig[type] || { label: 'Notificación', icon: faBell };
+    };
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
     };
 
     const indexOfLastNotification = currentPage * notificationsPerPage;
@@ -189,14 +160,14 @@ const UserNotifications = () => {
         return (
             <div className="filter-buttons mb-4">
                 {filters.map(({ key, label, icon }) => (
-                    <button
+                    <Button
                         key={key}
                         onClick={() => setFilter(key)}
                         className={`filter-button ${currentFilter === key ? 'active' : ''}`}
                     >
                         <FontAwesomeIcon icon={icon} className="me-2" />
                         {label}
-                    </button>
+                    </Button>
                 ))}
             </div>
         );
@@ -205,7 +176,7 @@ const UserNotifications = () => {
     return (
         <div className="user-notifications container mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="mb-0">Notificaciones</h2>
+                <h2>Notificaciones</h2>
                 <div className="d-flex align-items-center">
                     <FontAwesomeIcon icon={faBell} className="mr-2 me-2" />
                     <span className="badge">
@@ -214,22 +185,24 @@ const UserNotifications = () => {
                 </div>
             </div>
 
-            <FilterButtons currentFilter={filter} setFilter={setFilter} />
-
-            <div className="mb-4 d-flex justify-content-end">
-                <Dropdown>
-                    <Dropdown.Toggle id="dropdown-actions" className="custom-dropdown-toggle">
-                        <FontAwesomeIcon icon={faCaretDown} /> Acciones
-                    </Dropdown.Toggle>
-
-                    <Dropdown.Menu>
-                        <Dropdown.Item onClick={handleMarkAllRead}>Marcar todas como leídas</Dropdown.Item>
-                        <Dropdown.Item onClick={handleMarkAllUnread}>Marcar todas como no leídas</Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
+            <div className="filter-buttons mb-4">
+                {['all', 'unread', 'read', 'purchase_confirmation', 'confirmation', 'sale_sent'].map((filterType) => (
+                    <Button
+                        key={filterType}
+                        onClick={() => setFilter(filterType)}
+                        className={`filter-button ${filter === filterType ? 'active' : ''}`}
+                    >
+                        <FontAwesomeIcon icon={getNotificationConfig(filterType).icon} className="me-2" />
+                        {getNotificationConfig(filterType).label}
+                    </Button>
+                ))}
             </div>
 
-            <table className="notifications-table">
+            <Button onClick={handleMarkAllRead} variant="secondary" className="mb-4 custom-dropdown-toggle">
+                Marcar todas como leídas
+            </Button>
+
+            <Table className="notifications-table">
                 <thead>
                     <tr>
                         <th>Tipo</th>
@@ -245,44 +218,54 @@ const UserNotifications = () => {
                             <tr
                                 key={notification.id}
                                 onClick={() => handleNotificationClick(notification)}
-                                className="cursor-pointer hover:bg-gray-100"
                             >
-                                <td className="flex items-center">
-                                    <FontAwesomeIcon icon={config.icon} className={`me-2 ${config.background}`} />
+                                <td data-label="Tipo">
+                                    <FontAwesomeIcon icon={config.icon} className="me-2" />
                                     {config.label}
                                 </td>
-                                <td>{notification.content}</td>
-                                <td>{formatearFechaPersonalizada(notification.created_at)}</td>
-                                <td>
+                                <td data-label="Contenido">{notification.content}</td>
+                                <td data-label="Fecha">{formatDate(notification.created_at)}</td>
+                                <td data-label="Estado">
                                     {notification.is_read ? (
-                                        <FontAwesomeIcon icon={faEnvelopeOpen} className="text-gray-400" />
+                                        <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" />
                                     ) : (
-                                        <FontAwesomeIcon icon={faEnvelope} className="text-blue-500" />
+                                        <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
                                     )}
                                 </td>
                             </tr>
                         );
                     })}
                 </tbody>
-            </table>
+            </Table>
 
             <div className="pagination">
                 {[...Array(Math.ceil(filteredNotifications.length / notificationsPerPage)).keys()].map(number => (
-                    <button key={number + 1} className={number + 1 === currentPage ? 'active' : ''} onClick={() => paginate(number + 1)}>
+                    <Button
+                        key={number + 1}
+                        onClick={() => paginate(number + 1)}
+                        className={currentPage === number + 1 ? 'active' : ''}
+                    >
                         {number + 1}
-                    </button>
+                    </Button>
                 ))}
             </div>
 
-            <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)}>
+            <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} className="custom-modal">
                 <Modal.Header closeButton>
                     <Modal.Title>Detalles de la Notificación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {renderNotificationDetails()}
+                    <div className="notification-details">
+                        <h3>
+                            <FontAwesomeIcon icon={getNotificationConfig(selectedNotification?.type).icon} className="me-2" />
+                            {getNotificationConfig(selectedNotification?.type).label}
+                        </h3>
+                        <p>{selectedNotification?.content}</p>
+                        <p>{selectedNotification ? formatDate(selectedNotification.created_at) : ''}</p>
+                    </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <button className="secondary-button" onClick={() => setIsModalOpen(false)}>Cerrar</button>
+                    <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
                 </Modal.Footer>
             </Modal>
         </div>

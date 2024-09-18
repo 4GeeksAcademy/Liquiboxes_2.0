@@ -1,14 +1,28 @@
-// ContactSupport.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "../../../styles/shops/contactsupport.css";
+import { useNavigate } from 'react-router-dom';
+import Modal from '../Modal';
 
 const ContactSupport = () => {
   const [newform, setNewForm] = useState({
     saleId: null,
     subjectAffair: "",
     content: ""
-  })
+  });
+  const [userType, setUserType] = useState(null);
+  const [isModalLoggingOpen, setIsModalLoggingOpen] = useState(false);
+  const [isModalSuccessOpen, setIsModalSuccessOpen] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedUserType = sessionStorage.getItem('userType');
+    setUserType(storedUserType);
+
+    if (!storedUserType) {
+      setIsModalLoggingOpen(true);
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,34 +36,48 @@ const ContactSupport = () => {
     e.preventDefault();
     const token = sessionStorage.getItem('token');
 
+    if (!userType) {
+      setIsModalLoggingOpen(true);
+      return;
+    }
+
     try {
-      const response = await axios.post(`${process.env.BACKEND_URL}/notifications/shop/contactsupport`,
+      const response = await axios.post(`${process.env.BACKEND_URL}/notifications/${userType}/contactsupport`,
         newform,
         {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         }
-      )
-      alert('Notificación de contacto enviada a soporte, contactaremos lo antes posible.')
-      // Limpiar el formulario de contacto.
+      );
+      setIsModalSuccessOpen(true);
       setNewForm({
         saleId: null,
         subjectAffair: "",
         content: ""
-      })
+      });
     } catch (error) {
       console.error(error);
     }
+  };
 
+  const closeLoginModal = () => {
+    setIsModalLoggingOpen(false);
+    navigate('/');
+  };
+
+  const closeSuccessModal = () => {
+    setIsModalSuccessOpen(false);
+    if (userType === 'user'){
+      navigate('/home');
+    }
+    navigate('/shophome');
   };
 
   return (
-    <div className="contact-support-container">
+    <div className="contact-support-container mt-5">
       <h2>Contacto con Soporte</h2>
       <form onSubmit={handleSubmit} className="contact-support-form">
-
-        {/* Campo opcional para ID de Venta */}
         <div className="form-group">
           <label htmlFor="ventaId">ID de Venta (Opcional)</label>
           <input
@@ -62,7 +90,6 @@ const ContactSupport = () => {
           />
         </div>
 
-        {/* Campo de Asunto */}
         <div className="form-group">
           <label htmlFor="asunto">Asunto *</label>
           <input
@@ -76,7 +103,6 @@ const ContactSupport = () => {
           />
         </div>
 
-        {/* Campo de Contenido */}
         <div className="form-group">
           <label htmlFor="contenido">Contenido *</label>
           <textarea
@@ -89,12 +115,26 @@ const ContactSupport = () => {
           />
         </div>
 
-        {/* Botón para enviar */}
         <button type="submit">Enviar</button>
       </form>
+
+      <Modal
+        isOpen={isModalLoggingOpen}
+        onClose={closeLoginModal}
+        title="Iniciar sesión requerido"
+        body='Para ponerte en contacto con soporte, necesitas iniciar sesión.'
+        buttonBody='Iniciar sesión'
+      />
+
+      <Modal
+        isOpen={isModalSuccessOpen}
+        onClose={closeSuccessModal}
+        title='Mensaje de contacto con soporte enviado'
+        body='Mensaje de contacto con soporte enviado, contactaremos lo antes posible.'
+        buttonBody='Volver al panel de control'
+      />
     </div>
   );
 };
 
 export default ContactSupport;
-
