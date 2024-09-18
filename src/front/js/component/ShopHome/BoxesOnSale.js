@@ -120,7 +120,6 @@ function BoxesOnSale({ shopData }) {
     }
   };
 
-
   return (
     <>
       {shopData.mystery_boxes.map((box) => (
