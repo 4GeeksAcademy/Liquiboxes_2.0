@@ -191,6 +191,7 @@ def get_shop_profile():
         if not shop:
             return jsonify({"error": "Shop not found"}), 404
         return jsonify(shop.serialize_detail()), 200
+    
     except SQLAlchemyError as e:
         logging.error(f"Database error: {str(e)}")
         return jsonify({'error': 'Database error occurred'}), 500
@@ -263,3 +264,86 @@ def get_shop_change_requests():
         return jsonify([request.serialize() for request in change_requests]), 200
     except SQLAlchemyError as e:
         return jsonify({"error": str(e)}), 500
+    
+    
+@shops.route('/mystery-box/<int:box_id>', methods=['PUT'])
+@jwt_required()
+def update_mystery_box(box_id):
+    current_user = get_jwt_identity()
+    if current_user['type'] != 'shop':
+        return jsonify({'error': 'You must be logged in as a shop'}), 403
+    
+    shop = Shop.query.get(current_user['id'])
+    if not shop:
+        return jsonify({"error": "Shop not found"}), 404
+
+    mystery_box = MysteryBox.query.filter_by(id=box_id, shop_id=current_user['id']).first()
+    if not mystery_box:
+        return jsonify({'error': 'Mystery Box not found'}), 404
+
+    data = request.form
+    image_file = request.files.get('image_url')
+
+    # Validamos los campos requeridos
+    required_fields = ['name', 'description', 'price', 'size', 'possible_items', 'number_of_items']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({'error': f'Missing field: {field}'}), 400
+
+    # Subimos la imagen a Cloudinary si existe
+    if image_file:
+        try:
+            image_url = upload_image_to_cloudinary(image_file)
+            mystery_box.image_url = image_url
+        except Exception as e:
+            return jsonify({'error': f'Failed to upload image to Cloudinary: {str(e)}'}), 500
+
+    # Actualizamos el resto de los datos de la caja misteriosa
+    try:
+        mystery_box.name = data.get('name')
+        mystery_box.description = data.get('description')
+        mystery_box.price = float(data.get('price'))
+        mystery_box.size = data.get('size')
+        mystery_box.possible_items = data.get('possible_items').split(',')
+        mystery_box.number_of_items = int(data.get('number_of_items'))
+
+        db.session.commit()
+        return jsonify({'message': 'Mystery Box updated successfully'}), 200
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'error': f'Invalid data format: {str(e)}'}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error updating Mystery Box: {str(e)}'}), 500
+    
+@shops.route('/mystery-box/<int:box_id>', methods=['DELETE']) #RUTA PARA ELIMINAR MYSTERY BOX
+@jwt_required()
+def delete_mystery_box(box_id):
+    current_user = get_jwt_identity()
+
+    #Verifica que el usuario es de tipo 'shop'
+    if current_user['type'] != 'shop':
+        return jsonify({'error': 'You must be logged in as a shop'}), 403
+
+    #Verifica que la tienda existe
+    shop = Shop.query.get(current_user['id'])
+    if not shop:
+        return jsonify({'error': 'Shop not found'}), 404
+
+    #Verifica que la mystery box existe y pertenece a la tienda del usuario
+    mystery_box = MysteryBox.query.filter_by(id=box_id, shop_id=shop.id).first()
+    if not mystery_box:
+        return jsonify({'error': 'Mystery Box not found'}), 404
+
+    try:
+        #Elimina la mystery box
+        db.session.delete(mystery_box)
+        db.session.commit()
+
+        return jsonify({'message': 'Mystery Box deleted successfully'}), 200
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        return jsonify({'error': f'Database error: {str(e)}'}), 500
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Unexpected error: {str(e)}'}), 500

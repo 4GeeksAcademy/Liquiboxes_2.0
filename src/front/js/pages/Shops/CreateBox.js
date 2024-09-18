@@ -98,7 +98,9 @@ const CreateMysteryBox = () => {
             setNewBox(prevState => ({
                 ...prevState,
                 image: file
+            
             }));
+            
             setPreviewImage(URL.createObjectURL(file));
         }
     };
