@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faFilter, faCheck, faTimes, faExchange, faTruck, faPrint, faDownload, faCaretDown } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faEnvelope, faEnvelopeOpen, faFilter, faCheck, faTimes, faExchange, faTruck, faPrint, faDownload, faCaretDown, faList, faShoppingCart, faComment } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Form, Table, Tabs, Tab, Dropdown } from 'react-bootstrap';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
@@ -86,7 +86,31 @@ const ShopNotifications = () => {
       case 'read':
         filtered = filtered.filter(n => n.is_read);
         break;
-      // Add more cases if needed
+      case 'new_sale':
+        filtered = filtered.filter(n => n.type === 'new_sale');
+        break;
+      case 'item_change_approved':
+        filtered = filtered.filter(n => n.type === 'item_change_approved');
+        break;
+      case 'item_change_rejected':
+        filtered = filtered.filter(n => n.type === 'item_change_rejected');
+        break;
+      case 'confirmed':
+        filtered = filtered.filter(n => n.type === 'confirmed');
+        break;
+      case 'contact_support':
+        filtered = filtered.filter(n => n.type === 'contact_support');
+        break;
+      case 'contact_shop':
+        filtered = filtered.filter(n => n.type === 'contact_shop');
+        break;
+      case 'contact_user':
+        filtered = filtered.filter(n => n.type === 'contact_user');
+        break;
+      case 'all':
+      default:
+        // No additional filtering needed
+        break;
     }
     setFilteredNotifications(filtered);
   };
@@ -294,6 +318,7 @@ const ShopNotifications = () => {
     const primaryColor = '#6a8e7f';
     const secondaryColor = '#073b3a';
     const textColor = '#28112b';
+    
 
     // Encabezado
     doc.setFillColor(primaryColor);
@@ -301,7 +326,7 @@ const ShopNotifications = () => {
     doc.setTextColor('#ffffff');
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Recibo del pedido: ${orderDetails?.id || 'N/A'}`, 105, 25, null, null, 'center');
+    doc.text(`Detalles de envío del pedido: ${orderDetails?.id || 'N/A'}`, 105, 25, null, null, 'center');
 
     // Restablecer color de texto
     doc.setTextColor(textColor);
@@ -310,7 +335,7 @@ const ShopNotifications = () => {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     doc.text(`ID de Pedido: ${orderDetails?.id || 'N/A'}`, 20, 50);
-    doc.text(`Fecha: ${orderDetails?.date ? new Date(orderDetails.date).toLocaleString('es-ES') : 'N/A'}`, 20, 60);
+    doc.text(`Fecha: ${orderDetails?.date ? new Date(orderDetails.date).toLocaleString() : 'N/A'}`, 20, 60);
     doc.text(`Importe Total: ${orderDetails?.total_amount ? `${orderDetails.total_amount} €` : 'N/A'}`, 20, 70);
 
     // Detalles de envío
@@ -322,14 +347,12 @@ const ShopNotifications = () => {
 
     doc.setTextColor(textColor);
     doc.setFont('helvetica', 'normal');
-    if (shippingDetails) {
-      doc.text(`Nombre: ${shippingDetails.name || ''} ${shippingDetails.surname || ''}`, 25, 95);
-      doc.text(`Correo Electrónico: ${shippingDetails.email || 'N/A'}`, 25, 105);
-      doc.text(`Dirección: ${shippingDetails.address || 'N/A'}`, 25, 115);
-      doc.text(`Código Postal: ${shippingDetails.postal_code || 'N/A'}`, 25, 125);
-    } else {
-      doc.text('Información de envío no disponible', 25, 95);
-    }
+
+    doc.text(`Nombre: ${shippingDetails.name || ''} ${shippingDetails.surname || ''}`, 25, 95);
+    doc.text(`Correo Electrónico: ${shippingDetails.email || 'N/A'}`, 25, 105);
+    doc.text(`Dirección: ${shippingDetails.address || 'N/A'}`, 25, 115);
+    doc.text(`Código Postal: ${shippingDetails.postal_code || 'N/A'}`, 25, 125);
+
 
     // Preferencias del usuario
     doc.setFillColor(secondaryColor);
@@ -341,15 +364,11 @@ const ShopNotifications = () => {
     doc.setTextColor(textColor);
     doc.setFont('helvetica', 'normal');
     let yPos = 150;
-    if (userPreferences) {
-      for (const [key, value] of Object.entries(userPreferences)) {
-        doc.text(`${key}: ${value || 'N/A'}`, 25, yPos);
-        yPos += 10;
-      }
-    } else {
-      doc.text('Preferencias del usuario no disponibles', 25, yPos);
+    for (const [key, value] of Object.entries(userPreferences)) {
+      doc.text(`${key}: ${value || 'N/A'}`, 25, yPos);
       yPos += 10;
     }
+
 
     // Tabla de artículos
     if (items && items.length > 0) {
@@ -386,7 +405,7 @@ const ShopNotifications = () => {
         },
       });
     } else {
-      doc.text('No hay artículos disponibles', 20, yPos + 20);
+      doc.text('No hay artículos disponibles, pongase en contacto con soporte lo antes posible', 20, yPos + 20);
     }
 
     // Pie de página
@@ -398,7 +417,7 @@ const ShopNotifications = () => {
     }
 
     // Guardar el PDF
-    doc.save(`recibo_pedido_${orderDetails?.id || 'N/A'}.pdf`);
+    doc.save(`Detalle de envio pedido ${orderDetails?.id || 'N/A'}.pdf`);
   };
 
   const handlePDFDownload = () => {
@@ -565,6 +584,42 @@ const ShopNotifications = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const FilterButtons = ({ currentFilter, setFilter, activeTab }) => {
+    const filters = activeTab === 'sales'
+      ? [
+        { key: 'all', label: 'Todas', icon: faList },
+        { key: 'unread', label: 'No leídas', icon: faEnvelope },
+        { key: 'read', label: 'Leídas', icon: faEnvelopeOpen },
+        { key: 'new_sale', label: 'Nuevas ventas', icon: faShoppingCart },
+        { key: 'item_change_approved', label: 'Cambios aprobados', icon: faCheck },
+        { key: 'item_change_rejected', label: 'Cambios rechazados', icon: faTimes },
+        { key: 'confirmed', label: 'Ventas confirmadas', icon: faCheck },
+      ]
+      : [
+        { key: 'all', label: 'Todos', icon: faList },
+        { key: 'unread', label: 'No leídos', icon: faEnvelope },
+        { key: 'read', label: 'Leídos', icon: faEnvelopeOpen },
+        { key: 'contact_support', label: 'Soporte', icon: faComment },
+        { key: 'contact_shop', label: 'Tienda', icon: faShoppingCart },
+        { key: 'contact_user', label: 'Usuario', icon: faEnvelope },
+      ];
+
+    return (
+      <div className="filter-buttons mb-4">
+        {filters.map(({ key, label, icon }) => (
+          <button
+            key={key}
+            onClick={() => setFilter(key)}
+            className={`filter-button ${currentFilter === key ? 'active' : ''}`}
+          >
+            <FontAwesomeIcon icon={icon} className="me-2" />
+            {label}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="shop-notifications container mt-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -583,21 +638,19 @@ const ShopNotifications = () => {
 
       <Tabs
         activeKey={activeTab}
-        onSelect={(k) => setActiveTab(k)}
+        onSelect={(k) => {
+          setActiveTab(k);
+          setFilter('all');
+        }}
         className="mb-3"
       >
         <Tab eventKey="sales" title="Ventas">
-          <div className="mb-4">
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="dropdown-filter">
-                <FontAwesomeIcon icon={faFilter} /> Filtrar
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                <Dropdown.Item onClick={() => setFilter('all')}>Todas</Dropdown.Item>
-                <Dropdown.Item onClick={() => setFilter('unread')}>No Leídas</Dropdown.Item>
-                <Dropdown.Item onClick={() => setFilter('read')}>Leídas</Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
+          <FilterButtons currentFilter={filter} setFilter={setFilter} activeTab={activeTab} />
+
+          <div className="mb-4 d-flex justify-content-end">
+            <Button onClick={handleMarkAllRead} variant="secondary">
+              Marcar todas como leídas
+            </Button>
           </div>
 
           <table className="notifications-table">

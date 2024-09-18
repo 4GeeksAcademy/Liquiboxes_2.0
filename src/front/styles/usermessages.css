@@ -1,0 +1,283 @@
+/* UserMessages.css */
+.user-messages {
+  margin: 0 auto !important;
+  padding: 2rem !important;
+}
+
+.user-messages h2 {
+  color: var(--text-color) !important;
+  font-weight: 600 !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.user-messages .badge {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 20px !important;
+  font-size: 0.9rem !important;
+}
+
+.user-messages .filter-buttons {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.user-messages .filter-button {
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 20px !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.user-messages .filter-button:hover {
+  background-color: var(--background-secondary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.user-messages .filter-button.active {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.user-messages .filter-button .fa-icon {
+  margin-right: 0.5rem !important;
+}
+
+@media (max-width: 768px) {
+  .user-messages .filter-buttons {
+    flex-direction: column !important;
+  }
+
+  .user-messages .filter-button {
+    width: 100% !important;
+  }
+}
+
+.custom-dropdown-toggle {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--border-color) !important;
+  color: white !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.custom-dropdown-toggle:hover,
+.custom-dropdown-toggle:focus {
+  opacity: 0.9 !important;
+  box-shadow: 0 0 0 0.2rem rgba(106, 142, 127, 0.25) !important;
+}
+
+.dropdown-menu {
+  background-color: var(--background-color) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.dropdown-item {
+  color: var(--text-color) !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--background-secondary-color) !important;
+  color: var(--primary-color) !important;
+}
+
+.messages-table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  margin-bottom: 1rem !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.messages-table th,
+.messages-table td {
+  padding: 1rem !important;
+  text-align: left !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.messages-table th {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.messages-table tr:last-child td {
+  border-bottom: none !important;
+}
+
+.messages-table tr {
+  cursor: pointer !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.messages-table tr:hover {
+  background-color: var(--background-secondary-color) !important;
+}
+
+.pagination {
+  display: flex !important;
+  justify-content: center !important;
+  margin-top: 1.5rem !important;
+}
+
+.pagination button {
+  padding: 0.5rem 1rem !important;
+  margin: 0 0.25rem !important;
+  background-color: var(--background-color) !important;
+  border: 1px solid var(--border-color) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  border-radius: 5px !important;
+}
+
+.pagination button:hover,
+.pagination button.active {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+}
+
+.custom-modal .modal-content {
+  border-radius: 15px !important;
+  border: none !important;
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2) !important;
+}
+
+.custom-modal .modal-header {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  border-bottom: none !important;
+  border-top-left-radius: 15px !important;
+  border-top-right-radius: 15px !important;
+  padding: 1.5rem !important;
+}
+
+.custom-modal .modal-title {
+  font-weight: 600 !important;
+  font-size: 1.25rem !important;
+}
+
+.custom-modal .modal-body {
+  padding: 2rem !important;
+}
+
+.custom-modal .modal-footer {
+  border-top: none !important;
+  padding: 1.5rem !important;
+}
+
+.message-details h3 {
+  color: var(--primary-color) !important;
+  margin-bottom: 1.5rem !important;
+  font-weight: 600 !important;
+}
+
+.message-details p {
+  margin-bottom: 1rem !important;
+  color: var(--text-color) !important;
+  line-height: 1.6 !important;
+}
+
+.message-reply-form textarea {
+  width: 100% !important;
+  padding: 0.75rem !important;
+  margin-bottom: 1rem !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 5px !important;
+  resize: vertical !important;
+  transition: border-color 0.3s ease !important;
+}
+
+.message-reply-form textarea:focus {
+  border-color: var(--primary-color) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 0.2rem rgba(106, 142, 127, 0.25) !important;
+}
+
+.send-reply-button {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  transition: all 0.3s ease !important;
+}
+
+.send-reply-button:hover,
+.send-reply-button:focus {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+  box-shadow: 0 0 0 0.2rem rgba(106, 142, 127, 0.25) !important;
+}
+
+@media (max-width: 768px) {
+  .user-messages {
+    padding: 1rem !important;
+  }
+
+  .messages-table,
+  .messages-table thead,
+  .messages-table tbody,
+  .messages-table th,
+  .messages-table td,
+  .messages-table tr {
+    display: block !important;
+  }
+
+  .messages-table thead tr {
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+  }
+
+  .messages-table tr {
+    border: 1px solid var(--border-color) !important;
+    margin-bottom: 0.5rem !important;
+    border-radius: 5px !important;
+  }
+
+  .messages-table td {
+    border: none !important;
+    position: relative !important;
+    padding-left: 50% !important;
+    text-align: right !important;
+  }
+
+  .messages-table td:before {
+    position: absolute !important;
+    top: 12px !important;
+    left: 12px !important;
+    width: 45% !important;
+    padding-right: 10px !important;
+    white-space: nowrap !important;
+    content: attr(data-label) !important;
+    font-weight: bold !important;
+    text-align: left !important;
+  }
+
+  .custom-dropdown-toggle {
+    width: 100% !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .custom-modal .modal-body {
+    padding: 1.5rem !important;
+  }
+}

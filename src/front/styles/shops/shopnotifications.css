@@ -315,7 +315,44 @@
   cursor: not-allowed !important;
 }
 
+.filter-buttons {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.filter-button {
+  background-color: var(--background-color) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-color) !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  font-size: 0.9rem !important;
+}
+
+.filter-button:hover {
+  background-color: var(--background-secondary-color) !important;
+}
+
+.filter-button.active {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+
 @media (max-width: 768px) {
+  .filter-buttons {
+    flex-direction: column !important;
+  }
+
+  .filter-button {
+    width: 100% !important;
+  }
+  
   .shop-notifications {
     padding: 1rem !important;
   }
