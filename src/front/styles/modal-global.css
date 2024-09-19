@@ -1,0 +1,197 @@
+/* styles/modal-global.css */
+.modal-global-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(106, 142, 127, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(10px) saturate(180%);
+}
+
+.modal-global-overlay.modal-global-show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-global-content {
+  background-color: var(--background-color);
+  border-radius: 20px;
+  padding: 0;
+  max-width: 90%;
+  width: 500px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: scale(0.9) translateY(40px);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.modal-global-overlay.modal-global-show .modal-global-content {
+  transform: scale(1) translateY(0);
+}
+
+.modal-global-header {
+  background-color: var(--primary-color);
+  padding: 1.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-global-header::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.modal-global-header h2 {
+  color: var(--background-color);
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  position: relative;
+}
+
+.modal-global-close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--background-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+.modal-global-close-button:hover {
+  opacity: 1;
+  transform: rotate(90deg) scale(1.1);
+}
+
+.modal-global-body {
+  padding: 2rem 2rem 1rem;
+  color: var(--text-color);
+}
+
+.modal-global-body p {
+  margin-bottom: 1rem;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.modal-global-footer {
+  padding: 0 3.5rem 2.5rem;
+}
+
+.modal-global-button {
+  background-color: var(--primary-color);
+  color: var(--background-color);
+  border: none;
+  padding: 1rem 1.5rem 1.2rem;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  width: 100%;
+  display: block;
+  transition: all 0.2s ease;
+}
+
+.modal-global-button:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-global-button:active {
+  transform: translateY(1px);
+}
+
+@keyframes modal-global-slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-global-body > *,
+.modal-global-footer {
+  animation: modal-global-slideUpFade 0.5s ease forwards;
+  opacity: 0;
+}
+
+.modal-global-body > *:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.modal-global-footer {
+  animation-delay: 0.2s;
+}
+
+@media (max-width: 768px) {
+  .modal-global-content {
+    width: 95%;
+  }
+
+  .modal-global-header {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .modal-global-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .modal-global-body,
+  .modal-global-footer {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .modal-global-body {
+    padding-top: 1.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .modal-global-footer {
+    padding-bottom: 1.5rem;
+  }
+
+  .modal-global-body p {
+    font-size: 1rem;
+  }
+
+  .modal-global-footer .modal-global-button {
+    padding: 0.875rem 1.75rem;
+    font-size: 0.9rem;
+  }
+}

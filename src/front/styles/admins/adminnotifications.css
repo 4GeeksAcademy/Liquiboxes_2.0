@@ -1,0 +1,211 @@
+/* AdminNotifications.css */
+
+.admin-notifications {
+  margin: 0 auto !important;
+  padding: 2rem !important;
+}
+
+.admin-notifications h2 {
+  color: var(--text-color) !important;
+  font-weight: 600 !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.admin-notifications .badge {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: 20px !important;
+  font-size: 0.9rem !important;
+}
+
+.admin-notifications .nav-tabs {
+  border-bottom: 2px solid var(--primary-color) !important;
+  margin-bottom: 2rem !important;
+}
+
+.admin-notifications .nav-tabs .nav-link {
+  color: var(--text-color) !important;
+  border: none !important;
+  padding: 0.75rem 1.5rem !important;
+  font-weight: 500 !important;
+  transition: all 0.3s ease !important;
+}
+
+.admin-notifications .nav-tabs .nav-link:hover,
+.admin-notifications .nav-tabs .nav-link:focus {
+  color: var(--primary-color) !important;
+}
+
+.admin-notifications .nav-tabs .nav-link.active {
+  color: var(--primary-color) !important;
+  background-color: transparent !important;
+  border-bottom: 3px solid var(--primary-color) !important;
+}
+
+.admin-notifications .btn-group {
+  margin-bottom: 1.5rem !important;
+}
+
+.admin-notifications .btn-group .btn {
+  border-radius: 20px !important;
+  padding: 0.5rem 1rem !important;
+  margin-right: 0.5rem !important;
+  transition: all 0.3s ease !important;
+}
+
+.admin-notifications .table {
+  background-color: var(--background-color) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.admin-notifications .table th {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  padding: 1rem !important;
+}
+
+.admin-notifications .table td {
+  padding: 1rem !important;
+  vertical-align: middle !important;
+}
+
+.admin-notifications .table tr {
+  transition: background-color 0.3s ease !important;
+}
+
+.admin-notifications .table tr:hover {
+  background-color: var(--background-secondary-color) !important;
+}
+
+.admin-notifications .table .bg-light {
+  background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+}
+
+.admin-notifications .modal-content {
+  border-radius: 10px !important;
+  border: none !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.admin-notifications .modal-header {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  border-top-left-radius: 10px !important;
+  border-top-right-radius: 10px !important;
+  padding: 1.5rem !important;
+}
+
+.admin-notifications .modal-title {
+  font-weight: 600 !important;
+}
+
+.admin-notifications .modal-body {
+  padding: 2rem !important;
+}
+
+.admin-notifications .modal-footer {
+  border-top: none !important;
+  padding: 1.5rem !important;
+}
+
+.admin-notifications .form-control {
+  border-radius: 5px !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 0.75rem !important;
+  transition: border-color 0.3s ease !important;
+}
+
+.admin-notifications .form-control:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.25) !important;
+}
+
+.admin-notifications .btn-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  transition: all 0.3s ease !important;
+}
+
+.admin-notifications .btn-primary:hover,
+.admin-notifications .btn-primary:focus {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+}
+
+.admin-notifications .stats p {
+  margin-bottom: 0.5rem !important;
+  font-size: 1.1rem !important;
+}
+
+.admin-notifications .filter-buttons {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.admin-notifications .filter-button,
+.admin-notifications .stats-button {
+  background-color: var(--background-color) !important;
+  color: var(--text-color) !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 20px !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.admin-notifications .filter-button:hover,
+.admin-notifications .stats-button:hover {
+  background-color: var(--background-secondary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.admin-notifications .filter-button.active {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.admin-notifications .filter-button .fa-icon,
+.admin-notifications .stats-button .fa-icon {
+  margin-right: 0.5rem !important;
+}
+
+.admin-notifications .stats-button {
+  margin-bottom: 1.5rem !important;
+}
+
+@media (max-width: 768px) {
+  .admin-notifications .filter-buttons {
+    flex-direction: column !important;
+  }
+
+  .admin-notifications .filter-button,
+  .admin-notifications .stats-button {
+    width: 100% !important;
+  }
+
+  .admin-notifications .btn-group .btn {
+    flex: 1 0 calc(50% - 0.5rem) !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .admin-notifications .table {
+    font-size: 0.9rem !important;
+  }
+
+  .admin-notifications .table td,
+  .admin-notifications .table th {
+    padding: 0.75rem 0.5rem !important;
+  }
+}

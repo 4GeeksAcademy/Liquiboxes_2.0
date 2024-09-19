@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faFilter, faChartBar } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faEnvelope, faEnvelopeOpen, faList, faExchangeAlt, faUser, faStore, faChartBar } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Form, Table, Tabs, Tab } from 'react-bootstrap';
+import '../../../styles/admins/adminnotifications.css'
 
 const AdminNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [filteredNotifications, setFilteredNotifications] = useState([]);
+  const [supportNotifications, setSupportNotifications] = useState([]);
+  const [filteredSupportNotifications, setFilteredSupportNotifications] = useState([]);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [supportFilter, setSupportFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [changeRequests, setChangeRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [stats, setStats] = useState(null);
   const [activeTab, setActiveTab] = useState('notifications');
+  const [showStatsModal, setShowStatsModal] = useState(false);
+  const [replyMessage, setReplyMessage] = useState('');
 
   useEffect(() => {
     fetchNotifications();
@@ -29,14 +35,19 @@ const AdminNotifications = () => {
     filterNotifications();
   }, [notifications, filter]);
 
+  useEffect(() => {
+    filterSupportNotifications();
+  }, [supportNotifications, supportFilter]);
+
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get(`${process.env.BACKEND_URL}/notifications/all`, {
+      const response = await axios.get(`${process.env.BACKEND_URL}/notifications/admin`, {
         headers: {
           Authorization: `Bearer ${sessionStorage.getItem('token')}`
         }
       });
-      setNotifications(response.data);
+      setNotifications(response.data.filter(n => n.type !== 'contact_support'));
+      setSupportNotifications(response.data.filter(n => n.type === 'contact_support'));
       setLoading(false);
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -85,6 +96,25 @@ const AdminNotifications = () => {
         break;
       default:
         setFilteredNotifications(notifications);
+    }
+  };
+
+  const filterSupportNotifications = () => {
+    switch (supportFilter) {
+      case 'unread':
+        setFilteredSupportNotifications(supportNotifications.filter(n => !n.is_read));
+        break;
+      case 'read':
+        setFilteredSupportNotifications(supportNotifications.filter(n => n.is_read));
+        break;
+      case 'user':
+        setFilteredSupportNotifications(supportNotifications.filter(n => n.sender_type === 'user'));
+        break;
+      case 'shop':
+        setFilteredSupportNotifications(supportNotifications.filter(n => n.sender_type === 'shop'));
+        break;
+      default:
+        setFilteredSupportNotifications(supportNotifications);
     }
   };
 
@@ -143,6 +173,30 @@ const AdminNotifications = () => {
     }
   };
 
+  const handleReplySubmit = async (e) => {
+    e.preventDefault();
+    // AQUÍ ES DONDE SE CREA LA NUEVA NOTIFICACIÓN DE RESPUESTA
+    try {
+      await axios.post(`${process.env.BACKEND_URL}/notifications/adminreply`, {
+        subjectAffair: selectedNotification.extra_data.subject_affair,
+        saleId: selectedNotification.sale_id || null,
+        recipientId: selectedNotification.extra_data.user_id || selectedNotification.shop_id,
+        recipientType: selectedNotification.sender_type,
+        message: replyMessage
+      }, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+      setReplyMessage('');
+      setIsModalOpen(false);
+      fetchNotifications();
+    } catch (error) {
+      console.error('Error sending reply:', error);
+    }
+  };
+
+
   const renderNotificationDetails = () => {
     if (!selectedNotification) return null;
 
@@ -156,6 +210,29 @@ const AdminNotifications = () => {
             <Button onClick={() => handleRequestClick({ id: selectedNotification.item_change_request_id })}>
               View Change Request
             </Button>
+          </div>
+        );
+      case 'contact_support':
+        return (
+          <div>
+            <h5>{selectedNotification.extra_data.subject_affair}</h5>
+            <p><strong>From:</strong> {selectedNotification.extra_data.shop_name || selectedNotification.extra_data.user_name}</p>
+            <p><strong>Date:</strong> {new Date(selectedNotification.updated_at).toLocaleString()}</p>
+            {selectedNotification.sale_id && <p><strong>Sale ID:</strong> {selectedNotification.sale_id}</p>}
+            <p>{selectedNotification.content}</p>
+            <Form onSubmit={handleReplySubmit}>
+              <Form.Group>
+                <Form.Label>Reply:</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={3}
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                />
+              </Form.Group>
+              <Button type="submit" className="mt-2">Send Reply</Button>
+            </Form>
+            {/* AQUÍ SE PUEDE AGREGAR MÁS INFORMACIÓN SI ES NECESARIO */}
           </div>
         );
       default:
@@ -193,6 +270,45 @@ const AdminNotifications = () => {
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="error-message">{error}</div>;
 
+  const FilterButtons = ({ currentFilter, setFilter, filters }) => {
+    return (
+      <div className="filter-buttons mb-4">
+        {filters.map(({ key, label, icon }) => (
+          <Button
+            key={key}
+            onClick={() => setFilter(key)}
+            className={`filter-button ${currentFilter === key ? 'active' : ''}`}
+          >
+            <FontAwesomeIcon icon={icon} className="mr-2 me-2" />
+            {label}
+          </Button>
+        ))}
+      </div>
+    );
+  };
+
+  const StatsButton = ({ onClick }) => (
+    <Button onClick={onClick} className="stats-button mb-3">
+      <FontAwesomeIcon icon={faChartBar} className="mr-2 me-2" />
+      Show Statistics
+    </Button>
+  );
+
+  const notificationFilters = [
+    { key: 'all', label: 'All', icon: faList },
+    { key: 'unread', label: 'Unread', icon: faEnvelope },
+    { key: 'read', label: 'Read', icon: faEnvelopeOpen },
+    { key: 'change_request', label: 'Item Change Requests', icon: faExchangeAlt },
+  ];
+
+  const supportFilters = [
+    { key: 'all', label: 'All', icon: faList },
+    { key: 'unread', label: 'Unread', icon: faEnvelope },
+    { key: 'read', label: 'Read', icon: faEnvelopeOpen },
+    { key: 'user', label: 'User', icon: faUser },
+    { key: 'shop', label: 'Shop', icon: faStore },
+  ];
+
   return (
     <div className="admin-notifications container mt-4">
       <Tabs
@@ -204,27 +320,15 @@ const AdminNotifications = () => {
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2 className="mb-0">Admin Notifications</h2>
             <div className="d-flex align-items-center">
-              <FontAwesomeIcon icon={faBell} className="mr-2" />
+              <FontAwesomeIcon icon={faBell} className="mr-2 me-2" />
               <span className="badge bg-primary">
                 {notifications.filter(n => !n.is_read).length} Unread
               </span>
             </div>
           </div>
 
-          <div className="mb-4">
-            <Button onClick={() => setFilter('all')} variant={filter === 'all' ? 'primary' : 'outline-primary'} className="mr-2">
-              All
-            </Button>
-            <Button onClick={() => setFilter('unread')} variant={filter === 'unread' ? 'primary' : 'outline-primary'} className="mr-2">
-              Unread
-            </Button>
-            <Button onClick={() => setFilter('read')} variant={filter === 'read' ? 'primary' : 'outline-primary'} className="mr-2">
-              Read
-            </Button>
-            <Button onClick={() => setFilter('change_request')} variant={filter === 'change_request' ? 'primary' : 'outline-primary'}>
-              Item Change Requests
-            </Button>
-          </div>
+          <FilterButtons currentFilter={filter} setFilter={setFilter} filters={notificationFilters} />
+
 
           <Table striped bordered hover>
             <thead>
@@ -260,16 +364,9 @@ const AdminNotifications = () => {
         </Tab>
         <Tab eventKey="changeRequests" title="Change Requests">
           <h2>Change Requests</h2>
-          
-          {stats && (
-            <div className="stats mb-4">
-              <h3>Statistics</h3>
-              <p>Total Requests: {stats.total_requests}</p>
-              <p>Pending Requests: {stats.pending_requests}</p>
-              <p>Approved Requests: {stats.approved_requests}</p>
-              <p>Rejected Requests: {stats.rejected_requests}</p>
-            </div>
-          )}
+
+          <StatsButton onClick={() => setShowStatsModal(true)} />
+
 
           <Table striped bordered hover>
             <thead>
@@ -298,6 +395,51 @@ const AdminNotifications = () => {
             </tbody>
           </Table>
         </Tab>
+        <Tab eventKey="supportNotifications" title="Support Notifications">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="mb-0">Support Notifications</h2>
+            <div className="d-flex align-items-center">
+              <FontAwesomeIcon icon={faBell} className="mr-2" />
+              <span className="badge bg-primary">
+                {supportNotifications.filter(n => !n.is_read).length} Unread
+              </span>
+            </div>
+          </div>
+
+          <FilterButtons currentFilter={supportFilter} setFilter={setSupportFilter} filters={supportFilters} />
+
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Sender</th>
+                <th>Date</th>
+                <th>Sale ID</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredSupportNotifications.map((notification) => (
+                <tr
+                  key={notification.id}
+                  onClick={() => handleNotificationClick(notification)}
+                  className={`cursor-pointer ${notification.sender_type === 'shop' ? 'bg-light' : ''}`}
+                >
+                  <td>{notification.extra_data.subject_affair}</td>
+                  <td>{notification.extra_data.shop_name || notification.extra_data.user_name}</td>
+                  <td>{new Date(notification.updated_at).toLocaleString()}</td>
+                  <td>{notification.sale_id || 'N/A'}</td>
+                  <td>
+                    {notification.is_read ?
+                      <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" /> :
+                      <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
+                    }
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Tab>
       </Tabs>
 
       <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)}>
@@ -309,6 +451,25 @@ const AdminNotifications = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showStatsModal} onHide={() => setShowStatsModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Change Request Statistics</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {stats && (
+            <div className="stats">
+              <p>Total Requests: {stats.total_requests}</p>
+              <p>Pending Requests: {stats.pending_requests}</p>
+              <p>Approved Requests: {stats.approved_requests}</p>
+              <p>Rejected Requests: {stats.rejected_requests}</p>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowStatsModal(false)}>Close</Button>
         </Modal.Footer>
       </Modal>
     </div>

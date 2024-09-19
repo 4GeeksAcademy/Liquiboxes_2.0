@@ -24,6 +24,8 @@ import "../../styles/profile.css";
 import ProfileField from '../component/Profile/ProfileField';
 import { Context } from '../store/appContext'
 import UserNotifications from '../component/Profile/UserNotifications';
+import UserMessages from '../component/Profile/UserMessages';
+import ContactSupport from '../component/ShopHome/ContactSupport';
 
 function Profile() {
   const [userData, setUserData] = useState(null);
@@ -308,6 +310,8 @@ function Profile() {
     switch (activeSection) {
       case 'notifications':
         return <div><UserNotifications data={userData} /></div>;
+      case 'messages':
+        return <UserMessages />;
       case 'purchases':
         return <div>Aquí iría el historial de compras</div>;
       case 'profile':
@@ -332,7 +336,7 @@ function Profile() {
           </div>
         );
       case 'support':
-        return <div>Aquí iría el formulario de contacto con soporte</div>;
+        return <div><ContactSupport /></div>;
       default:
         return <div>Selecciona una opción del menú</div>;
     }
@@ -348,6 +352,12 @@ function Profile() {
             onClick={() => { setActiveSection('notifications'); setIsSidebarOpen(false); }}
           >
             <FontAwesomeIcon icon={faBell} className="mr-2" /> Notificaciones
+          </button>
+          <button
+            className={`list-group-item list-group-item-action ${activeSection === 'messages' ? 'active' : ''}`}
+            onClick={() => { setActiveSection('messages'); setIsSidebarOpen(false); }}
+          >
+            <FontAwesomeIcon icon={faEnvelope} className="mr-2" /> Mensajes
           </button>
           <button
             className={`list-group-item list-group-item-action ${activeSection === 'purchases' ? 'active' : ''}`}
@@ -370,11 +380,11 @@ function Profile() {
         </div>
       </div>
       <div id="page-content-wrapper">
-        <nav className="navbar navbar-expand-lg navbar-light bg-light border-bottom px-3">
+        <nav className=" border-bottom d-flex justify-content-between align-items-center">
           <button className="" id="menu-toggle" onClick={toggleSidebar}>
             <FontAwesomeIcon icon={faBars} />
           </button>
-          <h2 className="ml-3 mb-0">Mi Cuenta</h2>
+          <h2 className="ml-3 my-md-3 ms-md-5 me-3 fs-1"><strong>Mi Cuenta</strong></h2>
         </nav>
         <div className="container-fluid">
           {renderContent()}

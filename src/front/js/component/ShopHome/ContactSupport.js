@@ -1,75 +1,140 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import "../../../styles/shops/contactsupport.css";
+import { useNavigate } from 'react-router-dom';
+import Modal from '../Modal';
 
-// AQUÍ ELIIIIIIIIIIS!!  <3
+const ContactSupport = () => {
+  const [newform, setNewForm] = useState({
+    saleId: null,
+    subjectAffair: "",
+    content: ""
+  });
+  const [userType, setUserType] = useState(null);
+  const [isModalLoggingOpen, setIsModalLoggingOpen] = useState(false);
+  const [isModalSuccessOpen, setIsModalSuccessOpen] = useState(false);
+  const navigate = useNavigate();
 
-// {
-//   "address": "Avenida, Miguel, 1", 
-//   "average_rating": 0, 
-//   "business_core": "Este es el core de la tienda de Miguel", 
-//   "categories": [
-//     "Moda", 
-//     "Ropa de Trabajo", 
-//     "Tecnolog\u00eda", 
-//     "Carpinter\u00eda", 
-//     "Outdoor", 
-//     "Deporte", 
-//     "Arte", 
-//     "Cocina", 
-//     "Jardiner\u00eda", 
-//     "M\u00fasica", 
-//     "Viajes", 
-//     "Lectura", 
-//     "Cine", 
-//     "Fotograf\u00eda", 
-//     "Yoga"
-//   ], 
-//   "email": "tiendamiguel@gmail.com", 
-//   "id": 1, 
-//   "image_shop_url": "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726059603/i4uzrqfxwj8rfytftxuq.jpg", 
-//   "mystery_boxes": [
-//     {
-//       "id": 1, 
-//       "image_url": "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726059679/jkkoqsyrsjkpigy43f9d.webp", 
-//       "name": "Caja Misteriosa de Miguel", 
-//       "price": 50.0, 
-//       "shop_categories": [
-//         "Moda", 
-//         "Ropa de Trabajo", 
-//         "Tecnolog\u00eda", 
-//         "Carpinter\u00eda", 
-//         "Outdoor", 
-//         "Deporte", 
-//         "Arte", 
-//         "Cocina", 
-//         "Jardiner\u00eda", 
-//         "M\u00fasica", 
-//         "Viajes", 
-//         "Lectura", 
-//         "Cine", 
-//         "Fotograf\u00eda", 
-//         "Yoga"
-//       ], 
-//       "shop_id": 1, 
-//       "shop_name": "Tienda de Miguel", 
-//       "total_sales": 10
-//     }
-//   ], 
-//   "name": "Tienda de Miguel", 
-//   "owner_name": "Miguel", 
-//   "owner_surname": "Toyas Pernichi", 
-//   "postal_code": "14004", 
-//   "ratings": [], 
-//   "shop_description": "Esta es la descripci\u00f3n de la tienda de Miguel en profundidad.", 
-//   "shop_summary": "Resumen de la tienda de Miguel", 
-//   "total_orders": 2, 
-//   "total_sales": 500.0
-// }
+  useEffect(() => {
+    const storedUserType = sessionStorage.getItem('userType');
+    setUserType(storedUserType);
 
+    if (!storedUserType) {
+      setIsModalLoggingOpen(true);
+    }
+  }, []);
 
-function ContactSupport(shopData) {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewForm(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = sessionStorage.getItem('token');
+
+    if (!userType) {
+      setIsModalLoggingOpen(true);
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${process.env.BACKEND_URL}/notifications/${userType}/contactsupport`,
+        newform,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      setIsModalSuccessOpen(true);
+      setNewForm({
+        saleId: null,
+        subjectAffair: "",
+        content: ""
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const closeLoginModal = () => {
+    setIsModalLoggingOpen(false);
+    navigate('/');
+  };
+
+  const closeSuccessModal = () => {
+    setIsModalSuccessOpen(false);
+    if (userType === 'user'){
+      navigate('/home');
+    }
+    navigate('/shophome');
+  };
+
   return (
-    <div>ContactSupport</div>
-  )
-}
+    <div className="contact-support-container mt-5">
+      <h2>Contacto con Soporte</h2>
+      <form onSubmit={handleSubmit} className="contact-support-form">
+        <div className="form-group">
+          <label htmlFor="ventaId">ID de Venta (Opcional)</label>
+          <input
+            type="number"
+            id="ventaId"
+            name='saleId'
+            value={newform.saleId}
+            onChange={handleChange}
+            placeholder="Ingrese el ID de la venta si aplica"
+          />
+        </div>
 
-export default ContactSupport
+        <div className="form-group">
+          <label htmlFor="asunto">Asunto *</label>
+          <input
+            type="text"
+            id="asunto"
+            name='subjectAffair'
+            value={newform.subjectAffair}
+            onChange={handleChange}
+            placeholder="Escriba el asunto"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="contenido">Contenido *</label>
+          <textarea
+            id="contenido"
+            name='content'
+            value={newform.content}
+            onChange={handleChange}
+            placeholder="Describa su consulta"
+            required
+          />
+        </div>
+
+        <button type="submit">Enviar</button>
+      </form>
+
+      <Modal
+        isOpen={isModalLoggingOpen}
+        onClose={closeLoginModal}
+        title="Iniciar sesión requerido"
+        body='Para ponerte en contacto con soporte, necesitas iniciar sesión.'
+        buttonBody='Iniciar sesión'
+      />
+
+      <Modal
+        isOpen={isModalSuccessOpen}
+        onClose={closeSuccessModal}
+        title='Mensaje de contacto con soporte enviado'
+        body='Mensaje de contacto con soporte enviado, contactaremos lo antes posible.'
+        buttonBody='Volver al panel de control'
+      />
+    </div>
+  );
+};
+
+export default ContactSupport;

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faShoppingCart, faComment, faExclamationCircle, faFilter, faCheck , faTimes, faExchange, faTruck, faPrint, faDownload, faCaretDown } from '@fortawesome/free-solid-svg-icons';
-import { Modal, Dropdown } from 'react-bootstrap';
-import '../../../styles/usernotifications.css'
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBell, faEnvelope, faEnvelopeOpen, faList, faShoppingCart, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button, Table } from 'react-bootstrap';
+import '../../../styles/usernotifications.css';
 
-
-
-const UserNotifications = (data) => {
+const UserNotifications = () => {
     const [notifications, setNotifications] = useState([]);
     const [filteredNotifications, setFilteredNotifications] = useState([]);
     const [selectedNotification, setSelectedNotification] = useState(null);
@@ -18,7 +16,7 @@ const UserNotifications = (data) => {
 
     useEffect(() => {
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 15000); // Poll every 15 seconds
+        const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
         return () => clearInterval(interval);
     }, []);
 
@@ -33,7 +31,7 @@ const UserNotifications = (data) => {
                     Authorization: `Bearer ${sessionStorage.getItem('token')}`
                 }
             });
-            setNotifications(response.data);
+            setNotifications(response.data.filter(n => !['contact_support', 'contact_user', 'contact_shop'].includes(n.type)));
         } catch (error) {
             console.error('Error fetching notifications:', error);
         }
@@ -54,14 +52,19 @@ const UserNotifications = (data) => {
             case 'confirmation':
                 filtered = notifications.filter(n => n.type === 'confirmation');
                 break;
-            // Añadir más casos en futuros con más notificaciones.
+            case 'sale_sent':
+                filtered = notifications.filter(n => n.type === 'sale_sent');
+                break;
+            default:
+                filtered = notifications;
+                break;
         }
         setFilteredNotifications(filtered);
     };
 
     const markNotificationAsRead = async (notificationId, isRead) => {
         try {
-            await axios.patch(`${process.env.BACKEND_URL}/notifications/${notificationId}/read`, 
+            await axios.patch(`${process.env.BACKEND_URL}/notifications/${notificationId}/read`,
                 { is_read: isRead },
                 {
                     headers: {
@@ -85,9 +88,6 @@ const UserNotifications = (data) => {
                 setNotifications(notifications.map(n =>
                     n.id === notification.id ? { ...n, is_read: true } : n
                 ));
-            } else {
-                console.error('Failed to mark notification as read');
-                
             }
         }
     };
@@ -100,100 +100,83 @@ const UserNotifications = (data) => {
             setNotifications(notifications.map(n => ({ ...n, is_read: true })));
         } else {
             console.error('Some notifications could not be marked as read');
-            // Optionally, refresh notifications from the server here
-            fetchNotifications();
         }
+        fetchNotifications();
     };
-
-    const handleMarkAllUnread = async () => {
-        const results = await Promise.all(
-            notifications.filter(n => n.is_read).map(n => markNotificationAsRead(n.id, false))
-        );
-        if (results.every(result => result)) {
-            setNotifications(notifications.map(n => ({ ...n, is_read: false })));
-        } else {
-            console.error('Some notifications could not be marked as unread');
-            // Optionally, refresh notifications from the server here
-            fetchNotifications();
-        }
-    };
-
-    const handleConfirmReceipt = async (notificationId) => {
-        // TODO: Mandar recepción al backend para confirmar la recepción de la caja misteriosa.
-        console.log(`Confirming receipt for notification ${notificationId}`);
-        setIsModalOpen(false);
-    };
-
-    function formatearFechaPersonalizada(fecha) {
-        const d = new Date(fecha);
-
-        // Obtener componentes de la fecha
-        const dia = d.getDate().toString().padStart(2, '0');
-        const mes = (d.getMonth() + 1).toString().padStart(2, '0'); 
-        const anio = d.getFullYear();
-        const horas = d.getHours().toString().padStart(2, '0');
-        const minutos = d.getMinutes().toString().padStart(2, '0');
-
-        // Construir la cadena de fecha formateada
-        return `Recibida a las ${horas}:${minutos} del día ${dia}/${mes}/${anio}`;
-    }
 
     const renderNotificationDetails = () => {
         if (!selectedNotification) return null;
 
         return (
             <div className="notification-details">
-                <h3>{selectedNotification.type === 'purchase_confirmation' ? 'Confirmación de Compra' : 'Mensaje'}</h3>
+                <h3>{getNotificationConfig(selectedNotification.type).label}</h3>
                 <p>{selectedNotification.content}</p>
-                <hr className='w-75 mx-auto' />
-                <p className='text-center'>{formatearFechaPersonalizada(selectedNotification.created_at)}</p>
-                {selectedNotification.type === 'sent_confirmation' && (
-                    <button onClick={() => handleConfirmReceipt(selectedNotification.id)} className="confirm-button">
-                        <FontAwesomeIcon icon={faCheck} /> Confirmar Recepción
-                    </button>
-                )}
+                <p>{formatDate(selectedNotification.created_at)}</p>
             </div>
         );
     };
 
-    // Configración de las notifiaciones según tipo:
     const notificationConfig = {
         purchase_confirmation: {
-            label: 'Confirmación de compra',
+            label: 'Nueva Compra',
             icon: faShoppingCart,
-            // background: '.green' TODO: Realizar lista de cambios de colores del background según tipo de notificación y crear las clases de CSS para ello.
         },
         confirmation: {
-            label: 'Confirmación',
+            label: 'Confirmación de compra',
+            icon: faCheck,
+        },
+        sale_sent: {
+            label: 'Pedido enviado',
             icon: faShoppingCart,
         },
-        admin_message: {
-            label: 'Mensaje de administrador',
-            icon: faComment,
-        },
-        // Para agregar más tipos de notificaciones aquí
-        default: {
-            label: 'Notificación',
-            icon: faExclamationCircle,
-        }
+        // Add more types as needed
     };
 
     const getNotificationConfig = (type) => {
-        return notificationConfig[type] || notificationConfig.default;
+        return notificationConfig[type] || { label: 'Notificación', icon: faBell };
     };
 
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+    };
 
-    // Paginación
     const indexOfLastNotification = currentPage * notificationsPerPage;
     const indexOfFirstNotification = indexOfLastNotification - notificationsPerPage;
     const currentNotifications = filteredNotifications.slice(indexOfFirstNotification, indexOfLastNotification);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+    const FilterButtons = ({ currentFilter, setFilter }) => {
+        const filters = [
+            { key: 'all', label: 'Todas', icon: faList },
+            { key: 'unread', label: 'No leídas', icon: faEnvelope },
+            { key: 'read', label: 'Leídas', icon: faEnvelopeOpen },
+            { key: 'purchase_confirmation', label: 'Nueva compra', icon: faShoppingCart },
+            { key: 'confirmation', label: 'Confirmaciones', icon: faCheck },
+            { key: 'sale_sent', label: 'Pedidos enviados', icon: faShoppingCart },
+        ];
+        
+        return (
+            <div className="filter-buttons mb-4">
+                {filters.map(({ key, label, icon }) => (
+                    <Button
+                        key={key}
+                        onClick={() => setFilter(key)}
+                        className={`filter-button ${currentFilter === key ? 'active' : ''}`}
+                    >
+                        <FontAwesomeIcon icon={icon} className="me-2" />
+                        {label}
+                    </Button>
+                ))}
+            </div>
+        );
+    };
+
     return (
         <div className="user-notifications container mt-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="mb-0">Notificaciones</h2>
+                <h2>Notificaciones</h2>
                 <div className="d-flex align-items-center">
                     <FontAwesomeIcon icon={faBell} className="mr-2 me-2" />
                     <span className="badge">
@@ -202,34 +185,24 @@ const UserNotifications = (data) => {
                 </div>
             </div>
 
-            <div className="mb-4 d-flex justify-content-between">
-                <Dropdown>
-                    <Dropdown.Toggle id="dropdown-filter" className="custom-dropdown-toggle">
-                        <FontAwesomeIcon icon={faFilter} /> Filtrar
-                    </Dropdown.Toggle>
-
-                    <Dropdown.Menu>
-                        <Dropdown.Item onClick={() => setFilter('all')}>Todas</Dropdown.Item>
-                        <Dropdown.Item onClick={() => setFilter('unread')}>No leídas</Dropdown.Item>
-                        <Dropdown.Item onClick={() => setFilter('read')}>Leídas</Dropdown.Item>
-                        <Dropdown.Item onClick={() => setFilter('purchase_confirmation')}>Aprovación de compra</Dropdown.Item>
-                        <Dropdown.Item onClick={() => setFilter('confirmation')}>Confirmación de pedido</Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
-
-                <Dropdown>
-                    <Dropdown.Toggle id="dropdown-actions" className="custom-dropdown-toggle">
-                        <FontAwesomeIcon icon={faCaretDown} /> Acciones
-                    </Dropdown.Toggle>
-
-                    <Dropdown.Menu>
-                        <Dropdown.Item onClick={handleMarkAllRead}>Marcar todas como leídas</Dropdown.Item>
-                        <Dropdown.Item onClick={handleMarkAllUnread}>Marcar todas como no leídas</Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
+            <div className="filter-buttons mb-4">
+                {['all', 'unread', 'read', 'purchase_confirmation', 'confirmation', 'sale_sent'].map((filterType) => (
+                    <Button
+                        key={filterType}
+                        onClick={() => setFilter(filterType)}
+                        className={`filter-button ${filter === filterType ? 'active' : ''}`}
+                    >
+                        <FontAwesomeIcon icon={getNotificationConfig(filterType).icon} className="me-2" />
+                        {getNotificationConfig(filterType).label}
+                    </Button>
+                ))}
             </div>
 
-            <table className="notifications-table">
+            <Button onClick={handleMarkAllRead} variant="secondary" className="mb-4 custom-dropdown-toggle">
+                Marcar todas como leídas
+            </Button>
+
+            <Table className="notifications-table">
                 <thead>
                     <tr>
                         <th>Tipo</th>
@@ -239,50 +212,60 @@ const UserNotifications = (data) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {notifications.map((notification) => {
+                    {currentNotifications.map((notification) => {
                         const config = getNotificationConfig(notification.type);
                         return (
                             <tr
                                 key={notification.id}
                                 onClick={() => handleNotificationClick(notification)}
-                                className="cursor-pointer hover:bg-gray-100"
                             >
-                                <td className="flex items-center">
-                                    <FontAwesomeIcon icon={config.icon} className={`me-2 ${config.background}`} />
+                                <td data-label="Tipo">
+                                    <FontAwesomeIcon icon={config.icon} className="me-2" />
                                     {config.label}
                                 </td>
-                                <td>{notification.content}</td>
-                                <td>{formatearFechaPersonalizada(notification.created_at)}</td>
-                                <td>
+                                <td data-label="Contenido">{notification.content}</td>
+                                <td data-label="Fecha">{formatDate(notification.created_at)}</td>
+                                <td data-label="Estado">
                                     {notification.is_read ? (
-                                        <FontAwesomeIcon icon={faEnvelopeOpen} className="text-gray-400" />
+                                        <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" />
                                     ) : (
-                                        <FontAwesomeIcon icon={faEnvelope} className="text-blue-500" />
+                                        <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
                                     )}
                                 </td>
                             </tr>
                         );
                     })}
                 </tbody>
-            </table>
+            </Table>
 
             <div className="pagination">
                 {[...Array(Math.ceil(filteredNotifications.length / notificationsPerPage)).keys()].map(number => (
-                    <button key={number + 1} className={number + 1 === currentPage ? 'active' : ''} onClick={() => paginate(number + 1)}>
+                    <Button
+                        key={number + 1}
+                        onClick={() => paginate(number + 1)}
+                        className={currentPage === number + 1 ? 'active' : ''}
+                    >
                         {number + 1}
-                    </button>
+                    </Button>
                 ))}
             </div>
 
-            <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)}>
+            <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} className="custom-modal">
                 <Modal.Header closeButton>
                     <Modal.Title>Detalles de la Notificación</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {renderNotificationDetails()}
+                    <div className="notification-details">
+                        <h3>
+                            <FontAwesomeIcon icon={getNotificationConfig(selectedNotification?.type).icon} className="me-2" />
+                            {getNotificationConfig(selectedNotification?.type).label}
+                        </h3>
+                        <p>{selectedNotification?.content}</p>
+                        <p>{selectedNotification ? formatDate(selectedNotification.created_at) : ''}</p>
+                    </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <button className="secondary-button" onClick={() => setIsModalOpen(false)}>Cerrar</button>
+                    <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
                 </Modal.Footer>
             </Modal>
         </div>

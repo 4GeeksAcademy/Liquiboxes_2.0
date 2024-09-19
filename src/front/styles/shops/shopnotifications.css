@@ -1,75 +1,408 @@
+/* ShopNotifications.css */
 .shop-notifications {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 0 auto !important;
+}
+
+.shop-notifications h2 {
+  color: var(--text-color) !important;
+  font-weight: 600 !important;
+}
+
+.shop-notifications .badge {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  padding: 0.5rem !important;
+  border-radius: 5px !important;
+  font-size: 0.9rem !important;
+}
+
+.custom-dropdown-toggle {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--border-color) !important;
+  color: white !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.custom-dropdown-toggle:hover,
+.custom-dropdown-toggle:focus {
+  opacity: 0.9 !important;
+  box-shadow: 0 0 0 0.2rem rgba(106, 142, 127, 0.25) !important;
+}
+
+.dropdown-menu {
+  background-color: var(--background-color) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.dropdown-item {
+  color: var(--text-color) !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--background-secondary-color) !important;
+  color: var(--primary-color) !important;
+}
+
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+  box-shadow: 0 0 0 0.2rem rgba(106, 142, 127, 0.25) !important;
+}
+
+.btn-secondary {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+  transition: all 0.3s ease !important;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 0.2rem rgba(7, 59, 58, 0.25) !important;
+}
+
+.notifications-table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  margin-bottom: 1rem !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.notifications-table th,
+.notifications-table td {
+  padding: 1rem !important;
+  text-align: left !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.notifications-table th {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.notifications-table tr:last-child td {
+  border-bottom: none !important;
+}
+
+.notifications-table tr {
+  cursor: pointer !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.notifications-table tr:hover {
+  background-color: var(--background-secondary-color) !important;
+}
+
+.pagination {
+  display: flex !important;
+  justify-content: center !important;
+  margin-top: 1.5rem !important;
+}
+
+.pagination button {
+  padding: 0.5rem 1rem !important;
+  margin: 0 0.25rem !important;
+  background-color: var(--primary-color) !important;
+  border: 1px solid var(--border-color) !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  border-radius: 5px !important;
+}
+
+.pagination button:hover,
+.pagination button.active {
+  background-color: var(--secondary-color) !important;
+  color: var(--background-color) !important;
+}
+
+/* Modal styles */
+.modal-content {
+  border-radius: 15px !important;
+  border: none !important;
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.2) !important;
+}
+
+.modal-header {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  border-bottom: none !important;
+  border-top-left-radius: 15px !important;
+  border-top-right-radius: 15px !important;
+  padding: 1.5rem !important;
+}
+
+.modal-title {
+  font-weight: 600 !important;
+  font-size: 1.25rem !important;
+}
+
+.modal-body {
+  padding: 2rem !important;
+}
+
+.modal-footer {
+  border-top: none !important;
+  padding: 1.5rem !important;
+}
+
+.close {
+  color: var(--background-color) !important;
+  opacity: 0.8 !important;
+  transition: opacity 0.3s ease !important;
+}
+
+.close:hover {
+  opacity: 1 !important;
+}
+
+.notification-details h3 {
+  color: var(--primary-color) !important;
+  margin-bottom: 1.5rem !important;
+  font-weight: 600 !important;
+}
+
+.notification-details p {
+  margin-bottom: 1rem !important;
+  color: var(--text-color) !important;
+  line-height: 1.6 !important;
+}
+
+.message-reply-form textarea {
+  width: 100% !important;
+  padding: 0.75rem !important;
+  margin-bottom: 1rem !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 5px !important;
+  resize: vertical !important;
+  transition: border-color 0.3s ease !important;
+}
+
+.message-reply-form textarea:focus {
+  border-color: var(--primary-color) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 0.2rem rgba(106, 142, 127, 0.25) !important;
+}
+
+.nav-tabs {
+  border-bottom: 2px solid var(--primary-color) !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.nav-tabs .nav-link {
+  color: var(--text-color) !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  transition: all 0.3s ease !important;
+  font-weight: 500 !important;
+  padding: 0.75rem 1.5rem !important;
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus {
+  border-color: transparent !important;
+  color: var(--primary-color) !important;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--primary-color) !important;
+  background-color: transparent !important;
+  border-bottom: 2px solid var(--primary-color) !important;
+}
+
+.items-list {
+  margin-top: 1rem !important;
+}
+
+.item-card {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 0.75rem !important;
+  margin-bottom: 0.5rem !important;
+  background-color: var(--background-secondary-color) !important;
+  border-radius: 4px !important;
+  transition: all 0.3s ease !important;
+}
+
+.item-name {
+  font-weight: 500 !important;
+  font-size: 1rem !important;
+}
+
+.item-actions {
+  display: flex !important;
+  gap: 0.5rem !important;
+}
+
+.action-button {
+  padding: 0.4rem 0.8rem !important;
+  font-size: 0.9rem !important;
+  border-radius: 4px !important;
+  transition: all 0.3s ease !important;
+  font-weight: 400 !important;
+}
+
+.confirm-button {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+.confirm-button:hover:not(:disabled) {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+}
+
+.confirm-button.confirmed {
+  background-color: #28a745 !important;
+  border-color: #28a745 !important;
+  cursor: default !important;
+}
+
+.change-button {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+  color: white !important;
+}
+
+.change-button:hover:not(:disabled) {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.confirm-order-button {
+  display: block !important;
+  width: 100% !important;
+  padding: 0.75rem !important;
+  margin-top: 1rem !important;
+  font-size: 1rem !important;
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: white !important;
+  transition: all 0.3s ease !important;
+  border-radius: 4px !important;
+}
+
+.confirm-order-button:hover:not(:disabled) {
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
+}
+
+.confirm-order-button:disabled {
+  background-color: var(--border-color) !important;
+  border-color: var(--border-color) !important;
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
+}
+
+.filter-buttons {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.filter-button {
+  background-color: var(--background-color) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-color) !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  font-size: 0.9rem !important;
+}
+
+.filter-button:hover {
+  background-color: var(--background-secondary-color) !important;
+}
+
+.filter-button.active {
+  background-color: var(--primary-color) !important;
+  color: var(--background-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+
+@media (max-width: 768px) {
+  .filter-buttons {
+    flex-direction: column !important;
+  }
+
+  .filter-button {
+    width: 100% !important;
   }
   
-  .shop-notifications h2 {
-    color: var(--secondary-color);
-    margin-bottom: 1.5rem;
+  .shop-notifications {
+    padding: 1rem !important;
   }
-  
-  .shop-notifications .badge {
-    background-color: var(--primary-color);
-    color: white;
+
+  .notifications-table,
+  .notifications-table thead,
+  .notifications-table tbody,
+  .notifications-table th,
+  .notifications-table td,
+  .notifications-table tr {
+    display: block !important;
   }
-  
-  .shop-notifications .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
+
+  .notifications-table thead tr {
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
   }
-  
-  .shop-notifications .btn-primary:hover {
-    background-color: var(--secondary-color);
-    border-color: var(--secondary-color);
+
+  .notifications-table tr {
+    border: 1px solid var(--border-color) !important;
+    margin-bottom: 0.5rem !important;
+    border-radius: 5px !important;
   }
-  
-  .shop-notifications .btn-outline-primary {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+
+  .notifications-table td {
+    border: none !important;
+    position: relative !important;
+    padding-left: 50% !important;
+    text-align: right !important;
   }
-  
-  .shop-notifications .btn-outline-primary:hover {
-    background-color: var(--primary-color);
-    color: white;
+
+  .notifications-table td:before {
+    position: absolute !important;
+    top: 12px !important;
+    left: 12px !important;
+    width: 45% !important;
+    padding-right: 10px !important;
+    white-space: nowrap !important;
+    content: attr(data-label) !important;
+    font-weight: bold !important;
+    text-align: left !important;
   }
-  
-  .shop-notifications .table {
-    background-color: var(--background-secondary-color);
+
+  .custom-dropdown-toggle {
+    width: 100% !important;
+    margin-bottom: 1rem !important;
   }
-  
-  .shop-notifications .table th {
-    background-color: var(--secondary-color);
-    color: white;
+
+  .modal-body {
+    padding: 1.5rem !important;
   }
-  
-  .shop-notifications .table-hover tbody tr:hover {
-    background-color: rgba(106, 142, 127, 0.1);
-  }
-  
-  .shop-notifications .cursor-pointer {
-    cursor: pointer;
-  }
-  
-  .shop-notifications .modal-content {
-    background-color: var(--background-color);
-  }
-  
-  .shop-notifications .modal-header {
-    background-color: var(--secondary-color);
-    color: white;
-  }
-  
-  .shop-notifications .modal-footer {
-    border-top: 1px solid var(--border-color);
-  }
-  
-  .shop-notifications .close {
-    color: white;
-  }
-  
-  .shop-notifications .close:hover {
-    color: var(--background-secondary-color);
-  }
+}

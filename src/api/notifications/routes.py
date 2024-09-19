@@ -203,3 +203,167 @@ def create_change_request():
         db.session.rollback()
         logging.error(f"Database error: {str(e)}")
         return jsonify({'error': 'Database error occurred'}), 500
+    
+@notifications.route('/shop/contactsupport', methods=['POST'])
+@jwt_required()
+def  shop_contact_support():
+    current_shop=get_jwt_identity()
+    if current_shop['type'] != 'shop':
+        return jsonify({"error": "Unauthorished: You should logging as a shop"}), 403
+    
+    shop = Shop.query.get(current_shop['id'])
+    if not shop:
+        return jsonify({"error": "Shop not found"}), 404
+
+    data = request.get_json()
+    sale_id = data.get('saleId') or None
+
+    try:
+        new_message = Notification(
+            type = 'contact_support',
+            recipient_type = 'admin',
+            sender_type = current_shop['type'],
+            content = data.get('content'),
+            sender_id = current_shop['id'],
+            sale_id=sale_id,
+            shop_id=current_shop['id'],
+            extra_data={
+                'shop_name': shop.name,
+                'shop_email': shop.email,
+                'subject_affair': data.get('subjectAffair')
+            }
+        )
+
+        db.session.add(new_message)
+        db.session.commit()
+        return jsonify(new_message.serialize()), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logging.error(f"Database error: {str(e)}")
+        return jsonify({'error': 'Database error occurred'}), 500
+    
+@notifications.route('/user/contactsupport', methods=['POST'])
+@jwt_required()
+def  user_contact_support():
+    current_user=get_jwt_identity()
+    if current_user['type'] != 'user':
+        return jsonify({"error": "Unauthorished: You should logging as a user"}), 403
+    
+    user = User.query.get(current_user['id'])
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    data = request.get_json()
+    sale_id = data.get('saleId') or None
+
+    try:
+        new_message = Notification(
+            type = 'contact_support',
+            recipient_type = 'admin',
+            sender_type = current_user['type'],
+            content = data.get('content'),
+            sender_id = user.id,
+            sale_id=sale_id,
+            shop_id=user.id,
+            extra_data={
+                'shop_name': user.name,
+                'shop_email': user.email,
+                'subject_affair': data.get('subjectAffair')
+            }
+        )
+
+        db.session.add(new_message)
+        db.session.commit()
+        return jsonify(new_message.serialize()), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logging.error(f"Database error: {str(e)}")
+        return jsonify({'error': 'Database error occurred'}), 500
+    
+@notifications.route('/adminreply', methods=['POST'])
+@jwt_required()
+def  admin_repply_message():
+    current_admin=get_jwt_identity()
+    if current_admin['type'] not in ['SuperAdmin', 'Admin']:
+        return jsonify({"error": "Unauthorished: You should logging as a admin"}), 403
+        # TODO: Reportar Usuarios malicisios.
+    
+    admin = Admin_User.query.get(current_admin['id'])
+    if not admin:
+        return jsonify({"error": "Admin not found"}), 404
+
+    data = request.get_json()
+    sale_id = data.get('saleId') or None
+
+    try:
+        new_message = Notification(
+            type = 'contact_support',
+            recipient_type = data.get('recipientType'),
+            recipient_id= data.get('recipientId') ,
+            sender_type = current_admin['type'],
+            content = data.get('message'),
+            sender_id = current_admin['id'],
+            sale_id=sale_id,
+            shop_id=current_admin['id'],
+            extra_data={
+                'admin_email': admin.email,
+                'subject_affair': data.get('subjectAffair')
+            }
+        )
+
+        db.session.add(new_message)
+        db.session.commit()
+        return jsonify(new_message.serialize()), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logging.error(f"Database error: {str(e)}")
+        return jsonify({'error': 'Database error occurred'}), 500
+    
+@notifications.route('/contactsupport/reply', methods=['POST'])
+@jwt_required()
+def reply_to_notification():
+    data = request.get_json()
+    current_user = get_jwt_identity()
+
+    # Determinar si el usuario actual es una tienda o un usuario normal
+    user = Shop.query.get(current_user['id']) or User.query.get(current_user['id'])
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    sale_id = data.get('saleId') or None
+
+    recipient_type = data.get('recipientType', '').strip().lower()  # Convierte a minúsculas y quita espacios
+
+    if recipient_type in ['superadmin', 'admin']:
+        recipient_type = 'admin'
+    
+    try:
+        new_reply = Notification(
+            type='contact_support',
+            recipient_type=recipient_type,
+            sender_type=current_user['type'],
+            content=data.get('message'),
+            sender_id=user.id,
+            recipient_id=data.get('recipientId'),
+            sale_id=sale_id,
+            shop_id=user.id if isinstance(user, Shop) else None,
+            extra_data={
+                'sender_email': user.email,
+                'subject_affair': data.get('subjectAffair'),
+                'user_id': user.id if isinstance(user, User) else None,
+                'user_name': user.name,
+            }
+        )
+
+        db.session.add(new_reply)
+        db.session.commit()
+
+        return jsonify(new_reply.serialize()), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
+
+
