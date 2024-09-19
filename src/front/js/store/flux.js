@@ -95,10 +95,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 
             logout: () => {
                 sessionStorage.removeItem('token');
+                sessionStorage.removeItem('userType');
                 setStore({
                     userData: null,
                     error: null
                 });
+                // Después de cerrar sesión, osea después de llamar a esta función habría que redireccionar al usuario a login (useNavigate('/'))
             },
 
 
@@ -264,27 +266,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                     }
                 }
             },
-
-            // getShopMysteryBoxes: async (id) => {
-            //     setStore({ showError: true, isLoading: true });
-            //     try {
-            //         const response = await axios.get(process.env.BACKEND_URL + `/shops/shop_${id}/mysteryboxes`)
-            //         if (response.data) {
-            //             console.log(response.data)
-            //             setStore({ shopMysteryBoxes: response.data, showError: false, isLoading: false})
-            //             console.log(first)
-            //         }
-            //     } catch (error) {
-            //         console.log("Error al obtener la Tienda:", error);
-            //         if (error.response && error.response.status === 404) {
-            //             setStore({ showError: true, isLoading: false });
-
-            //         } else {
-            //             setStore({ showError: true, isLoading: false });
-            //         }
-            //     }
-            // },
-
+         
         }
     };
 };

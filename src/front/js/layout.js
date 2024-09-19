@@ -11,7 +11,7 @@ import { Home } from "./pages/Home";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Cart from "./pages/Cart"
-import ContactUs from "./pages/ContactUs"
+import AboutUs from "./pages/AboutUs"
 import PayingForm from "./pages/PayingForm"
 import Profile from "./pages/Profile"
 import ShopDetail from "./pages/ShopDetail"
@@ -29,6 +29,9 @@ import ShopSignUp from "./pages/Shops/ShopSignUp"
 import CreateBox from "./pages/Shops/CreateBox";
 import { Navbar } from "./component/navbar";
 import Footer from "./component/Footer";
+
+// Not Found
+import NotFound from "./pages/NotFound";
 
 import injectContext from "./store/appContext"; // Asegúrate de importar correctamente
 
@@ -60,7 +63,7 @@ const Layout = () => {
                   <Route element={<SignUp />} path="/signup" />
                   <Route element={<Login />} path="/" />
                   <Route element={<Cart />} path="/cart" />
-                  <Route element={<ContactUs />} path="/contactus" />
+                  <Route element={<AboutUs />} path="/aboutus" />
                   <Route element={<PayingForm />} path="/payingform" />
                   <Route element={<Profile />} path="/profile" />
                   <Route element={<ShopDetail />} path="/shops/:id" />
@@ -78,7 +81,7 @@ const Layout = () => {
                   <Route element={<ShopSignUp />} path="/shopsignup" />
                   <Route element={<CreateBox />} path="/createbox" />
 
-                  <Route element={<h1>Not found!</h1>} path="*" />
+                  <Route element={<NotFound />} path="*" />
                 </Routes>
               </div>
               <Footer />
