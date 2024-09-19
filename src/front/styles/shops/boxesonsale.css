@@ -1,0 +1,8 @@
+.custom-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .custom-hover:hover {
+    transform: scale(1.02);  /* Aumenta ligeramente el tamaño */
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);  /* Añade una sombra más pronunciada */
+  }
