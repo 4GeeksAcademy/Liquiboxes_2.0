@@ -217,7 +217,7 @@ function BoxesOnSale({ shopData }) {
                 />
               </div>
 
-              <div className="mb-3"> {/*INPUT POSSIBLE ITEMS*/}
+              <div className="mb-3"> {/*INPUT POSSIBLE ITEMS / AÑADIR ITEM*/}
                 <label htmlFor="mysteryboxpossibleitems" className="form-label">
                   Items posibles
                 </label>
@@ -230,7 +230,7 @@ function BoxesOnSale({ shopData }) {
                     placeholder="Añadir nuevo item"
                   />
                   <button type="button " onClick={handleAddItem}>
-                    Añadir
+                    Añadir  
                   </button>
                 </div>
                 <ul className="list-group">
@@ -241,7 +241,7 @@ function BoxesOnSale({ shopData }) {
                         type="button"
                         onClick={() => handleRemoveItem(index)}
                       >
-                        Eliminar
+                        <i className="fa-regular fa-trash-can"></i>
                       </button>
                     </li>
                   ))}
