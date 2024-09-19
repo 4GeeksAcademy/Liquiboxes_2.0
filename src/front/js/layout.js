@@ -13,7 +13,7 @@ import Login from "./pages/Login";
 import Cart from "./pages/Cart"
 import AboutUs from "./pages/AboutUs"
 import PayingForm from "./pages/PayingForm"
-import Profile from "./pages/Profile"
+import Profile from "./pages/UserDashboard"
 import ShopDetail from "./pages/ShopDetail"
 import ShopsSearch from "./pages/ShopsSearch"
 import MysteryBoxDetail from "./pages/MysteryBoxDetail";
@@ -65,7 +65,7 @@ const Layout = () => {
                   <Route element={<Cart />} path="/cart" />
                   <Route element={<AboutUs />} path="/aboutus" />
                   <Route element={<PayingForm />} path="/payingform" />
-                  <Route element={<Profile />} path="/profile" />
+                  <Route element={<Profile />} path="/userdashboard" />
                   <Route element={<ShopDetail />} path="/shops/:id" />
                   <Route element={<ShopsSearch />} path="/shopssearch" />
                   <Route element={<MysteryBoxDetail />} path="/mysterybox/:id" />

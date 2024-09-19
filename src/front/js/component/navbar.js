@@ -33,7 +33,7 @@ export const Navbar = () => {
                                 <li><Link to="/cart" className="dropdown-item">Carrito</Link></li>
                                 <li><Link to="/aboutus" className="dropdown-item">Sobre Nosotros</Link></li>
                                 <li><Link to="/payingform" className="dropdown-item">Formulario de Pago</Link></li>
-                                <li><Link to="/profile" className="dropdown-item">Perfil</Link></li>
+                                <li><Link to="/userdashboard" className="dropdown-item">Panel de Control</Link></li>
                                 <li><Link to="/shopssearch" className="dropdown-item">Buscar Tiendas</Link></li>
                             </ul>
                         </li>

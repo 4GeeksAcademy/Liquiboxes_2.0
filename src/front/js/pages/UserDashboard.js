@@ -20,14 +20,14 @@ import {
   faHeadset,
   faBars
 } from '@fortawesome/free-solid-svg-icons';
-import "../../styles/profile.css";
+import "../../styles/userdashboard.css";
 import ProfileField from '../component/Profile/ProfileField';
 import { Context } from '../store/appContext'
 import UserNotifications from '../component/Profile/UserNotifications';
 import UserMessages from '../component/Profile/UserMessages';
 import ContactSupport from '../component/ShopHome/ContactSupport';
 
-function Profile() {
+function UserDashboard() {
   const [userData, setUserData] = useState(null);
   const [editMode, setEditMode] = useState({});
   const [error, setError] = useState(null);
@@ -394,4 +394,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default UserDashboard;
