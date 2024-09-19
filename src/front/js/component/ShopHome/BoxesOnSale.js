@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import axios from "axios";
+import "../../../styles/shops/boxesonsale.css";
 import { useNavigate } from "react-router-dom";
 
 function BoxesOnSale({ shopData }) {
@@ -125,7 +126,7 @@ function BoxesOnSale({ shopData }) {
       {shopData.mystery_boxes.map((box) => (
         <div
           key={box.id}
-          className="row align-items-center justify-content-between p-3 shadow-sm border rounded w-60 m-3"
+          className="custom-hover row align-items-center justify-content-between p-3 shadow-sm border rounded w-60 m-3 "
         >
           <div className="col-sm-12 col-md-6 text-center text-md-start">
             <h4 className="fw-bold">{box.name}</h4>
