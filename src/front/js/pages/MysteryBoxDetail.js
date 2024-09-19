@@ -10,6 +10,7 @@ function MysteryBoxDetail() {
   const [mysteryBox, setMysteryBox] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
+  const token = sessionStorage.getItem('token')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +57,7 @@ function MysteryBoxDetail() {
 
   if (store.showError) {
     return (
-      <div className={`modal ${store.showError ? 'd-block' : ''}`} tabIndex="-1" role="dialog" style={{backgroundColor: 'rgba(0,0,0,0.5)'}}>
+      <div className={`modal ${store.showError ? 'd-block' : ''}`} tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
         <div className="modal-dialog" role="document">
           <div className="modal-content">
             <div className="modal-header">
@@ -125,7 +126,23 @@ function MysteryBoxDetail() {
             <p><strong>Envío:</strong> desde 3,99 €</p>
           </div>
           <div className="action-buttons mt-4">
-            <button type="button" className="btn btn-primary w-100 mb-2" onClick={() => handleBuyNow(mysteryBox.id)}>Comprar Ahora</button>
+            {token ? (
+              <button
+                type="button"
+                className="btn btn-primary w-100 mb-2"
+                onClick={() => handleBuyNow(mysteryBox.id)}
+              >
+                Comprar Ahora
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-primary w-100 mb-2"
+                onClick={() => navigate('/', { state: { from: location.pathname } })}
+              >
+                Inicia sesión para comprar ya
+              </button>
+            )}
             <button type="button" className="btn btn-secondary w-100" onClick={handleAddToCart}>Añadir al Carrito</button>
           </div>
         </div>

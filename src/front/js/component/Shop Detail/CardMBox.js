@@ -9,6 +9,7 @@ import '../../../styles/cardmbox.css'
 function CardMBox({ data }) {
   const navigate = useNavigate();
   const { actions } = useContext(Context);
+  const token = sessionStorage.getItem('token')
 
 
 
@@ -53,9 +54,14 @@ function CardMBox({ data }) {
         <Button className='card-button' onClick={handleButtonClick}>
           <FontAwesomeIcon icon={faBoxOpen} /> Ver detalles
         </Button>
-        <Button className='card-button' onClick={() => { handleBuyNow(data.id) }}>
+        {token ? <Button className='card-button' onClick={() => { handleBuyNow(data.id) }}>
           <FontAwesomeIcon icon={faShoppingCart} /> Comprar Ya
         </Button>
+            : <Button className='card-button' onClick={() => { navigate('/', { state: { from: location.pathname } }) }}>
+            Inicia sesión para comprar ya
+          </Button>
+            }
+        
       </Card.Body>
     </Card>
   );
