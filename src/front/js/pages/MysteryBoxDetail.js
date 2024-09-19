@@ -33,6 +33,23 @@ function MysteryBoxDetail() {
     navigate('/home');
   };
 
+  const handleBuyNow = async (id) => {
+    try {
+      await actions.addToCart(id);
+      const mysteryBoxDetails = await actions.fetchSingleItemDetail(id);
+      if (mysteryBoxDetails) {
+        // Actualizar cartWithDetails
+        actions.updateCartWithDetails([mysteryBoxDetails]);
+        navigate('/payingform');
+      } else {
+        throw new Error('No se pudo obtener los detalles de la Mystery Box');
+      }
+    } catch (error) {
+      console.error('Error en Comprar Ya:', error);
+      alert('No se ha podido utilizar Comprar Ya: ' + error.message);
+    }
+  };
+
   if (store.isLoading) {
     return <div className="text-center mt-5">Cargando...</div>;
   }
@@ -108,7 +125,7 @@ function MysteryBoxDetail() {
             <p><strong>Envío:</strong> desde 3,99 €</p>
           </div>
           <div className="action-buttons mt-4">
-            <button type="button" className="btn btn-primary w-100 mb-2">Comprar Ahora</button>
+            <button type="button" className="btn btn-primary w-100 mb-2" onClick={() => handleBuyNow(mysteryBox.id)}>Comprar Ahora</button>
             <button type="button" className="btn btn-secondary w-100" onClick={handleAddToCart}>Añadir al Carrito</button>
           </div>
         </div>

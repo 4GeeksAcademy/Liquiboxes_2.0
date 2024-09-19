@@ -1,53 +1,104 @@
-.card-img {
-  transition: transform 0.6s ease, box-shadow 0.3s ease;
-}
-
-.card-img:hover {
-  transform: scale(1.3) rotate(15deg); /* Zoom y rotación */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
 .card-container {
-  width: 18rem;
-  border: none;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra sutil */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  overflow: hidden; /* Asegura que los bordes redondeados se apliquen a la imagen */
-  margin: auto;
-  background: #fff; /* Fondo blanco */
+  width: 300px !important;
+  border: none !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+  margin: 1rem !important;
 }
 
 .card-container:hover {
-  transform: translateY(-10px); /* Desplaza la tarjeta hacia arriba al pasar el ratón */
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra más profunda al pasar el ratón */
+  transform: translateY(-5px) !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+.card-img-wrapper {
+  position: relative !important;
+  width: 100% !important;
+  padding-top: 100% !important; /* Esto crea un contenedor cuadrado */
+  overflow: hidden !important;
+}
+
+.card-img {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
 }
 
 .card-body {
-  padding: 1.5rem; /* Espaciado interno */
-  background: #f8f9fa; /* Fondo gris claro para el contenido */
-  border-top: 1px solid #e9ecef; /* Borde superior para separar la imagen del contenido */
+  padding: 1.5rem !important;
+  background: linear-gradient(145deg, #f3f4f6, #ffffff) !important;
 }
 
 .card-title {
-  font-size: 1.3rem; /* Tamaño de fuente del título */
-  font-weight: bold; /* Peso de fuente fuerte */
-  color: #343a40; /* Color oscuro para el título */
-  margin-bottom: 0.5rem; /* Espacio debajo del título */
+  font-size: 1.2rem !important;
+  color: #2d3748 !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
 }
 
 .card-subtitle {
-  color: #6c757d; /* Color de texto para la subtítulo */
-  font-size: 0.8rem; /* Tamaño de fuente más pequeño para la subtítulo */
-  margin-bottom: 1rem; /* Espacio debajo de la subtítulo */
+  font-size: 0.9rem !important;
+  color: #718096 !important;
+  margin-bottom: 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.card-subtitle svg {
+  margin-right: 0.5rem !important;
 }
 
 .card-text {
-  font-size: 1.5rem; /* Tamaño de fuente más pequeño para el texto */
-  color: #3f4245; /* Color de texto más claro */
-  margin-bottom: 1rem; /* Espacio debajo del texto */
+  font-size: 1.1rem !important;
+  color: #4a5568 !important;
+  margin-bottom: 1.5rem !important;
+  font-weight: 600 !important;
 }
 
 .card-button {
-  background-color: #4b6a5e; /* Color de fondo del botón */
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border: none !important;
+  padding: 0.75rem 1rem !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  margin-bottom: 0.75rem !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
+.card-button svg {
+  margin-right: 0.5rem !important;
+}
 
+.card-button:hover {
+  background-color: var(--secondary-color) !important;
+  transform: translateY(-2px) !important;
+}
+
+.card-button:last-child {
+  margin-bottom: 0 !important;
+  background-color: #e2e8f0 !important;
+  color: #4a5568 !important;
+}
+
+.card-button:last-child:hover {
+  background-color: #cbd5e0 !important;
+}
+
+@media (max-width: 768px) {
+  .card-container {
+    width: 100% !important;
+  }
+}

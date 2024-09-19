@@ -197,7 +197,6 @@ const getState = ({ getStore, getActions, setStore }) => {
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`);
                     if (response.data) {
-                        console.log("Se ha ejecutado satisfactoriamente fetchSingleDetail")
                         return response.data;
                     }
                 } catch (error) {
@@ -252,7 +251,6 @@ const getState = ({ getStore, getActions, setStore }) => {
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/${id}`)
                     if (response.data) {
-                        console.log(response.data)
                         setStore({ shopDetail: response.data, showError: false, isLoading: false})
                         console.log(first)
                     }
