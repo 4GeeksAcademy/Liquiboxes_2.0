@@ -1,30 +1,38 @@
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mystery-box-slider {
+  animation: fadeIn 0.5s ease-in;
+}
+
 .carousel-container {
-    max-width: 100%; /* Asegura que el carrusel no exceda el ancho del contenedor */
-    margin: 0 auto; /* Centra el carrusel en la página */
-    padding: 20px; /* Añade algo de espacio alrededor */
-  }
-  
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.carousel-image {
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-caption {
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+@media (max-width: 768px) {
   .carousel-image {
-    max-height: 400px; /* Ajusta esta altura según tus necesidades */
-    object-fit: cover; /* Hace que la imagen se ajuste al contenedor sin distorsionarse */
-    border-radius: 15px; /* Bordes redondeados para un look más moderno */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Añade una sombra sutil */
+    max-height: 300px;
   }
-  
-  .carousel-caption {
-    background-color: rgba(0, 0, 0, 0.5); /* Fondo semi-transparente para mejorar la legibilidad del texto */
-    padding: 10px;
-    border-radius: 10px;
+
+  .carousel-caption h3,
+  .carousel-caption p {
+    font-size: 1rem;
   }
-  
-  @media (max-width: 768px) {
-    .carousel-image {
-      max-height: 300px; /* Reduce la altura en dispositivos móviles */
-    }
-  
-    .carousel-caption h3,
-    .carousel-caption p {
-      font-size: 1rem; /* Ajusta el tamaño del texto en móviles */
-    }
-  }
-  
+}
