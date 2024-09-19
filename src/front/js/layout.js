@@ -10,13 +10,11 @@ import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { Home } from "./pages/Home";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
-import Private from "./pages/Private";
 import Cart from "./pages/Cart"
 import ContactUs from "./pages/ContactUs"
 import PayingForm from "./pages/PayingForm"
 import Profile from "./pages/Profile"
 import ShopDetail from "./pages/ShopDetail"
-import Shops from "./pages/Shops"
 import ShopsSearch from "./pages/ShopsSearch"
 import MysteryBoxDetail from "./pages/MysteryBoxDetail";
 import ChooseRegistration from "./pages/ChooseRegistration";
@@ -61,12 +59,10 @@ const Layout = () => {
                   <Route element={<Home />} path="/home" />
                   <Route element={<SignUp />} path="/signup" />
                   <Route element={<Login />} path="/" />
-                  <Route element={<Private />} path="/private" />
                   <Route element={<Cart />} path="/cart" />
                   <Route element={<ContactUs />} path="/contactus" />
                   <Route element={<PayingForm />} path="/payingform" />
                   <Route element={<Profile />} path="/profile" />
-                  <Route element={<Shops />} path="/shops" />
                   <Route element={<ShopDetail />} path="/shops/:id" />
                   <Route element={<ShopsSearch />} path="/shopssearch" />
                   <Route element={<MysteryBoxDetail />} path="/mysterybox/:id" />
