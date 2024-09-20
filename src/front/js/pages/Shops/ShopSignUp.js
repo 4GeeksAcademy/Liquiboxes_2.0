@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faStore, faEnvelope, faLock, faShoppingBag, faBriefcase, faComments, faList, faImage } from '@fortawesome/free-solid-svg-icons';
 import "../../../styles/signup.css";
 import { Context } from "../../store/appContext";
+import { registerAndLogin } from "../../component/AuthenticationUtils";
+import Confetti from 'react-confetti';
+import ModalGlobal from '../../component/ModalGlobal'
 
 const STEPS = [
   { icon: faUser, title: "Datos del Propietario", description: "Información sobre el dueño de la tienda" },
@@ -13,7 +15,7 @@ const STEPS = [
   { icon: faShoppingBag, title: "Categorías", description: "Selecciona las categorías de tus productos" },
   { icon: faBriefcase, title: "Core del Negocio", description: "Cuéntanos sobre la esencia de tu negocio" },
   { icon: faComments, title: "Descripción de la Tienda", description: "Comparte la historia y valores de tu tienda" },
-  { icon: faList , title: "Resumen de la Tienda", description: "Breve descripción de tu tienda en 10 palabras" },
+  { icon: faList, title: "Resumen de la Tienda", description: "Breve descripción de tu tienda en 10 palabras" },
   { icon: faImage, title: "Imagen de la Tienda", description: "Sube una imagen representativa de tu tienda" }
 ];
 
@@ -34,6 +36,10 @@ export default function ShopSignUp() {
     shop_summary: "",
     image_shop_url: null
   });
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [userType, setUserType] = useState(null);
+  const [error, setError] = useState(null);
+
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -74,9 +80,10 @@ export default function ShopSignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
 
     if (signupData.categories.length === 0) {
-      alert(`Por favor selecciona al menos una categoría`);
+      setError("Por favor selecciona al menos una categoría");
       return;
     }
 
@@ -86,29 +93,29 @@ export default function ShopSignUp() {
         formData.append(key, JSON.stringify(value));
       } else if (key === 'image_shop_url' && value instanceof File) {
         formData.append(key, value, value.name);
-      } else if (value !== null) {
-        formData.append(key, value);
+      } else if (value !== null && value !== undefined) {
+        formData.append(key, String(value));
       }
     });
 
     try {
-      const response = await axios.post(
-        process.env.BACKEND_URL + "/shops/register",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      console.log("Tienda registrada:", response.data);
-      navigate("/");
+      const response = await registerAndLogin(`${process.env.BACKEND_URL}/shops/register`, formData);
+      setUserType(response.user_type);
+      setIsSuccess(true);
     } catch (error) {
-      console.error("Ha habido un error:", error);
-      if (error.response) {
-        console.error("Respuesta del servidor:", error.response.data);
-      }
-      // Aquí podríamos mostrar un mensaje de error al usuario
+      setError("Error en el registro o inicio de sesión. Por favor, inténtalo de nuevo.");
+      console.error("Error detallado:", error.response ? error.response.data : error.message);
     }
   };
+
+  const handleCloseModal = () => {
+    setIsSuccess(false);
+    navigate("/shophome");
+  };
+
+  useEffect(() => {
+    setIsStepValid(validateStep());
+  }, [signupData, step]);
 
   const validateStep = () => {
     const validations = {
@@ -123,10 +130,6 @@ export default function ShopSignUp() {
     };
     return validations[step]?.() ?? false;
   };
-
-  useEffect(() => {
-    setIsStepValid(validateStep());
-  }, [signupData, step]);
 
   const renderStep = () => {
     const stepComponents = {
@@ -168,16 +171,16 @@ export default function ShopSignUp() {
       5: (
         <>
           <p className="field-description">
-            El core de tu negocio es lo que te hace único. Describe brevemente la esencia de tu tienda, 
-            lo que te diferencia de la competencia y por qué los clientes deberían elegirte. 
+            El core de tu negocio es lo que te hace único. Describe brevemente la esencia de tu tienda,
+            lo que te diferencia de la competencia y por qué los clientes deberían elegirte.
             Esta información nos ayudará a conectarte con los usuarios adecuados.
           </p>
-          <textarea 
-            name="business_core" 
-            value={signupData.business_core} 
-            onChange={handleChange} 
-            placeholder="Describe el core de tu negocio (mínimo 10 caracteres)" 
-            required 
+          <textarea
+            name="business_core"
+            value={signupData.business_core}
+            onChange={handleChange}
+            placeholder="Describe el core de tu negocio (mínimo 10 caracteres)"
+            required
             rows="4"
           />
         </>
@@ -185,17 +188,17 @@ export default function ShopSignUp() {
       6: (
         <>
           <p className="field-description">
-            Tu descripción es la primera impresión que los usuarios tendrán de tu tienda. 
-            Cuéntanos tu historia, tus valores, y lo que hace especial a tu negocio. 
-            Sé auténtico y detallado, ya que esta información ayudará a los usuarios a 
+            Tu descripción es la primera impresión que los usuarios tendrán de tu tienda.
+            Cuéntanos tu historia, tus valores, y lo que hace especial a tu negocio.
+            Sé auténtico y detallado, ya que esta información ayudará a los usuarios a
             conectar con tu marca y entender lo que ofreces.
           </p>
-          <textarea 
-            name="shop_description" 
-            value={signupData.shop_description} 
-            onChange={handleChange} 
-            placeholder="Describe tu tienda en detalle (mínimo 50 caracteres)" 
-            required 
+          <textarea
+            name="shop_description"
+            value={signupData.shop_description}
+            onChange={handleChange}
+            placeholder="Describe tu tienda en detalle (mínimo 50 caracteres)"
+            required
             rows="6"
           />
         </>
@@ -250,7 +253,7 @@ export default function ShopSignUp() {
     return stepComponents[step] || null;
   };
 
-  return (
+   return (
     <div className="signup-container">
       <div className="signup-progress">
         {STEPS.map((s, index) => (
@@ -262,7 +265,7 @@ export default function ShopSignUp() {
           </div>
         ))}
       </div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
         <div className="signup-content">
           <div className="step-info">
             <h2>{STEPS[step - 1].title}</h2>
@@ -272,6 +275,7 @@ export default function ShopSignUp() {
             {renderStep()}
           </div>
         </div>
+        {error && <div className="error-message">{error}</div>}
         <div className="navigation-buttons">
           {step > 1 && <button type="button" onClick={() => setStep(prev => prev - 1)}>Anterior</button>}
           {step < 8 ? (
@@ -294,6 +298,22 @@ export default function ShopSignUp() {
           )}
         </div>
       </form>
+      {isSuccess && (
+        <>
+          <Confetti
+            width={window.innerWidth}
+            height={window.innerHeight}
+          />
+          <ModalGlobal
+            isOpen={true}
+            onClose={handleCloseModal}
+            title="¡Bienvenido a Liquiboxes!"
+            body="Enhorabuena, ya eres un comercio de Liquiboxes. ¡Esperamos que disfrutes de nuestra plataforma!"
+            buttonBody="Continuar"
+            className="welcome-modal"
+          />
+        </>
+      )}
     </div>
   );
 }
