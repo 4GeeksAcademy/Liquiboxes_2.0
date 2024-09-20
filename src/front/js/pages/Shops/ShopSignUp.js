@@ -1,12 +1,11 @@
-import "../../../styles/signup.css";
-
-
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Context } from "../../store/appContext";
 import { registerAndLogin } from "../../component/AuthenticationUtils";
 import Confetti from 'react-confetti';
 import ModalGlobal from '../../component/ModalGlobal'
+import "../../../styles/signup.css";
+
 
 const STEPS = [
   { title: "Datos del Propietario", description: "Información sobre el dueño de la tienda", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850499/Smartphone_User_y6d64l.gif" },
@@ -230,12 +229,17 @@ export default function ShopSignUp() {
               Sube una imagen representativa de tu tienda. Esta imagen se mostrará en tu perfil y en los resultados de búsqueda.
             </p>
             <input
-              type="file"
-              ref={fileInputRef}
-              onChange={(e) => handleChange({ target: { name: 'image_shop_url', files: e.target.files } })}
-              accept="image/*"
-              required
-            />
+            type="file"
+            ref={fileInputRef}
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                setSignUpData(prev => ({ ...prev, image_shop_url: file }));
+              }
+            }}
+            accept="image/*"
+            required
+          />
             {signupData.image_shop_url && (
               <img
                 src={URL.createObjectURL(signupData.image_shop_url)}
