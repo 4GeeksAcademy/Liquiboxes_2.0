@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /* home.css */
 
 /* Estilos generales de la página Home */
@@ -94,43 +93,3 @@
 
 
 
-=======
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.mystery-box-slider {
-  animation: fadeIn 0.5s ease-in;
-}
-
-.carousel-container {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.carousel-image {
-  max-height: 400px;
-  object-fit: cover;
-  border-radius: 15px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.carousel-caption {
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 10px;
-  border-radius: 10px;
-}
-
-@media (max-width: 768px) {
-  .carousel-image {
-    max-height: 300px;
-  }
-
-  .carousel-caption h3,
-  .carousel-caption p {
-    font-size: 1rem;
-  }
-}
->>>>>>> e1f32cbea436edbd5397793f728debafd9e50c7c

@@ -7,6 +7,7 @@ import ScrollHorizontalMysteryBoxes from "../component/Home/ScrollHorizontalMyst
 import CarruselTopSellers from "../component/Home/CarruselTopSellers";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Slide } from "react-awesome-reveal";
 
 export const Home = () => {
     const { store, actions } = useContext(Context);
