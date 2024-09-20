@@ -5,16 +5,15 @@ import { Context } from "../store/appContext";
 import { registerAndLogin } from "../component/AuthenticationUtils";
 import Confetti from 'react-confetti';
 import ModalGlobal from '../component/ModalGlobal'
-import { DotLottiePlayer } from "@dotlottie/react-player";
 
 
 const STEPS = [
-  { title: "Datos Personales", description: "Cuéntanos un poco sobre ti", src: "https://lottie.host/445b6b92-2f50-483f-bafb-b4af9f09091d/1tvtNOkLzB.json" },
-  { title: "Cuenta", description: "Crea tu cuenta segura", src: "https://lottie.host/5b895979-235f-45ca-ba4c-c790df699436/IOxPxID8CU.json" },
-  { title: "Tallas", description: "Ayúdanos a personalizar tu experiencia", src: "https://lottie.host/d068a1ec-c963-4986-b7d8-091e441c03c9/W2uU1SjbPp.json" },
-  { title: "Estilo", description: "Define tus preferencias de estilo", src: "https://lottie.host/a4b709cb-8c2e-4131-952d-f4c68080aeab/TyJYqRbZV5.json" },
-  { title: "Preferencias", description: "Dinos qué te gusta y qué no", src: "https://lottie.host/25ec99c3-a811-4fa6-859a-c6478da4d376/cS0rdHb4eN.json" },
-  { title: "Finalizar", description: "Últimos detalles para completar tu perfil", src: "https://lottie.host/6bd9a683-8479-4efc-8a8a-36c0d884a740/1F2Mi7nPGq.json" }
+  { title: "Datos Personales", description: "Cuéntanos un poco sobre ti", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850499/Smartphone_User_y6d64l.gif" },
+  { title: "Cuenta", description: "Crea tu cuenta segura", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Smartphone_Lock_cvnebi.gif" },
+  { title: "Tallas", description: "Ayúdanos a personalizar tu experiencia", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850497/Filter_Item_altaic.gif" },
+  { title: "Estilo", description: "Define tus preferencias de estilo", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Shopping_Bag_jlntsk.gif" },
+  { title: "Preferencias", description: "Dinos qué te gusta y qué no", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Remove_Item_sqgou4.gif" },
+  { title: "Finalizar", description: "Últimos detalles para completar tu perfil", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850497/Checklist_l0hzyf.gif" }
 ];
 
 const SIZES = {
@@ -464,11 +463,9 @@ export default function SignUp() {
         <div className="animation-section">
           <h2 className="step-title">{STEPS[step - 1].title}</h2>
           <div className="animation-wrapper">
-            <DotLottiePlayer
+            <img
               src={STEPS[step - 1].src}
-              autoplay
-              loop
-              className="my-auto py-auto"
+              className="img-fluid"
             />
           </div>
           <p className="step-description">{STEPS[step - 1].description}</p>
