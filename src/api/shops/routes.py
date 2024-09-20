@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_jwt_extended import create_access_token
-from api.models import db, Shop, MysteryBox, ItemChangeRequest, BoxItem
+from api.models import db, Shop, MysteryBox, ItemChangeRequest, Notification
 from werkzeug.exceptions import BadRequest
 from sqlalchemy.exc import SQLAlchemyError
 import cloudinary
@@ -78,6 +78,16 @@ def register_shop():
         new_shop.set_password(data['password'])
 
         db.session.add(new_shop)
+
+        welcome_notification = Notification(
+            recipient_type='shop',
+            sender_type='platform',
+            shop_id=new_shop.id,
+            type="welcome_notification",
+            content=f"Te damos la bienvenida a Liquiboxes {new_shop.owner_name}, tu tienda {new_shop.name} ha sido registrada. No dudes en crear tu primera mystery box. Si tienes cualquier duda contactanos en la pestaña de Contacto con soporte que tienes en el menú lateral.",
+        )
+        db.session.add(welcome_notification)
+
         db.session.commit()
         
         access_token = create_access_token(identity=new_shop.id)
