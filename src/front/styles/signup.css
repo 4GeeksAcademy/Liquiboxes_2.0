@@ -1,91 +1,178 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
-
-
-
-
 .signup-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.signup-progress {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-}
-
-.step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 16.66%;
-}
-
-.step-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: var(--border-color);
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  transition: all 0.3s ease;
-}
-
-.step.active .step-icon {
-  background-color: var(--primary-color);
-  transform: scale(1.1);
-}
-
-.step.completed .step-icon {
-  background-color: var(--secondary-color);
-}
-
-.step-label {
-  font-size: 0.8rem;
-  color: var(--text-color);
-  text-align: center;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  min-height: 100vh !important;
+  background-color: var(--background-color) !important;
+  font-family: "Poppins", sans-serif !important;
 }
 
 .signup-content {
-  display: flex;
-  flex: 1;
-  background-color: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  min-height: 100vh !important;
+  background-color: white !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
 }
 
-.step-info {
-  flex: 1;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-  padding: 3rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.animation-section {
+  flex: 1 !important;
+  background-color: var(--background-secondary-color) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  min-height: 100vh !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 2rem !important;
+  color: var(--text-color) !important;
 }
 
-.step-info h2 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+.animation-wrapper {
+  width: 300px !important;
+  height: 300px !important;
+  margin-bottom: 4rem !important;
+  margin-top: 4rem !important;
+  padding: auto;
 }
 
-.step-info p {
-  font-size: 1.2rem;
-  line-height: 1.6;
+.step-title {
+  font-size: 2.5rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem !important;
+  text-align: center !important;
 }
 
-.step-form {
-  flex: 1;
-  padding: 3rem;
-  overflow-y: auto;
+.step-description {
+  font-size: 1rem !important;
+  text-align: center !important;
 }
 
+.form-section {
+  flex: 1 !important;
+  padding: 2rem !important;
+  overflow-y: auto !important;
+  position: relative !important;
+}
 
+.back-button {
+  position: absolute !important;
+  top: 1rem !important;
+  left: 1rem !important;
+  background: none !important;
+  border: none !important;
+  font-size: 1.5rem !important;
+  cursor: pointer !important;
+  color: var(--text-color) !important;
+}
+
+.step-content {
+  margin-top: 2rem !important;
+}
+
+.step-question {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 1.5rem !important;
+  color: var(--text-color) !important;
+}
+
+.input-group {
+  margin-bottom: 1rem !important;
+}
+
+.input, select {
+  width: 100% !important;
+  padding: 0.75rem !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  transition: border-color 0.3s ease !important;
+  margin-bottom: 2rem !important;
+}
+
+.input:focus, select:focus {
+  border-color: var(--primary-color) !important;
+  outline: none !important;
+}
+
+.error {
+  color: #ff4d4f !important;
+  font-size: 0.875rem !important;
+  margin-top: 0.25rem !important;
+}
+
+.checkbox-group {
+  margin-bottom: 1.5rem !important;
+}
+
+.checkbox-options {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+  gap: 0.5rem !important;
+}
+
+.checkbox-label {
+  display: flex !important;
+  align-items: center !important;
+  padding: 0.5rem !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.checkbox-label:hover {
+  background-color: var(--background-secondary-color) !important;
+}
+
+.checkbox {
+  margin-right: 0.5rem !important;
+}
+
+.navigation-buttons {
+  display: flex !important;
+  justify-content: flex-end !important;
+  margin-top: 2rem !important;
+}
+
+.next-button, .submit-button {
+  padding: 0.75rem 1.5rem !important;
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 1rem !important;
+  cursor: pointer !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.next-button:hover, .submit-button:hover {
+  background-color: var(--secondary-color) !important;
+}
+
+@media (max-width: 768px) {
+  .signup-content {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+
+  .animation-section, .form-section {
+    width: 100% !important;
+  }
+
+  .animation-section {
+    padding: 1rem !important;
+    height: 400px !important;
+  }
+
+  .animation-wrapper {
+    width: 150px !important;
+    height: 150px !important;
+
+  }
+}

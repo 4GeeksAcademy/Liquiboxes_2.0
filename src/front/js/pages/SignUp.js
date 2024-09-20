@@ -1,22 +1,20 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faEnvelope, faLock, faTshirt, faShoePrints, faPalette, faTextHeight, faBriefcase } from '@fortawesome/free-solid-svg-icons';
-import "../../styles/signup.css";
+import '../../styles/signup.css';
 import { Context } from "../store/appContext";
 import { registerAndLogin } from "../component/AuthenticationUtils";
 import Confetti from 'react-confetti';
 import ModalGlobal from '../component/ModalGlobal'
+import { DotLottiePlayer } from "@dotlottie/react-player";
 
 
 const STEPS = [
-  { icon: faUser, title: "Datos Personales", description: "Cuéntanos un poco sobre ti" },
-  { icon: faEnvelope, title: "Cuenta", description: "Crea tu cuenta segura" },
-  { icon: faTshirt, title: "Tallas", description: "Ayúdanos a personalizar tu experiencia" },
-  { icon: faPalette, title: "Estilo", description: "Define tus preferencias de estilo" },
-  { icon: faTextHeight, title: "Preferencias", description: "Dinos qué te gusta y qué no" },
-  { icon: faBriefcase, title: "Finalizar", description: "Últimos detalles para completar tu perfil" }
+  { title: "Datos Personales", description: "Cuéntanos un poco sobre ti", src: "https://lottie.host/445b6b92-2f50-483f-bafb-b4af9f09091d/1tvtNOkLzB.json" },
+  { title: "Cuenta", description: "Crea tu cuenta segura", src: "https://lottie.host/5b895979-235f-45ca-ba4c-c790df699436/IOxPxID8CU.json" },
+  { title: "Tallas", description: "Ayúdanos a personalizar tu experiencia", src: "https://lottie.host/d068a1ec-c963-4986-b7d8-091e441c03c9/W2uU1SjbPp.json" },
+  { title: "Estilo", description: "Define tus preferencias de estilo", src: "https://lottie.host/a4b709cb-8c2e-4131-952d-f4c68080aeab/TyJYqRbZV5.json" },
+  { title: "Preferencias", description: "Dinos qué te gusta y qué no", src: "https://lottie.host/25ec99c3-a811-4fa6-859a-c6478da4d376/cS0rdHb4eN.json" },
+  { title: "Finalizar", description: "Últimos detalles para completar tu perfil", src: "https://lottie.host/6bd9a683-8479-4efc-8a8a-36c0d884a740/1F2Mi7nPGq.json" }
 ];
 
 const SIZES = {
@@ -179,79 +177,281 @@ export default function SignUp() {
     </select>
   );
 
+
+
   const renderStep = () => {
     switch (step) {
       case 1:
         return (
-          <>
-            <input type="text" name="name" value={signupData.name} onChange={handleChange} placeholder="Nombre" required aria-label="Nombre" />
-            {errors.name && <span className="error">{errors.name}</span>}
-            <input type="text" name="surname" value={signupData.surname} onChange={handleChange} placeholder="Apellido" required aria-label="Apellido" />
-            {errors.surname && <span className="error">{errors.surname}</span>}
-            {renderSelect("gender", ["Masculino", "Femenino", "No especificado"], "Selecciona género")}
-            {errors.gender && <span className="error">{errors.gender}</span>}
-            <input type="text" name="address" value={signupData.address} onChange={handleChange} placeholder="Dirección" required aria-label="Dirección" />
-            {errors.address && <span className="error">{errors.address}</span>}
-            <input type="text" name="postalCode" value={signupData.postalCode} onChange={handleChange} placeholder="Código Postal" required aria-label="Código Postal" maxLength="5" pattern="\d{5}" />
-            {errors.postalCode && <span className="error">{errors.postalCode}</span>}
-          </>
+          <div className="step-content">
+            <h2 className="step-question">¿Cuáles son tus datos personales?</h2>
+            <div className="input-group">
+              <input
+                type="text"
+                name="name"
+                value={signupData.name}
+                onChange={handleChange}
+                placeholder="Nombre"
+                className="input"
+              />
+              {errors.name && <span className="error">{errors.name}</span>}
+            </div>
+            <div className="input-group">
+              <input
+                type="text"
+                name="surname"
+                value={signupData.surname}
+                onChange={handleChange}
+                placeholder="Apellido"
+                className="input"
+              />
+              {errors.surname && <span className="error">{errors.surname}</span>}
+            </div>
+            <div className="input-group">
+              <select
+                name="gender"
+                value={signupData.gender}
+                onChange={handleChange}
+                className="input"
+              >
+                <option value="">Selecciona género</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="No especificado">No especificado</option>
+              </select>
+              {errors.gender && <span className="error">{errors.gender}</span>}
+            </div>
+            <div className="input-group">
+              <input
+                type="text"
+                name="address"
+                value={signupData.address}
+                onChange={handleChange}
+                placeholder="Dirección"
+                className="input"
+              />
+              {errors.address && <span className="error">{errors.address}</span>}
+            </div>
+            <div className="input-group">
+              <input
+                type="text"
+                name="postalCode"
+                value={signupData.postalCode}
+                onChange={handleChange}
+                placeholder="Código Postal"
+                className="input"
+                maxLength="5"
+                pattern="\d{5}"
+              />
+              {errors.postalCode && <span className="error">{errors.postalCode}</span>}
+            </div>
+          </div>
         );
       case 2:
         return (
-          <>
-            <input type="email" name="email" value={signupData.email} onChange={handleChange} placeholder="Email" required aria-label="Email" />
-            {errors.email && <span className="error">{errors.email}</span>}
-            <input type="password" name="password" value={signupData.password} onChange={handleChange} placeholder="Contraseña" required aria-label="Contraseña" minLength="8" />
-            {errors.password && <span className="error">{errors.password}</span>}
-          </>
+          <div className="step-content">
+            <h2 className="step-question">Crea tu cuenta</h2>
+            <div className="input-group">
+              <input
+                type="email"
+                name="email"
+                value={signupData.email}
+                onChange={handleChange}
+                placeholder="Email"
+                className="input"
+              />
+              {errors.email && <span className="error">{errors.email}</span>}
+            </div>
+            <div className="input-group">
+              <input
+                type="password"
+                name="password"
+                value={signupData.password}
+                onChange={handleChange}
+                placeholder="Contraseña"
+                className="input"
+              />
+              {errors.password && <span className="error">{errors.password}</span>}
+            </div>
+          </div>
         );
       case 3:
         return (
-          <>
-            {renderSelect("upperSize", SIZES.upper, "Talla Superior")}
-            {errors.upperSize && <span className="error">{errors.upperSize}</span>}
-            {renderSelect("lowerSize", SIZES.lower, "Talla Inferior")}
-            {errors.lowerSize && <span className="error">{errors.lowerSize}</span>}
-            {renderSelect("capSize", SIZES.upper, "Talla de Gorra o Sombrero")}
-            {errors.capSize && <span className="error">{errors.capSize}</span>}
-            {renderSelect("shoeSize", SIZES.shoe, "Talla de Zapato (EU)")}
-            {errors.shoeSize && <span className="error">{errors.shoeSize}</span>}
-          </>
+          <div className="step-content">
+            <h2 className="step-question">¿Cuáles son tus tallas?</h2>
+            <div className="input-group">
+              <select
+                name="upperSize"
+                value={signupData.upperSize}
+                onChange={handleChange}
+                className="input"
+              >
+                <option value="">Selecciona talla superior</option>
+                {SIZES.upper.map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              {errors.upperSize && <span className="error">{errors.upperSize}</span>}
+            </div>
+            <div className="input-group">
+              <select
+                name="lowerSize"
+                value={signupData.lowerSize}
+                onChange={handleChange}
+                className="input"
+              >
+                <option value="">Selecciona talla inferior</option>
+                {SIZES.lower.map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              {errors.lowerSize && <span className="error">{errors.lowerSize}</span>}
+            </div>
+            <div className="input-group">
+              <select
+                name="capSize"
+                value={signupData.capSize}
+                onChange={handleChange}
+                className="input"
+              >
+                <option value="">Selecciona talla de gorra</option>
+                {SIZES.upper.map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              {errors.capSize && <span className="error">{errors.capSize}</span>}
+            </div>
+            <div className="input-group">
+              <select
+                name="shoeSize"
+                value={signupData.shoeSize}
+                onChange={handleChange}
+                className="input"
+              >
+                <option value="">Selecciona talla de zapato</option>
+                {SIZES.shoe.map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              {errors.shoeSize && <span className="error">{errors.shoeSize}</span>}
+            </div>
+          </div>
         );
       case 4:
         return (
-          <>
-            {renderCheckboxGroup("notColors", COLORS, 3)}
-            {renderSelect("stamps", ["Estampados", "Lisos"], "Preferencia de Estampado")}
-            {errors.stamps && <span className="error">{errors.stamps}</span>}
-            {renderSelect("fit", ["Ajustado", "Holgado"], "Preferencia de Ajuste")}
-            {errors.fit && <span className="error">{errors.fit}</span>}
-          </>
+          <div className="step-content">
+            <h2 className="step-question">Define tus preferencias de estilo</h2>
+            <div className="checkbox-group">
+              <p>Colores que menos te gustan (máximo 3):</p>
+              <div className="checkbox-options">
+                {COLORS.map(color => (
+                  <label key={color} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="notColors"
+                      value={color}
+                      checked={signupData.notColors.includes(color)}
+                      onChange={handleChange}
+                      disabled={signupData.notColors.length >= 3 && !signupData.notColors.includes(color)}
+                      className="checkbox"
+                    />
+                    {color}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="input-group">
+              <select
+                name="stamps"
+                value={signupData.stamps}
+                onChange={handleChange}
+                className="input"
+              >
+                <option value="">Selecciona preferencia de estampado</option>
+                <option value="Estampados">Estampados</option>
+                <option value="Lisos">Lisos</option>
+              </select>
+              {errors.stamps && <span className="error">{errors.stamps}</span>}
+            </div>
+            <div className="input-group">
+              <select
+                name="fit"
+                value={signupData.fit}
+                onChange={handleChange}
+                className="input"
+              >
+                <option value="">Selecciona preferencia de ajuste</option>
+                <option value="Ajustado">Ajustado</option>
+                <option value="Holgado">Holgado</option>
+              </select>
+              {errors.fit && <span className="error">{errors.fit}</span>}
+            </div>
+          </div>
         );
       case 5:
-        return renderCheckboxGroup("notClothes", CLOTHES, 3);
+        return (
+          <div className="step-content">
+            <h2 className="step-question">Dinos qué prendas prefieres</h2>
+            <div className="checkbox-group">
+              <p>Prendas que menos te gustan (máximo 3):</p>
+              <div className="checkbox-options">
+                {CLOTHES.map(cloth => (
+                  <label key={cloth} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="notClothes"
+                      value={cloth}
+                      checked={signupData.notClothes.includes(cloth)}
+                      onChange={handleChange}
+                      disabled={signupData.notClothes.length >= 3 && !signupData.notClothes.includes(cloth)}
+                      className="checkbox"
+                    />
+                    {cloth}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
       case 6:
         return (
-          <>
+          <div className="step-content">
+            <h2 className="step-question">Últimos detalles para completar tu perfil</h2>
             <div className="checkbox-group">
               <p>Categorías con las que te identificas (máximo 5):</p>
-              {CATEGORIES.map(category => (
-                <label key={category}>
-                  <input
-                    type="checkbox"
-                    name="categories"
-                    value={category}
-                    checked={signupData.categories.includes(category)}
-                    onChange={handleChange}
-                    disabled={signupData.categories.length >= 5 && !signupData.categories.includes(category)}
-                  /> {category}
-                </label>
-              ))}
+              <div className="checkbox-options">
+                {CATEGORIES.map(category => (
+                  <label key={category} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="categories"
+                      value={category}
+                      checked={signupData.categories.includes(category)}
+                      onChange={handleChange}
+                      disabled={signupData.categories.length >= 5 && !signupData.categories.includes(category)}
+                      className="checkbox"
+                    />
+                    {category}
+                  </label>
+                ))}
+              </div>
             </div>
             {errors.categories && <span className="error">{errors.categories}</span>}
-            {renderSelect("profession", PROFESSIONS, "Selecciona tu profesión")}
-            {errors.profession && <span className="error">{errors.profession}</span>}
-          </>
+            <div className="input-group">
+              <select
+                name="profession"
+                value={signupData.profession}
+                onChange={handleChange}
+                className="input"
+              >
+                <option value="">Selecciona tu profesión</option>
+                {PROFESSIONS.map(profession => (
+                  <option key={profession} value={profession}>{profession}</option>
+                ))}
+              </select>
+              {errors.profession && <span className="error">{errors.profession}</span>}
+            </div>
+          </div>
         );
       default:
         return null;
@@ -260,43 +460,60 @@ export default function SignUp() {
 
   return (
     <div className="signup-container">
-      <div className="signup-progress" role="progressbar" aria-valuenow={step} aria-valuemin="1" aria-valuemax="6">
-        {STEPS.map((s, index) => (
-          <div key={index} className={`step ${index + 1 === step ? 'active' : ''} ${index + 1 < step ? 'completed' : ''}`}>
-            <div className="step-icon">
-              <FontAwesomeIcon icon={s.icon} aria-hidden="true" />
-            </div>
-            <div className="step-label">{s.title}</div>
+      <div className="signup-content">
+        <div className="animation-section">
+          <h2 className="step-title">{STEPS[step - 1].title}</h2>
+          <div className="animation-wrapper">
+            <DotLottiePlayer
+              src={STEPS[step - 1].src}
+              autoplay
+              loop
+              className="my-auto py-auto"
+            />
           </div>
-        ))}
-      </div>
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="signup-content">
-          <div className="step-info">
-            <h2>{STEPS[step - 1].title}</h2>
-            <p>{STEPS[step - 1].description}</p>
-          </div>
-          <div className="step-form">
-            {renderStep()}
-          </div>
+          <p className="step-description">{STEPS[step - 1].description}</p>
         </div>
-        {errors.submit && <div className="error-message">{errors.submit}</div>}
-        <div className="navigation-buttons">
-          {step > 1 && <button type="button" onClick={() => setStep(prev => prev - 1)}>Anterior</button>}
-          {step < 6 ? (
-            <button
-              type="button"
-              onClick={() => {
-                if (validateStep()) setStep(prev => prev + 1);
-              }}
-            >
-              Siguiente
+        <div className="form-section">
+          {step > 1 && (
+            <button className="back-button" onClick={() => setStep(prev => prev - 1)}>
+              ←
             </button>
-          ) : (
-            <button type="submit">Registrarse</button>
           )}
+          <form onSubmit={handleSubmit} noValidate>
+            {renderStep()}
+            <div className="navigation-buttons">
+              {step < 6 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (validateStep()) setStep(prev => prev + 1);
+                  }}
+                  className="next-button"
+                >
+                  Continuar
+                </button>
+              ) : (
+                <button type="submit" className="submit-button">
+                  Registrarse
+                </button>
+              )}
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
+      {isSuccess && (
+        <>
+          <Confetti width={window.innerWidth} height={window.innerHeight} />
+          <ModalGlobal
+            isOpen={true}
+            onClose={handleCloseModal}
+            title="¡Bienvenido a Liquiboxes!"
+            body={`Enhorabuena, ya eres un ${userType === "user" ? "usuario" : "comercio"} de Liquiboxes. ¡Esperamos que disfrutes de nuestra plataforma!`}
+            buttonBody="Continuar"
+            className="welcome-modal"
+          />
+        </>
+      )}
     </div>
   );
 }
