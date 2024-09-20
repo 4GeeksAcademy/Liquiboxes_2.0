@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_jwt_extended import create_access_token
-from api.models import db, Shop, MysteryBox, ItemChangeRequest, BoxItem
+from api.models import db, Shop, MysteryBox, ItemChangeRequest, Notification
 from werkzeug.exceptions import BadRequest
 from sqlalchemy.exc import SQLAlchemyError
 import cloudinary
@@ -78,6 +78,16 @@ def register_shop():
         new_shop.set_password(data['password'])
 
         db.session.add(new_shop)
+
+        welcome_notification = Notification(
+            recipient_type='shop',
+            sender_type='platform',
+            shop_id=new_shop.id,
+            type="welcome_notification",
+            content=f"Te damos la bienvenida a Liquiboxes {new_shop.owner_name}, tu tienda {new_shop.name} ha sido registrada. No dudes en crear tu primera mystery box. Si tienes cualquier duda contactanos en la pestaña de Contacto con soporte que tienes en el menú lateral.",
+        )
+        db.session.add(welcome_notification)
+
         db.session.commit()
         
         access_token = create_access_token(identity=new_shop.id)
@@ -162,13 +172,19 @@ def get_shop(shop_id):
         return jsonify({'error': 'Shop not found'}), 404
     
 @shops.route('/<int:shop_id>/mysteryboxes', methods=['GET'])
-def  get_shop_mystery_boxes(shop_id):
+def get_shop_mystery_boxes(shop_id):
+    print(f"Received request for shop_id: {shop_id}")
+    print(f"Request headers: {request.headers}")
+    
     shop = Shop.query.get(shop_id)
     if shop:
         mystery_boxes = MysteryBox.query.filter_by(shop_id=shop_id).all()
-        return jsonify([box.serialize_detail() for box in mystery_boxes]), 200
+        result = [box.serialize_for_card() for box in mystery_boxes]
+        print(f"Returning {len(result)} mystery boxes for shop {shop_id}")
+        return jsonify(result), 200
     else:
-        return jsonify({'error': 'Shop not found'}), 404       
+        print(f"Shop {shop_id} not found")
+        return jsonify({'error': 'Shop not found'}), 404      
      
 
 @shops.route('/mystery-box/<int:box_id>', methods=['GET'])

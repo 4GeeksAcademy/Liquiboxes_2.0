@@ -25,13 +25,37 @@ const PayingForm = () => {
       try {
         setIsLoading(true);
         let cartData = store.cartWithDetails || JSON.parse(localStorage.getItem("cartWithDetails") || "[]");
+
+        // Asegúrate de que cartData sea siempre un array
+        if (!Array.isArray(cartData)) {
+          cartData = [cartData];
+        }
+
         if (cartData.length === 0) {
           throw new Error("El carrito está vacío");
         }
-        setCheckoutCart(cartData);
 
-        const totalPrice = cartData.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        setTotal(totalPrice);
+        // Procesar los datos del carrito
+        const processedCart = cartData.map(item => {
+          // Asumimos que la cantidad está en store.cart
+          const cartItem = store.cart.find(ci => ci.mysterybox_id === item.id.toString());
+          return {
+            ...item,
+            quantity: cartItem ? cartItem.quantity : 1
+          };
+        });
+
+        setCheckoutCart(processedCart);
+
+        // Calcular el total
+        const totalPrice = processedCart.reduce((sum, item) =>
+          sum + (parseFloat(item.price) * parseInt(item.quantity)), 0
+        );
+
+        console.log('Datos procesados del carrito:', processedCart);
+        console.log('Precio total calculado:', totalPrice);
+
+        setTotal(Number(totalPrice.toFixed(2)));
         setError(null);
 
         // Fetch user profile
@@ -44,6 +68,7 @@ const PayingForm = () => {
         });
         setUserProfile(response.data);
       } catch (err) {
+        console.error('Error al procesar los datos del carrito:', err);
         setError(err.message);
       } finally {
         setIsLoading(false);
@@ -51,7 +76,7 @@ const PayingForm = () => {
     };
 
     fetchCartData();
-  }, [store.cartWithDetails]);
+  }, [store.cartWithDetails, store.cart]);
 
   const handleStripePaymentSuccess = async (paymentIntentId) => {
     try {
@@ -59,7 +84,7 @@ const PayingForm = () => {
       if (!token) {
         throw new Error("No se encontró el token de autenticación");
       }
-  
+
       const response = await axios.post(
         `${process.env.BACKEND_URL}/sales/create`,
         {
@@ -72,13 +97,13 @@ const PayingForm = () => {
           user_data: userProfile
         },
         {
-          headers: { 
+          headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
       );
-      
+
       console.log('Respuesta del backend:', response.data);
       alert('Compra realizada con éxito. ID de la venta: ' + response.data.sale_id);
       actions.clearCart();

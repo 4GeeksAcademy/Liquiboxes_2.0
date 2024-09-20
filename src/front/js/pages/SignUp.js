@@ -5,6 +5,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faLock, faTshirt, faShoePrints, faPalette, faTextHeight, faBriefcase } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/signup.css";
 import { Context } from "../store/appContext";
+import { registerAndLogin } from "../component/AuthenticationUtils";
+import Confetti from 'react-confetti';
+import ModalGlobal from '../component/ModalGlobal'
+
 
 const STEPS = [
   { icon: faUser, title: "Datos Personales", description: "Cuéntanos un poco sobre ti" },
@@ -37,6 +41,9 @@ export default function SignUp() {
   const location = useLocation();
   const { store } = useContext(Context);
   const CATEGORIES = store.categories;
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [userType, setUserType] = useState(null);
+  const [error, setError] = useState(null);
 
   const { google_data, access_token } = location.state || {};
 
@@ -105,21 +112,43 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
     if (!validateStep()) return;
 
     try {
-      const response = await axios.post(
-        process.env.BACKEND_URL + `/users/register`,
-        signupData,
-        { headers: { "Content-Type": "application/json" } }
-      );
-      console.log("Usuario registrado:", response.data);
-      navigate("/");
+      const { user_type } = await registerAndLogin(`${process.env.BACKEND_URL}/users/register`, signupData);
+      setUserType(user_type);
+      setIsSuccess(true);
     } catch (error) {
-      console.error("Ha habido un error:", error);
-      setErrors({ submit: "Hubo un error al registrar. Por favor, inténtalo de nuevo." });
+      setError("Error en el registro o inicio de sesión. Por favor, inténtalo de nuevo.");
+      console.error(error);
     }
   };
+
+  const handleCloseModal = () => {
+    setIsSuccess(false);
+    navigate("/home");
+  };
+
+  if (isSuccess) {
+    return (
+      <>
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+        />
+        <ModalGlobal
+          isOpen={true}
+          onClose={handleCloseModal}
+          title="¡Bienvenido a Liquiboxes!"
+          body={`Enhorabuena, ya eres un ${userType === "user" ? "usuario" : "comercio"} de Liquiboxes. ¡Esperamos que disfrutes de nuestra plataforma!`}
+          buttonBody="Continuar"
+          className="welcome-modal"
+        />
+      </>
+    );
+  }
+
 
   const renderCheckboxGroup = (name, options, maxItems) => (
     <div className="checkbox-group">

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "../../../styles/shops/contactsupport.css";
 import { useNavigate } from 'react-router-dom';
-import Modal from '../Modal';
+import ModalGlobal from '../ModalGlobal';
 
 const ContactSupport = () => {
   const [newform, setNewForm] = useState({
@@ -118,7 +118,7 @@ const ContactSupport = () => {
         <button type="submit">Enviar</button>
       </form>
 
-      <Modal
+      <ModalGlobal
         isOpen={isModalLoggingOpen}
         onClose={closeLoginModal}
         title="Iniciar sesión requerido"
@@ -126,7 +126,7 @@ const ContactSupport = () => {
         buttonBody='Iniciar sesión'
       />
 
-      <Modal
+      <ModalGlobal
         isOpen={isModalSuccessOpen}
         onClose={closeSuccessModal}
         title='Mensaje de contacto con soporte enviado'

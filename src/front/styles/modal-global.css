@@ -5,7 +5,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(106, 142, 127, 0.9);
+  background-color: rgba(106, 142, 127, 0.476);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13,7 +13,7 @@
   opacity: 0;
   visibility: hidden;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(10px) saturate(180%);
+  backdrop-filter: blur(2px) saturate(180%);
 }
 
 .modal-global-overlay.modal-global-show {

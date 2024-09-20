@@ -1,45 +1,73 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react';
 import Carousel from 'react-bootstrap/Carousel';
-
+import axios from 'axios'; 
 
 function CarruselTopSellers() {
+  const [shops, setShops] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchShops = async () => {
+      try {
+        const url = `${process.env.BACKEND_URL}/shops`; 
+        console.log('Fetching shops from:', url);
+
+        const response = await axios.get(url);
+        console.log('API response:', response);
+
+        let shopsData;
+        if (Array.isArray(response.data)) {
+          shopsData = response.data;
+        } else if (typeof response.data === 'object' && response.data !== null) {
+          shopsData = response.data.shops || response.data.data || [];
+        } else {
+          shopsData = [];
+        }
+
+        console.log('Processed shops data:', shopsData);
+
+        setShops(shopsData);
+      } catch (error) {
+        console.error("Error fetching shops:", error);
+        console.error("Error details:", error.response || error.message);
+        setError("No se pudieron cargar las tiendas. Por favor, intente más tarde.");
+        setShops([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchShops();
+  }, []);
+
+  if (isLoading) {
+    return <div>Cargando tiendas...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
   return (
-<div className="carousel-container">
-      <Carousel fade> {/* Agrega el atributo fade para transiciones suaves */}
-        <Carousel.Item>
-          <img
-            className=" img-fluid" 
-            src="https://images.pexels.com/photos/1666070/pexels-photo-1666070.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-            alt="First slide"/>          
-          <Carousel.Caption>
-            <h3>First Box</h3>
-            <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-          </Carousel.Caption>
-        </Carousel.Item>
-
-        <Carousel.Item>
-          <img
-            className="img-fluid"
-            src="https://images.pexels.com/photos/697224/pexels-photo-697224.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-            alt="Second slide"/>          
-          <Carousel.Caption>
-            <h3>Second Box</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-          </Carousel.Caption>
-        </Carousel.Item>
-
-        <Carousel.Item>
-          <img
-            className="img-fluid"
-            src="https://images.pexels.com/photos/1050256/pexels-photo-1050256.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-            alt="Third slide"/>          
-          <Carousel.Caption>
-            <h3>Third Box</h3>
-            <p>Praesent commodo cursus magna, vel scelerisque nisl consectetur.</p>
-          </Carousel.Caption>
-        </Carousel.Item>          
+    <div className="carousel-container">
+      <Carousel fade>
+        {shops.map((shop, index) => (
+          <Carousel.Item key={shop.id}>
+            <img
+              className="img-fluid"
+              src={shop.image_shop_url} 
+              alt={`Slide ${index + 1}`}
+            />
+            <Carousel.Caption>
+              <h3>{shop.name}</h3>
+              <p>{shop.shop_summary}</p> 
+            </Carousel.Caption>
+          </Carousel.Item>
+        ))}
       </Carousel>
     </div>
-  )
+  );
 }
-export default CarruselTopSellers
+
+export default CarruselTopSellers;

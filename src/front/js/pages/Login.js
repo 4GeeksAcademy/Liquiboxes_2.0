@@ -1,5 +1,5 @@
-import React, { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useContext, useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { Context } from "../store/appContext";
@@ -14,6 +14,15 @@ export default function Login() {
         password: ""
     });
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        // Guarda la ruta anterior cuando se monta el componente
+        const prevPath = location.state?.from || "/";
+        if (prevPath !== "/") {
+            localStorage.setItem("prevPath", prevPath);
+        }
+    }, [location]);
 
     const handleChange = (e) => {
         setLoginData({
@@ -55,7 +64,19 @@ export default function Login() {
                 sessionStorage.setItem("token", loginResult.access_token);
                 sessionStorage.setItem("userType", loginResult.user_type);
                 console.log(`Ha entrado como ${loginResult.user_type}`);
-                navigate(loginResult.user_type === "user" ? "/home" : "/shophome");
+                
+                // Obtén la ruta anterior del almacenamiento local
+                const prevPath = localStorage.getItem("prevPath");
+                
+                // Elimina la ruta anterior del almacenamiento local
+                localStorage.removeItem("prevPath");
+                
+                // Redirige al usuario a la ruta anterior o a la ruta por defecto
+                if (prevPath && prevPath !== "/") {
+                    navigate(prevPath);
+                } else {
+                    navigate(loginResult.user_type === "user" ? "/home" : "/shophome");
+                }
             }
         } catch (error) {
             console.log("Error de autenticación:", error);
@@ -84,7 +105,19 @@ export default function Login() {
                 // Usuario existente, guardar token y redirigir
                 sessionStorage.setItem('token', access_token);
                 sessionStorage.setItem('userType', user_type);
-                navigate(user_type === 'normal' ? "/home" : "/shophome");
+                
+                // Obtén la ruta anterior del almacenamiento local
+                const prevPath = localStorage.getItem("prevPath");
+                
+                // Elimina la ruta anterior del almacenamiento local
+                localStorage.removeItem("prevPath");
+                
+                // Redirige al usuario a la ruta anterior o a la ruta por defecto
+                if (prevPath && prevPath !== "/") {
+                    navigate(prevPath);
+                } else {
+                    navigate(user_type === 'normal' ? "/home" : "/shophome");
+                }
             }
         } catch (error) {
             console.log("Error en la autenticación con Google:", error);
