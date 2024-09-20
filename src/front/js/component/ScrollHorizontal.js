@@ -23,7 +23,7 @@ const ScrollHorizontal = ({ items, renderItem, title, subtitle }) => {
     dots: true,
     infinite: shouldAutoplay, // Solo infinito si hay más de 5 elementos
     speed: 300,
-    slidesToShow:5, // Mostrar como máximo 5 slides
+    slidesToShow:4, // Mostrar como máximo 5 slides
     slidesToScroll: 1,
     prevArrow: <Arrow direction="prev" />,
     nextArrow: <Arrow direction="next" />,
