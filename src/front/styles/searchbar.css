@@ -1,0 +1,242 @@
+/*
+Search Bar CSS
+*/
+.ultimate-search-bar-container {
+    background-color: #f0f5f1 !important;
+    border-radius: 20px !important;
+    padding: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    margin: 20px auto !important;
+    max-width: 1200px !important;
+    transition: all 0.3s ease !important;
+}
+
+.ultimate-search-title {
+    text-align: center !important;
+    color: #073b3a !important;
+    margin-bottom: 15px !important;
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+}
+
+.ultimate-search-inner-container {
+    background-color: white !important;
+    border-radius: 50px !important;
+    padding: 5px 15px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    margin-bottom: 10px !important;
+}
+
+.ultimate-search-inner-container.showing-suggestions {
+    border-radius: 25px 25px 0 0 !important;
+    border-bottom: none !important;
+    padding-bottom: 0 !important; /* Elimina el padding inferior */
+}
+
+
+.ultimate-search-form {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.ultimate-search-input-group {
+    display: flex !important;
+    align-items: center !important;
+    margin-bottom: 0 !important; /* Elimina el margen inferior */
+    position: relative !important;
+}
+
+.ultimate-search-suggestions {
+    position: absolute !important;
+    top: 100% !important;
+    left: -15px !important; /* Alinea con el borde izquierdo del contenedor */
+    right: -15px !important; /* Alinea con el borde derecho del contenedor */
+    background-color: white !important;
+    border: 1px solid #6a8e7f !important;
+    border-top: none !important;
+    border-radius: 0 0 25px 25px !important;
+    list-style-type: none !important;
+    margin: 0 !important;
+    padding: 5px 0 !important; /* Añade un poco de padding vertical */
+    max-height: 300px !important;
+    overflow-y: auto !important;
+    z-index: 1000 !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ultimate-search-suggestions li {
+    padding: 10px 15px !important;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease !important;
+}
+
+.ultimate-search-suggestions li:nth-child(odd) {
+    background-color: #f0f5f1 !important;
+}
+
+.ultimate-search-suggestions li:nth-child(even) {
+    background-color: #ffffff !important;
+}
+
+.ultimate-search-suggestions li:hover {
+    background-color: #e0eae1 !important;
+}
+
+.ultimate-search-suggestions li:last-child {
+    border-radius: 0 0 25px 25px !important;
+}
+
+.ultimate-search-suggestions li strong {
+    display: block !important;
+    color: #073b3a !important;
+    font-size: 1rem !important;
+}
+
+.ultimate-search-suggestions li small {
+    color: #6a8e7f !important;
+    font-size: 0.8rem !important;
+}
+
+.ultimate-search-icon {
+    color: #6a8e7f !important;
+    font-size: 1.2rem !important;
+    margin-right: 10px !important;
+}
+
+.ultimate-search-input {
+    flex-grow: 1 !important;
+    border: none !important;
+    padding: 10px 0 !important;
+    font-size: 1rem !important;
+    background: transparent !important;
+}
+
+.ultimate-search-input:focus {
+    outline: none !important;
+}
+
+.ultimate-search-submit-btn {
+    display: none !important;
+}
+
+.ultimate-search-toggle-btn {
+    width: 95% !important;
+    background-color: #073b3a !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px !important;
+    font-size: 1rem !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 10px auto !important;
+}
+
+.ultimate-search-toggle-btn:hover {
+    background-color: #6a8e7f !important;
+}
+
+.ultimate-search-icon-right {
+    margin-left: 10px !important;
+}
+
+.ultimate-search-category-buttons {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    margin-top: 10px !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    transition: max-height 0.5s ease, opacity 0.5s ease !important;
+    opacity: 0 !important;
+}
+
+.ultimate-search-expanded {
+    max-height: 1000px !important;
+    opacity: 1 !important;
+}
+
+.ultimate-search-category-btn {
+    flex: 1 0 calc(50% - 5px) !important;
+    background-color: white !important;
+    border: 1px solid #6a8e7f !important;
+    color: #073b3a !important;
+    padding: 8px !important;
+    font-size: 0.9rem !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    text-align: center !important;
+}
+
+.ultimate-search-category-btn:hover,
+.ultimate-search-category-btn-active {
+    background-color: #6a8e7f !important;
+    color: white !important;
+}
+
+@media (max-width: 767px) {
+    .ultimate-search-inner-container {
+        border-radius: 10px !important;
+        padding: 5px 10px !important; /* Reduce el padding horizontal */
+    }
+
+    .ultimate-search-inner-container.showing-suggestions {
+        border-radius: 10px 10px 0 0 !important;
+        border-bottom: none !important;
+        padding-bottom: 5px !important;
+    }
+
+    .ultimate-search-suggestions {
+        left: -10px !important; /* Alinea con el nuevo padding del contenedor */
+        right: -10px !important;
+        border-radius: 0 0 10px 10px !important;
+        margin-top: 0 !important;
+        border-top: 1px solid #6a8e7f !important; /* Añade un borde superior sutil */
+    }
+
+    .ultimate-search-suggestions li:last-child {
+        border-radius: 0 0 10px 10px !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .ultimate-search-bar-container {
+        padding: 30px !important;
+    }
+
+    .ultimate-search-title {
+        font-size: 2rem !important;
+    }
+
+    .ultimate-search-inner-container {
+        border-radius: 50px !important;
+        padding: 5px 15px !important;
+    }
+
+    .ultimate-search-form {
+        flex-direction: row !important;
+    }
+
+    .ultimate-search-input-group {
+        margin-bottom: 0 !important;
+        width: 100% !important;
+    }
+
+    .ultimate-search-submit-btn {
+        display: none !important;
+    }
+
+    .ultimate-search-toggle-btn {
+        margin-top: 15px !important;
+    }
+
+    .ultimate-search-category-btn {
+        flex: 1 0 auto !important;
+        min-width: 100px !important;
+    }
+}

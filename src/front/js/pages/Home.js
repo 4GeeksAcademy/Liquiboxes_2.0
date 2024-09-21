@@ -42,26 +42,26 @@ export const Home = () => {
     const fetchRecommendedMysteryBoxes = async (shops) => {
         setIsLoadingMysteryBoxes(true);
         try {
-            const mysteryBoxesPromises = shops.map(shop => 
+            const mysteryBoxesPromises = shops.map(shop =>
                 axios.get(`${process.env.BACKEND_URL}/shops/${shop.id}/mysteryboxes`, {
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     }
                 })
-                .then(response => {
-                    console.log(`Response for shop ${shop.id}:`, response);
-                    if (response.headers['content-type'].includes('application/json')) {
-                        return response.data;
-                    } else {
-                        console.error(`Received non-JSON response for shop ${shop.id}`);
+                    .then(response => {
+                        console.log(`Response for shop ${shop.id}:`, response);
+                        if (response.headers['content-type'].includes('application/json')) {
+                            return response.data;
+                        } else {
+                            console.error(`Received non-JSON response for shop ${shop.id}`);
+                            return [];
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error fetching mystery boxes for shop ${shop.id}:`, error.response || error);
                         return [];
-                    }
-                })
-                .catch(error => {
-                    console.error(`Error fetching mystery boxes for shop ${shop.id}:`, error.response || error);
-                    return [];
-                })
+                    })
             );
             const responses = await Promise.all(mysteryBoxesPromises);
             console.log("All responses:", responses);
@@ -94,9 +94,15 @@ export const Home = () => {
                 </div>
             )}
             <div>
-                <SearchBar onSearch={(term) => {
-                    navigate(`/shopssearch?search=${encodeURIComponent(term)}`);
-                }} />
+                <SearchBar
+                    onSearch={(term) => {
+                        navigate(`/shopssearch?search=${encodeURIComponent(term)}`);
+                    }}
+                    shops={store.allShops}
+                    categories={store.userData ? store.userData.categories : []}
+                    initialSearchTerm=""
+                    onCategoryChange={() => { }} // Esta función no se usa en la página de inicio, pero la pasamos para evitar errores
+                />
             </div>
             <div>
                 <h3>Estas son las tiendas más vendidas en este momento:</h3>
@@ -130,7 +136,7 @@ export const Home = () => {
             ) : (
                 <div className="my-5">
                     <h2>Inicia sesión para ver recomendaciones personalizadas</h2>
-                    <button type="button" className="btn btn-secondary fs-5 my-2" onClick={() => { navigate('/', { state: { from: location.pathname}}) }}>Iniciar sesión</button>
+                    <button type="button" className="btn btn-secondary fs-5 my-2" onClick={() => { navigate('/', { state: { from: location.pathname } }) }}>Iniciar sesión</button>
                 </div>
             )}
         </div>
