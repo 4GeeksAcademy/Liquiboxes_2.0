@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Carousel from 'react-bootstrap/Carousel';
 import axios from 'axios'; 
+import { useNavigate } from 'react-router-dom';
 
 function CarruselTopSellers() {
   const [shops, setShops] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate(); //navigate para ir hasta la tienda especifica segun el id
+  const handleButtonClick = (id) => {
+    navigate(`/shops/${id}`);
+  };
 
   useEffect(() => {
     const fetchShops = async () => {
@@ -54,7 +60,7 @@ function CarruselTopSellers() {
       <Carousel fade>
         {shops.map((shop, index) => (
           <Carousel.Item key={shop.id}>
-            <img
+            <img onClick={() => handleButtonClick(shop.id)}  //lleva a la tienda especifica al hacer click sobre la imagen///
               className="img-fluid"
               src={shop.image_shop_url} 
               alt={`Slide ${index + 1}`}
