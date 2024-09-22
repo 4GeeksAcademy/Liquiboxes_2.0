@@ -14,6 +14,7 @@ export const Home = () => {
     const [recommendedShops, setRecommendedShops] = useState([]);
     const [recommendedMysteryBoxes, setRecommendedMysteryBoxes] = useState([]);
     const [isLoadingMysteryBoxes, setIsLoadingMysteryBoxes] = useState(false);
+    const [topSellingShops, setTopSellingShops] = useState([]); // Nueva variable para las tiendas más vendidas
     const token = sessionStorage.getItem('token')
     const navigate = useNavigate()
 
@@ -35,6 +36,7 @@ export const Home = () => {
             );
             setRecommendedShops(filtered);
             fetchRecommendedMysteryBoxes(filtered);
+            calculateTopSellingShops(store.allShops); // Calcular las tiendas más vendidas
         }
     }, [store.userData, store.allShops]);
 
@@ -83,6 +85,14 @@ export const Home = () => {
         }
     };
 
+    const calculateTopSellingShops = (shops) => {
+        const sortedShops = shops
+            .filter(shop => shop.total_sales) // Filtramos las tiendas con ventas
+            .sort((a, b) => b.total_sales - a.total_sales) // Ordenamos por ventas descendente
+            .slice(0, 5); // Limitar a las 5 más vendidas 
+        setTopSellingShops(sortedShops); // Guardamos en el estado
+    };
+
     return (
         <div className="text-center my-5 mx-5">
             <h1>LiquiBoxes</h1>
@@ -104,7 +114,7 @@ export const Home = () => {
             </div>
             <div>
                 <h3>Estas son las tiendas más vendidas en este momento:</h3>
-                <CarruselTopSellers />
+                <CarruselTopSellers shopData={topSellingShops} />
             </div>
             {token ? (
                 <>
