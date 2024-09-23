@@ -1,0 +1,73 @@
+.about-us-container {
+    padding: 2rem;
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+  
+  .company-info, .how-it-works, .team-section, .contact-section {
+    margin-bottom: 3rem;
+  }
+  
+  h1, h2 {
+    color: var(--primary-color);
+  }
+  
+  p {
+    line-height: 1.6;
+  }
+  
+  .team-section {
+    text-align: center;
+  }
+  
+  .team-members {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+  }
+  
+  .team-member {
+    text-align: center;
+    margin: 1rem;
+  }
+  
+  .team-photo {
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+  }
+  
+  .social-links {
+    margin-top: 0.5rem;
+  }
+  
+  .social-links a {
+    margin: 0 0.5rem;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+  }
+  
+  .social-links a:hover {
+    color: var(--secondary-color);
+  }
+  
+  .contact-section a {
+    color: var(--primary-color);
+    text-decoration: underline;
+  }
+  
+  .contact-section a:hover {
+    color: var(--secondary-color);
+  }
+  
+  @media (max-width: 768px) {
+    .team-members {
+      flex-direction: column;
+    }
+  
+    .team-photo {
+      width: 100px;
+      height: 100px;
+    }
+  }
+  
