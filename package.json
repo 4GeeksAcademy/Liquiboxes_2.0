@@ -73,6 +73,7 @@
 		]
 	},
 	"dependencies": {
+		"@emotion/react": "^11.13.3",
 		"@dotlottie/react-player": "^1.6.19",
 		"@fortawesome/fontawesome-svg-core": "^6.6.0",
 		"@fortawesome/free-brands-svg-icons": "^6.6.0",
@@ -92,6 +93,7 @@
 		"jspdf-autotable": "^3.8.3",
 		"prop-types": "^15.6.1",
 		"react": "^16.8.4",
+		"react-awesome-reveal": "^4.2.14",
 		"react-bootstrap": "^2.10.4",
 		"react-chartjs-2": "^5.2.0",
 		"react-confetti": "^6.1.0",
