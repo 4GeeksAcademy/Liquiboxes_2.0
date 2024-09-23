@@ -1,22 +1,24 @@
 .about-us-container {
     padding: 2rem;
-    background-color: var(--background-color);
-    color: var(--text-color);
-  }
-  
-  .company-info, .how-it-works, .team-section, .contact-section {
-    margin-bottom: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    color: #333;
   }
   
   h1, h2 {
-    color: var(--primary-color);
+    color: #073b3aff;
+    text-align: center;
   }
   
   p {
     line-height: 1.6;
+    font-size: 1.1rem;
+    text-align: justify;
   }
   
   .team-section {
+    margin-top: 2rem;
     text-align: center;
   }
   
@@ -27,47 +29,51 @@
   }
   
   .team-member {
+    margin: 1.5rem;
     text-align: center;
-    margin: 1rem;
+    transition: transform 0.3s ease;
+  }
+  
+  .team-member:hover {
+    transform: translateY(-10px);
   }
   
   .team-photo {
-    border-radius: 50%;
     width: 150px;
     height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.3s ease;
   }
   
-  .social-links {
-    margin-top: 0.5rem;
+  .team-photo:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   }
   
   .social-links a {
     margin: 0 0.5rem;
-    color: var(--primary-color);
+    color: #073b3aff;
     font-size: 1.5rem;
+    transition: color 0.3s ease;
   }
   
   .social-links a:hover {
-    color: var(--secondary-color);
+    color: #6a8e7fff;
+  }
+  
+  .contact-section {
+    margin-top: 3rem;
+    text-align: center;
   }
   
   .contact-section a {
-    color: var(--primary-color);
-    text-decoration: underline;
+    color: #6a8e7fff;
+    text-decoration: none;
+    font-weight: bold;
   }
   
   .contact-section a:hover {
-    color: var(--secondary-color);
-  }
-  
-  @media (max-width: 768px) {
-    .team-members {
-      flex-direction: column;
-    }
-  
-    .team-photo {
-      width: 100px;
-      height: 100px;
-    }
+    text-decoration: underline;
   }
   
