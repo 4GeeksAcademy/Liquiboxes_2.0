@@ -333,5 +333,4 @@ function BoxesOnSale({ shopData }) {
     </>
   );
 }
-
 export default BoxesOnSale;

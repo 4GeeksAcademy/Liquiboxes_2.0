@@ -73,10 +73,12 @@
 		]
 	},
 	"dependencies": {
+		"@emotion/react": "^11.13.3",
 		"@fortawesome/fontawesome-svg-core": "^6.6.0",
 		"@fortawesome/free-brands-svg-icons": "^6.6.0",
 		"@fortawesome/free-solid-svg-icons": "^6.6.0",
 		"@fortawesome/react-fontawesome": "^0.2.2",
+		"@lottiefiles/dotlottie-react": "^0.8.12",
 		"@paypal/react-paypal-js": "^8.6.0",
 		"@react-oauth/google": "^0.12.1",
 		"@stripe/react-stripe-js": "^2.8.0",
@@ -90,6 +92,7 @@
 		"jspdf-autotable": "^3.8.3",
 		"prop-types": "^15.6.1",
 		"react": "^16.8.4",
+		"react-awesome-reveal": "^4.2.14",
 		"react-bootstrap": "^2.10.4",
 		"react-chartjs-2": "^5.2.0",
 		"react-confetti": "^6.1.0",
@@ -97,6 +100,7 @@
 		"react-polyfills": "0.0.1",
 		"react-router-dom": "^6.26.2",
 		"react-slick": "^0.30.2",
+		"react-transition-group": "^4.4.5",
 		"slick-carousel": "^1.8.1"
 	}
 }

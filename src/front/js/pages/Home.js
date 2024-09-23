@@ -7,6 +7,7 @@ import ScrollHorizontalMysteryBoxes from "../component/Home/ScrollHorizontalMyst
 import CarruselTopSellers from "../component/Home/CarruselTopSellers";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Slide } from "react-awesome-reveal";
 
 export const Home = () => {
     const { store, actions } = useContext(Context);
@@ -14,7 +15,6 @@ export const Home = () => {
     const [recommendedMysteryBoxes, setRecommendedMysteryBoxes] = useState([]);
     const [isLoadingMysteryBoxes, setIsLoadingMysteryBoxes] = useState(false);
     const [topSellingShops, setTopSellingShops] = useState([]); // Nueva variable para las tiendas más vendidas
-
     const token = sessionStorage.getItem('token')
     const navigate = useNavigate()
 
@@ -30,12 +30,10 @@ export const Home = () => {
 
     useEffect(() => {
         if (store.userData && store.allShops.length > 0) {
-            console.log("Datos del usuario", store.userData, "Datos de todas las tiendas", store.allShops);
             const userCategories = store.userData.categories.map(cat => cat.toLowerCase());
             const filtered = store.allShops.filter(shop =>
                 shop.categories.some(category => userCategories.includes(category))
             );
-            console.log(filtered)
             setRecommendedShops(filtered);
             fetchRecommendedMysteryBoxes(filtered);
             calculateTopSellingShops(store.allShops); // Calcular las tiendas más vendidas
@@ -45,26 +43,26 @@ export const Home = () => {
     const fetchRecommendedMysteryBoxes = async (shops) => {
         setIsLoadingMysteryBoxes(true);
         try {
-            const mysteryBoxesPromises = shops.map(shop => 
+            const mysteryBoxesPromises = shops.map(shop =>
                 axios.get(`${process.env.BACKEND_URL}/shops/${shop.id}/mysteryboxes`, {
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     }
                 })
-                .then(response => {
-                    console.log(`Response for shop ${shop.id}:`, response);
-                    if (response.headers['content-type'].includes('application/json')) {
-                        return response.data;
-                    } else {
-                        console.error(`Received non-JSON response for shop ${shop.id}`);
+                    .then(response => {
+                        console.log(`Response for shop ${shop.id}:`, response);
+                        if (response.headers['content-type'].includes('application/json')) {
+                            return response.data;
+                        } else {
+                            console.error(`Received non-JSON response for shop ${shop.id}`);
+                            return [];
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error fetching mystery boxes for shop ${shop.id}:`, error.response || error);
                         return [];
-                    }
-                })
-                .catch(error => {
-                    console.error(`Error fetching mystery boxes for shop ${shop.id}:`, error.response || error);
-                    return [];
-                })
+                    })
             );
             const responses = await Promise.all(mysteryBoxesPromises);
             console.log("All responses:", responses);
@@ -91,7 +89,7 @@ export const Home = () => {
         const sortedShops = shops
             .filter(shop => shop.total_sales) // Filtramos las tiendas con ventas
             .sort((a, b) => b.total_sales - a.total_sales) // Ordenamos por ventas descendente
-            .slice(0, 5); // Limitar a las 5 más vendidas (puedes cambiar este número)
+            .slice(0, 5); // Limitar a las 5 más vendidas 
         setTopSellingShops(sortedShops); // Guardamos en el estado
     };
 
@@ -99,15 +97,22 @@ export const Home = () => {
         <div className="text-center my-5 mx-5">
             <h1>LiquiBoxes</h1>
             {store.userData && (
-                <div>
-                    <h3>Hola {store.userData.name}</h3>
-                    <p>Aquí puedes buscar tiendas según su nombre o dirección:</p>
+                <div className="greeting-section">
+                    <Slide triggerOnce>
+                        <h2 className="greeting-text">¡Hola, {store.userData.name}!</h2>
+                    </Slide>
                 </div>
             )}
             <div>
-                <SearchBar onSearch={(term) => {
-                    navigate(`/shopssearch?search=${encodeURIComponent(term)}`);
-                }} />
+                <SearchBar
+                    onSearch={(term) => {
+                        navigate(`/shopssearch?search=${encodeURIComponent(term)}`);
+                    }}
+                    shops={store.allShops}
+                    categories={store.userData ? store.userData.categories : []}
+                    initialSearchTerm=""
+                    onCategoryChange={() => { }} // Esta función no se usa en la página de inicio, pero la pasamos para evitar errores
+                />
             </div>
             <div>
                 <h3>Estas son las tiendas más vendidas en este momento:</h3>
@@ -141,7 +146,7 @@ export const Home = () => {
             ) : (
                 <div className="my-5">
                     <h2>Inicia sesión para ver recomendaciones personalizadas</h2>
-                    <button type="button" className="btn btn-secondary fs-5 my-2" onClick={() => { navigate('/', { state: { from: location.pathname}}) }}>Iniciar sesión</button>
+                    <button type="button" className="btn btn-secondary fs-5 my-2" onClick={() => { navigate('/', { state: { from: location.pathname } }) }}>Iniciar sesión</button>
                 </div>
             )}
         </div>

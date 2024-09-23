@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import SearchBar from '../component/Home/SearchBar'
 import CardTienda from '../component/Home/CardTienda'
 import axios from 'axios'
 import { useLocation } from 'react-router-dom'
 import '../../styles/shopssearch.css';
+import { Context } from '../store/appContext'
 
 
 function ShopsSearch() {
@@ -13,19 +14,22 @@ function ShopsSearch() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
+  const {store} = useContext(Context)
+  const categories = store.categories;
+
 
   useEffect(() => {
     const fetchShops = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const url = `${process.env.BACKEND_URL}/shops`;
         console.log('Fetching shops from:', url);
-        
+
         const response = await axios.get(url);
         console.log('API response:', response);
-        
+
         let shopsData;
         if (Array.isArray(response.data)) {
           shopsData = response.data;
@@ -34,12 +38,12 @@ function ShopsSearch() {
         } else {
           shopsData = [];
         }
-        
+
         console.log('Processed shops data:', shopsData);
-        
+
         setShops(shopsData);
         setFilteredShops(shopsData);
-        
+
         const searchParams = new URLSearchParams(location.search);
         const initialSearchTerm = searchParams.get('search');
         if (initialSearchTerm) {
@@ -67,7 +71,7 @@ function ShopsSearch() {
   const handleSearch = (searchTerm, shopsToFilter = shops) => {
     setSearchTerm(searchTerm);
     const normalizedSearchTerm = normalizeString(searchTerm);
-    const filtered = shopsToFilter.filter(shop => 
+    const filtered = shopsToFilter.filter(shop =>
       normalizeString(shop.name).includes(normalizedSearchTerm) ||
       (shop.address && normalizeString(shop.address).includes(normalizedSearchTerm))
     );
@@ -78,8 +82,8 @@ function ShopsSearch() {
     if (selectedCategories.length === 0) {
       setFilteredShops(shops);
     } else {
-      const filtered = shops.filter(shop => 
-        shop.categories && shop.categories.some(category => 
+      const filtered = shops.filter(shop =>
+        shop.categories && shop.categories.some(category =>
           selectedCategories.includes(category.replace(/[\[\]"]/g, ''))
         )
       );
@@ -97,28 +101,35 @@ function ShopsSearch() {
 
   return (
     <div className="shops-search">
-      <h1>Descubre Nuestras Tiendas</h1>
-      
       <div className="search-container">
-        <SearchBar onSearch={(term) => handleSearch(term)} onCategoryChange={handleCategoryChange} initialSearchTerm={searchTerm} />
+        <SearchBar
+          onSearch={(term) => handleSearch(term)}
+          onCategoryChange={handleCategoryChange}
+          initialSearchTerm={searchTerm}
+          shops={shops}
+          categories={categories}
+        />
       </div>
-
-      <div className="shops-grid">
+      <div className="row">
         {filteredShops.length > 0 ? (
           filteredShops.map((shop) => (
-            <CardTienda
-              key={shop.id}
-              id={shop.id}
-              imageSrc={shop.image_shop_url}
-              shopName={shop.name}
-              shopSummary={shop.shop_summary}
-              shopAddress={shop.address}
-            />
+            <div className="col-12 col-md-6 col-lg-4 col-xxl-3"
+            >
+              <CardTienda
+                key={shop.id}
+                id={shop.id}
+                imageSrc={shop.image_shop_url}
+                shopName={shop.name}
+                shopSummary={shop.shop_summary}
+                shopAddress={shop.address}
+              />
+            </div>
           ))
         ) : (
           <p>No se encontraron tiendas que coincidan con tu búsqueda.</p>
         )}
       </div>
+
     </div>
   )
 }

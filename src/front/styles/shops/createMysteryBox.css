@@ -1,24 +1,18 @@
-/* signup.css */
-
-.signup-container {
+.create-mystery-box-container {
   min-height: 100vh !important;
   display: flex !important;
   align-items: stretch !important;
 }
 
-.signup-content {
+.create-mystery-box-content {
   flex: 1 !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important; 
   min-height: 100% !important;
-  background-color: white !important;
-  border-radius: 20px !important;
-  overflow: hidden !important;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
 }
 
-.signup-animation-section {
+.create-mystery-box-animation-section {
   flex: 1 !important;
   background-color: var(--background-secondary-color) !important;
   display: flex !important;
@@ -30,41 +24,40 @@
   color: var(--text-color) !important;
 }
 
-.signup-animation-wrapper {
+.create-mystery-box-animation-wrapper {
   width: 300px !important;
   height: 300px !important;
   margin-bottom: 4rem !important;
   margin-top: 4rem !important;
 }
 
-.signup-step-animation {
+.create-mystery-box-step-animation {
   width: 100% !important;
   height: 100% !important;
   object-fit: contain !important;
 }
 
-.signup-step-title {
+.create-mystery-box-step-title {
   font-size: 2.5rem !important;
   font-weight: 600 !important;
   margin-bottom: 0.5rem !important;
   text-align: center !important;
 }
 
-.signup-step-description {
+.create-mystery-box-step-description {
   font-size: 1rem !important;
   text-align: center !important;
 }
 
-.signup-form-section {
+.create-mystery-box-form-section {
   flex: 1 !important;
   display: flex !important;
   flex-direction: column !important;
   overflow-y: auto !important;
   padding: 2rem !important;
-  position: relative !important;
 }
 
-.signup-back-button {
+.create-mystery-box-back-button {
   position: absolute !important;
   top: 1rem !important;
   left: 1rem !important;
@@ -75,29 +68,29 @@
   color: var(--text-color) !important;
 }
 
-.signup-step-content {
+.create-mystery-box-step-content {
   margin-top: 2rem !important;
 }
 
-.signup-step-question {
+.create-mystery-box-step-question {
   font-size: 1.25rem !important;
   font-weight: 600 !important;
   margin-bottom: 1.5rem !important;
   color: var(--text-color) !important;
 }
 
-.signup-input-group {
+.create-mystery-box-input-group {
   margin-bottom: 1rem !important;
 }
 
-.signup-input-group label {
+.create-mystery-box-input-group label {
   display: block !important;
   color: var(--text-color) !important;
   margin-bottom: 0.5rem !important;
 }
 
-.signup-input,
-.signup-select {
+.create-mystery-box-input,
+.create-mystery-box-select {
   width: 100% !important;
   padding: 0.75rem !important;
   border: 1px solid var(--border-color) !important;
@@ -107,43 +100,79 @@
   margin-bottom: 1rem !important;
 }
 
-.signup-input:focus,
-.signup-select:focus {
+.create-mystery-box-input:focus,
+.create-mystery-box-select:focus {
   border-color: var(--primary-color) !important;
   outline: none !important;
 }
 
-.signup-error-message {
+.create-mystery-box-error-message {
   color: #ff4d4f !important;
   font-size: 0.875rem !important;
   margin-top: 0.25rem !important;
 }
-.checkbox-group {
-  margin-bottom: 1.5rem !important;
-}
 
-.checkbox-options {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+.add-item-container {
+  display: flex !important;
   gap: 0.5rem !important;
 }
 
-.checkbox-label {
-  display: flex !important;
-  align-items: center !important;
-  padding: 0.5rem !important;
-  border: 1px solid var(--border-color) !important;
+.add-item-container,
+input {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+
+.add-button {
+  padding: 0.75rem 1rem !important;
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border: none !important;
   border-radius: 8px !important;
   cursor: pointer !important;
   transition: background-color 0.3s ease !important;
 }
 
-.checkbox-label:hover {
-  background-color: var(--background-secondary-color) !important;
+.add-button:hover {
+  background-color: var(--secondary-color) !important;
 }
 
-.checkbox {
-  margin-right: 0.5rem !important;
+.items-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+  gap: 0.5rem !important;
+  margin-top: 1rem !important;
+}
+
+.item-card {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 0.5rem !important;
+  background-color: var(--background-secondary-color) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px !important;
+}
+
+.remove-button {
+  background: none !important;
+  border: none !important;
+  color: #ff4d4f !important;
+  cursor: pointer !important;
+}
+
+.preview-image {
+  max-width: 250px !important;
+  height: auto !important;
+  margin-top: 1rem !important;
+  border-radius: 8px !important;
+}
+
+.summary {
+  margin-top: 2rem !important;
+  padding: 1rem !important;
+  background-color: var(--background-secondary-color) !important;
+  border-radius: 8px !important;
 }
 
 .navigation-buttons {
@@ -152,7 +181,8 @@
   margin-top: 2rem !important;
 }
 
-.next-button, .submit-button {
+.next-button,
+.submit-button {
   padding: 0.75rem 1.5rem !important;
   background-color: var(--primary-color) !important;
   color: white !important;
@@ -163,36 +193,28 @@
   transition: background-color 0.3s ease !important;
 }
 
-.next-button:hover, .submit-button:hover {
+.next-button:hover,
+.submit-button:hover {
   background-color: var(--secondary-color) !important;
 }
 
-.create-mystery-box-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background-color: #f0f2f5;
-  font-family: 'Arial', sans-serif;
-}
-
 @media (max-width: 768px) {
-  .signup-content {
+  .create-mystery-box-content {
     flex-direction: column !important;
   }
 
-  .signup-animation-section,
-  .signup-form-section {
+  .create-mystery-box-animation-section,
+  .create-mystery-box-form-section {
     min-height: auto !important;
     width: 100% !important;
   }
 
-  .signup-animation-section {
+  .create-mystery-box-animation-section {
     padding: 1rem !important;
     height: 400px !important;
   }
 
-  .signup-animation-wrapper {
+  .create-mystery-box-animation-wrapper {
     width: 150px !important;
     height: 150px !important;
   }
