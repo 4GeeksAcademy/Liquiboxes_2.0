@@ -14,7 +14,7 @@ function CarruselTopSellers({ shopData }) {
                 {shopData.map((shop, index) => (
                     <Carousel.Item key={shop.id}>
                         <img onClick={() => handleButtonClick(shop.id)}
-                            className="d-block w-100 carousel-image image-fluid"
+                            className="d-block w-100 carousel-image image-fluid rounded"
                             src={shop.image_shop_url} // Asegúrate de que la tienda tenga una imagen
                             alt={`Slide ${index + 1}`}
                         />

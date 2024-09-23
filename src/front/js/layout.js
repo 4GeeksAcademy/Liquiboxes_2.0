@@ -4,8 +4,6 @@ import ScrollToTop from "./component/scrollToTop";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
-
-
 // Imports para las vistas de cliente
 import { Home } from "./pages/Home";
 import SignUp from "./pages/SignUp";
