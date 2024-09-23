@@ -1,28 +1,24 @@
-/* 
-signup.css 
-*/
+/* signup.css */
 
 .signup-container {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
   min-height: 100vh !important;
-  background-color: var(--background-color) !important;
-  font-family: "Poppins", sans-serif !important;
+  display: flex !important;
+  align-items: stretch !important;
 }
 
 .signup-content {
+  flex: 1 !important;
   display: flex !important;
-  align-items: center !important;
-  width: 100% !important;
-  min-height: 100vh !important;
+  flex-direction: row !important;
+  align-items: center !important; 
+  min-height: 100% !important;
   background-color: white !important;
   border-radius: 20px !important;
   overflow: hidden !important;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
 }
 
-.animation-section {
+.signup-animation-section {
   flex: 1 !important;
   background-color: var(--background-secondary-color) !important;
   display: flex !important;
@@ -30,41 +26,45 @@ signup.css
   justify-content: center !important;
   align-items: center !important;
   min-height: 100vh !important;
-  justify-content: center !important;
-  align-items: center !important;
   padding: 2rem !important;
   color: var(--text-color) !important;
 }
 
-.animation-wrapper {
+.signup-animation-wrapper {
   width: 300px !important;
   height: 300px !important;
   margin-bottom: 4rem !important;
   margin-top: 4rem !important;
-  padding: auto;
 }
 
+.signup-step-animation {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
 
-.step-title {
+.signup-step-title {
   font-size: 2.5rem !important;
   font-weight: 600 !important;
   margin-bottom: 0.5rem !important;
   text-align: center !important;
 }
 
-.step-description {
+.signup-step-description {
   font-size: 1rem !important;
   text-align: center !important;
 }
 
-.form-section {
+.signup-form-section {
   flex: 1 !important;
-  padding: 2rem !important;
+  display: flex !important;
+  flex-direction: column !important;
   overflow-y: auto !important;
+  padding: 2rem !important;
   position: relative !important;
 }
 
-.back-button {
+.signup-back-button {
   position: absolute !important;
   top: 1rem !important;
   left: 1rem !important;
@@ -75,42 +75,49 @@ signup.css
   color: var(--text-color) !important;
 }
 
-.step-content {
+.signup-step-content {
   margin-top: 2rem !important;
 }
 
-.step-question {
+.signup-step-question {
   font-size: 1.25rem !important;
   font-weight: 600 !important;
   margin-bottom: 1.5rem !important;
   color: var(--text-color) !important;
 }
 
-.input-group {
+.signup-input-group {
   margin-bottom: 1rem !important;
 }
 
-.input, select {
+.signup-input-group label {
+  display: block !important;
+  color: var(--text-color) !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.signup-input,
+.signup-select {
   width: 100% !important;
   padding: 0.75rem !important;
   border: 1px solid var(--border-color) !important;
   border-radius: 8px !important;
   font-size: 1rem !important;
   transition: border-color 0.3s ease !important;
-  margin-bottom: 2rem !important;
+  margin-bottom: 1rem !important;
 }
 
-.input:focus, select:focus {
+.signup-input:focus,
+.signup-select:focus {
   border-color: var(--primary-color) !important;
   outline: none !important;
 }
 
-.error {
+.signup-error-message {
   color: #ff4d4f !important;
   font-size: 0.875rem !important;
   margin-top: 0.25rem !important;
 }
-
 .checkbox-group {
   margin-bottom: 1.5rem !important;
 }
@@ -172,21 +179,21 @@ signup.css
 @media (max-width: 768px) {
   .signup-content {
     flex-direction: column !important;
-    height: auto !important;
   }
 
-  .animation-section, .form-section {
+  .signup-animation-section,
+  .signup-form-section {
+    min-height: auto !important;
     width: 100% !important;
   }
 
-  .animation-section {
+  .signup-animation-section {
     padding: 1rem !important;
     height: 400px !important;
   }
 
-  .animation-wrapper {
+  .signup-animation-wrapper {
     width: 150px !important;
     height: 150px !important;
-
   }
 }

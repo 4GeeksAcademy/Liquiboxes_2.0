@@ -74,7 +74,6 @@
 	},
 	"dependencies": {
 		"@emotion/react": "^11.13.3",
-		"@dotlottie/react-player": "^1.6.19",
 		"@fortawesome/fontawesome-svg-core": "^6.6.0",
 		"@fortawesome/free-brands-svg-icons": "^6.6.0",
 		"@fortawesome/free-solid-svg-icons": "^6.6.0",

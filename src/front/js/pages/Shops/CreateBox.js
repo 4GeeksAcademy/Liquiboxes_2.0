@@ -154,8 +154,9 @@ const CreateMysteryBox = () => {
         switch(step) {
             case 1:
                 return (
-                    <>
-                        <div className="input-group">
+                    <div className="signup-step-content">
+                        <h2 className="signup-step-question">Información Básica</h2>
+                        <div className="signup-input-group">
                             <label htmlFor="name">Nombre de la caja misteriosa</label>
                             <input
                                 id="name"
@@ -163,28 +164,31 @@ const CreateMysteryBox = () => {
                                 name="name"
                                 value={newBox.name}
                                 onChange={handleChange}
-                                className={`input ${errors.name ? 'error' : ''}`}
+                                className={`signup-input ${errors.name ? 'error' : ''}`}
+                                placeholder="Ingrese el nombre de la caja misteriosa"
                             />
-                            {errors.name && <p className="error-message">{errors.name}</p>}
+                            {errors.name && <p className="signup-error-message">{errors.name}</p>}
                         </div>
-                        <div className="input-group">
+                        <div className="signup-input-group">
                             <label htmlFor="description">Descripción de la caja misteriosa</label>
                             <textarea
                                 id="description"
                                 name="description"
                                 value={newBox.description}
                                 onChange={handleChange}
-                                className={`input ${errors.description ? 'error' : ''}`}
+                                className={`signup-input ${errors.description ? 'error' : ''}`}
                                 rows="4"
+                                placeholder="Describa el contenido de la caja misteriosa"
                             />
-                            {errors.description && <p className="error-message">{errors.description}</p>}
+                            {errors.description && <p className="signup-error-message">{errors.description}</p>}
                         </div>
-                    </>
+                    </div>
                 );
             case 2:
                 return (
-                    <>
-                        <div className="input-group">
+                    <div className="signup-step-content">
+                        <h2 className="signup-step-question">Precio y Tamaño</h2>
+                        <div className="signup-input-group">
                             <label htmlFor="price">Precio de la caja misteriosa</label>
                             <input
                                 id="price"
@@ -192,28 +196,29 @@ const CreateMysteryBox = () => {
                                 name="price"
                                 value={newBox.price}
                                 onChange={handleChange}
-                                className={`input ${errors.price ? 'error' : ''}`}
+                                className={`signup-input ${errors.price ? 'error' : ''}`}
                                 step="0.01"
+                                placeholder="Ingrese el precio"
                             />
-                            {errors.price && <p className="error-message">{errors.price}</p>}
+                            {errors.price && <p className="signup-error-message">{errors.price}</p>}
                         </div>
-                        <div className="input-group">
+                        <div className="signup-input-group">
                             <label htmlFor="size">Tamaño de la caja</label>
                             <select
                                 id="size"
                                 name="size"
                                 value={newBox.size}
                                 onChange={handleChange}
-                                className={`input ${errors.size ? 'error' : ''}`}
+                                className={`signup-select ${errors.size ? 'error' : ''}`}
                             >
                                 <option value="">Selecciona un tamaño</option>
                                 <option value="pequeño">Pequeño</option>
                                 <option value="mediano">Mediano</option>
                                 <option value="grande">Grande</option>
                             </select>
-                            {errors.size && <p className="error-message">{errors.size}</p>}
+                            {errors.size && <p className="signup-error-message">{errors.size}</p>}
                         </div>
-                        <div className="input-group">
+                        <div className="signup-input-group">
                             <label htmlFor="numberOfItems">Número de artículos incluidos</label>
                             <input
                                 id="numberOfItems"
@@ -221,46 +226,49 @@ const CreateMysteryBox = () => {
                                 name="numberOfItems"
                                 value={newBox.numberOfItems}
                                 onChange={handleChange}
-                                className="input"
+                                className="signup-input"
                                 min="1"
+                                placeholder="Ingrese el número de artículos"
                             />
                         </div>
-                    </>
+                    </div>
                 );
             case 3:
                 return (
-                    <>
-                        <div className="input-group d-flex flex-column">
+                    <div className="signup-step-content">
+                        <h2 className="signup-step-question">Contenido Posible</h2>
+                        <div className="signup-input-group">
                             <label htmlFor="newItem">Añadir nuevo artículo</label>
-                            <div className="add-item-container d-flex justify-content-between">
+                            <div className="signup-add-item-container">
                                 <input
                                     id="newItem"
                                     type="text"
                                     value={newItem}
                                     onChange={(e) => setNewItem(e.target.value)}
-                                    className="input my-auto"
+                                    className="signup-input"
                                     placeholder="Ej: Camiseta, Libro, Taza..."
                                 />
-                                <button onClick={handleAddItem} className="add-button">Añadir</button>
+                                <button onClick={handleAddItem} className="signup-add-button">Añadir</button>
                             </div>
                         </div>
-                        {errors.possibleItems && <p className="error-message">{errors.possibleItems}</p>}
-                        <div className="items-grid">
+                        {errors.possibleItems && <p className="signup-error-message">{errors.possibleItems}</p>}
+                        <div className="signup-items-grid">
                             {newBox.possibleItems.map((item, index) => (
-                                <div key={index} className="item-card">
-                                    <span className="item-name">{item}</span>
-                                    <button onClick={() => handleRemoveItem(index)} className="remove-button">
+                                <div key={index} className="signup-item-card">
+                                    <span className="signup-item-name">{item}</span>
+                                    <button onClick={() => handleRemoveItem(index)} className="signup-remove-button">
                                         <FontAwesomeIcon icon={faArrowLeft} />
                                     </button>
                                 </div>
                             ))}
                         </div>
-                    </>
+                    </div>
                 );
             case 4:
                 return (
-                    <>
-                        <div className="input-group">
+                    <div className="signup-step-content">
+                        <h2 className="signup-step-question">Imagen y Resumen</h2>
+                        <div className="signup-input-group">
                             <label htmlFor="image">Imagen de la caja misteriosa</label>
                             <input
                                 id="image"
@@ -268,14 +276,14 @@ const CreateMysteryBox = () => {
                                 onChange={handleImageChange}
                                 name="image"
                                 accept="image/*"
-                                className={`input ${errors.image ? 'error' : ''}`}
+                                className={`signup-input ${errors.image ? 'error' : ''}`}
                             />
-                            {errors.image && <p className="error-message">{errors.image}</p>}
+                            {errors.image && <p className="signup-error-message">{errors.image}</p>}
                         </div>
                         {previewImage && (
-                            <img src={previewImage} alt="Vista previa" className="preview-image" />
+                            <img src={previewImage} alt="Vista previa" className="signup-preview-image" />
                         )}
-                        <div className="summary">
+                        <div className="signup-summary">
                             <h3>Resumen de la Caja Misteriosa</h3>
                             <p><strong>Nombre:</strong> {newBox.name}</p>
                             <p><strong>Descripción:</strong> {newBox.description}</p>
@@ -289,7 +297,7 @@ const CreateMysteryBox = () => {
                                 ))}
                             </ul>
                         </div>
-                    </>
+                    </div>
                 );
             default:
                 return null;
@@ -297,31 +305,28 @@ const CreateMysteryBox = () => {
     };
 
     return (
-        <div className="create-mystery-box-container">
-            <div className="create-mystery-box-content">
-                <div className="animation-section">
-                    <h2 className="step-title">{STEPS[step - 1].title}</h2>
-                    <div className="animation-wrapper">
-                        <img src={STEPS[step - 1].src} alt={STEPS[step - 1].title} className="step-animation" />
+        <div className="signup-container">
+            <div className="signup-content">
+                <div className="signup-animation-section">
+                    <h2 className="signup-step-title">{STEPS[step - 1].title}</h2>
+                    <div className="signup-animation-wrapper">
+                        <img src={STEPS[step - 1].src} alt={STEPS[step - 1].title} className="signup-step-animation" />
                     </div>
-                    <p className="step-description">{STEPS[step - 1].description}</p>
+                    <p className="signup-step-description">{STEPS[step - 1].description}</p>
                 </div>
-                <div className="form-section">
+                <div className="signup-form-section">
                     {step > 1 && (
-                        <button className="back-button" onClick={() => setStep(prev => prev - 1)}>
+                        <button className="signup-back-button" onClick={() => setStep(prev => prev - 1)}>
                             <FontAwesomeIcon icon={faArrowLeft} />
                         </button>
                     )}
                     <form onSubmit={handleSubmit} noValidate>
-                        <div className="step-content">
-                            <h2 className="step-question">{STEPS[step - 1].title}</h2>
-                            {renderStepContent()}
-                        </div>
-                        {errors.submit && <p className="error-message">{errors.submit}</p>}
-                        <div className="navigation-buttons">
+                        {renderStepContent()}
+                        {errors.submit && <p className="signup-error-message">{errors.submit}</p>}
+                        <div className="signup-navigation-buttons">
                             <button 
                                 type="submit" 
-                                className="next-button"
+                                className="signup-next-button"
                             >
                                 {step < STEPS.length ? "Continuar" : "Crear Caja Misteriosa"}
                             </button>

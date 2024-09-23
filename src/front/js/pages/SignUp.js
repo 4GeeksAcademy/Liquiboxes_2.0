@@ -182,169 +182,191 @@ export default function SignUp() {
     switch (step) {
       case 1:
         return (
-          <div className="step-content">
-            <h2 className="step-question">¿Cuáles son tus datos personales?</h2>
-            <div className="input-group">
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">¿Cuáles son tus datos personales?</h2>
+            <div className="signup-input-group">
+              <label htmlFor="name">Nombre</label>
               <input
                 type="text"
+                id="name"
                 name="name"
                 value={signupData.name}
                 onChange={handleChange}
                 placeholder="Nombre"
-                className="input"
+                className="signup-input"
               />
-              {errors.name && <span className="error">{errors.name}</span>}
+              {errors.name && <p className="signup-error-message">{errors.name}</p>}
             </div>
-            <div className="input-group">
+            <div className="signup-input-group">
+              <label htmlFor="surname">Apellido</label>
               <input
                 type="text"
+                id="surname"
                 name="surname"
                 value={signupData.surname}
                 onChange={handleChange}
                 placeholder="Apellido"
-                className="input"
+                className="signup-input"
               />
-              {errors.surname && <span className="error">{errors.surname}</span>}
+              {errors.surname && <p className="signup-error-message">{errors.surname}</p>}
             </div>
-            <div className="input-group">
+            <div className="signup-input-group">
+              <label htmlFor="gender">Género</label>
               <select
+                id="gender"
                 name="gender"
                 value={signupData.gender}
                 onChange={handleChange}
-                className="input"
+                className="signup-select"
               >
                 <option value="">Selecciona género</option>
                 <option value="Masculino">Masculino</option>
                 <option value="Femenino">Femenino</option>
                 <option value="No especificado">No especificado</option>
               </select>
-              {errors.gender && <span className="error">{errors.gender}</span>}
+              {errors.gender && <p className="signup-error-message">{errors.gender}</p>}
             </div>
-            <div className="input-group">
+            <div className="signup-input-group">
+              <label htmlFor="address">Dirección</label>
               <input
                 type="text"
+                id="address"
                 name="address"
                 value={signupData.address}
                 onChange={handleChange}
                 placeholder="Dirección"
-                className="input"
+                className="signup-input"
               />
-              {errors.address && <span className="error">{errors.address}</span>}
+              {errors.address && <p className="signup-error-message">{errors.address}</p>}
             </div>
-            <div className="input-group">
+            <div className="signup-input-group">
+              <label htmlFor="postalCode">Código Postal</label>
               <input
                 type="text"
+                id="postalCode"
                 name="postalCode"
                 value={signupData.postalCode}
                 onChange={handleChange}
                 placeholder="Código Postal"
-                className="input"
+                className="signup-input"
                 maxLength="5"
                 pattern="\d{5}"
               />
-              {errors.postalCode && <span className="error">{errors.postalCode}</span>}
+              {errors.postalCode && <p className="signup-error-message">{errors.postalCode}</p>}
             </div>
           </div>
         );
       case 2:
         return (
-          <div className="step-content">
-            <h2 className="step-question">Crea tu cuenta</h2>
-            <div className="input-group">
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">Crea tu cuenta</h2>
+            <div className="signup-input-group">
+              <label htmlFor="email">Email</label>
               <input
                 type="email"
+                id="email"
                 name="email"
                 value={signupData.email}
                 onChange={handleChange}
                 placeholder="Email"
-                className="input"
+                className="signup-input"
               />
-              {errors.email && <span className="error">{errors.email}</span>}
+              {errors.email && <p className="signup-error-message">{errors.email}</p>}
             </div>
-            <div className="input-group">
+            <div className="signup-input-group">
+              <label htmlFor="password">Contraseña</label>
               <input
                 type="password"
+                id="password"
                 name="password"
                 value={signupData.password}
                 onChange={handleChange}
                 placeholder="Contraseña"
-                className="input"
+                className="signup-input"
               />
-              {errors.password && <span className="error">{errors.password}</span>}
+              {errors.password && <p className="signup-error-message">{errors.password}</p>}
             </div>
           </div>
         );
       case 3:
         return (
-          <div className="step-content">
-            <h2 className="step-question">¿Cuáles son tus tallas?</h2>
-            <div className="input-group">
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">¿Cuáles son tus tallas?</h2>
+            <div className="signup-input-group">
+              <label htmlFor="upperSize">Talla Superior</label>
               <select
+                id="upperSize"
                 name="upperSize"
                 value={signupData.upperSize}
                 onChange={handleChange}
-                className="input"
+                className="signup-select"
               >
                 <option value="">Selecciona talla superior</option>
                 {SIZES.upper.map(size => (
                   <option key={size} value={size}>{size}</option>
                 ))}
               </select>
-              {errors.upperSize && <span className="error">{errors.upperSize}</span>}
+              {errors.upperSize && <p className="signup-error-message">{errors.upperSize}</p>}
             </div>
-            <div className="input-group">
+            <div className="signup-input-group">
+              <label htmlFor="lowerSize">Talla Inferior</label>
               <select
+                id="lowerSize"
                 name="lowerSize"
                 value={signupData.lowerSize}
                 onChange={handleChange}
-                className="input"
+                className="signup-select"
               >
                 <option value="">Selecciona talla inferior</option>
                 {SIZES.lower.map(size => (
                   <option key={size} value={size}>{size}</option>
                 ))}
               </select>
-              {errors.lowerSize && <span className="error">{errors.lowerSize}</span>}
+              {errors.lowerSize && <p className="signup-error-message">{errors.lowerSize}</p>}
             </div>
-            <div className="input-group">
+            <div className="signup-input-group">
+              <label htmlFor="capSize">Talla de Gorra</label>
               <select
+                id="capSize"
                 name="capSize"
                 value={signupData.capSize}
                 onChange={handleChange}
-                className="input"
+                className="signup-select"
               >
                 <option value="">Selecciona talla de gorra</option>
                 {SIZES.upper.map(size => (
                   <option key={size} value={size}>{size}</option>
                 ))}
               </select>
-              {errors.capSize && <span className="error">{errors.capSize}</span>}
+              {errors.capSize && <p className="signup-error-message">{errors.capSize}</p>}
             </div>
-            <div className="input-group">
+            <div className="signup-input-group">
+              <label htmlFor="shoeSize">Talla de Zapato</label>
               <select
+                id="shoeSize"
                 name="shoeSize"
                 value={signupData.shoeSize}
                 onChange={handleChange}
-                className="input"
+                className="signup-select"
               >
                 <option value="">Selecciona talla de zapato</option>
                 {SIZES.shoe.map(size => (
                   <option key={size} value={size}>{size}</option>
                 ))}
               </select>
-              {errors.shoeSize && <span className="error">{errors.shoeSize}</span>}
+              {errors.shoeSize && <p className="signup-error-message">{errors.shoeSize}</p>}
             </div>
           </div>
         );
       case 4:
         return (
-          <div className="step-content">
-            <h2 className="step-question">Define tus preferencias de estilo</h2>
-            <div className="checkbox-group">
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">Define tus preferencias de estilo</h2>
+            <div className="signup-checkbox-group">
               <p>Colores que menos te gustan (máximo 3):</p>
-              <div className="checkbox-options">
+              <div className="signup-checkbox-options">
                 {COLORS.map(color => (
-                  <label key={color} className="checkbox-label">
+                  <label key={color} className="signup-checkbox-label">
                     <input
                       type="checkbox"
                       name="notColors"
@@ -352,50 +374,54 @@ export default function SignUp() {
                       checked={signupData.notColors.includes(color)}
                       onChange={handleChange}
                       disabled={signupData.notColors.length >= 3 && !signupData.notColors.includes(color)}
-                      className="checkbox"
+                      className="signup-checkbox"
                     />
                     {color}
                   </label>
                 ))}
               </div>
             </div>
-            <div className="input-group">
+            <div className="signup-input-group">
+              <label htmlFor="stamps">Preferencia de Estampado</label>
               <select
+                id="stamps"
                 name="stamps"
                 value={signupData.stamps}
                 onChange={handleChange}
-                className="input"
+                className="signup-select"
               >
                 <option value="">Selecciona preferencia de estampado</option>
                 <option value="Estampados">Estampados</option>
                 <option value="Lisos">Lisos</option>
               </select>
-              {errors.stamps && <span className="error">{errors.stamps}</span>}
+              {errors.stamps && <p className="signup-error-message">{errors.stamps}</p>}
             </div>
-            <div className="input-group">
+            <div className="signup-input-group">
+              <label htmlFor="fit">Preferencia de Ajuste</label>
               <select
+                id="fit"
                 name="fit"
                 value={signupData.fit}
                 onChange={handleChange}
-                className="input"
+                className="signup-select"
               >
                 <option value="">Selecciona preferencia de ajuste</option>
                 <option value="Ajustado">Ajustado</option>
                 <option value="Holgado">Holgado</option>
               </select>
-              {errors.fit && <span className="error">{errors.fit}</span>}
+              {errors.fit && <p className="signup-error-message">{errors.fit}</p>}
             </div>
           </div>
         );
       case 5:
         return (
-          <div className="step-content">
-            <h2 className="step-question">Dinos qué prendas prefieres</h2>
-            <div className="checkbox-group">
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">Dinos qué prendas prefieres</h2>
+            <div className="signup-checkbox-group">
               <p>Prendas que menos te gustan (máximo 3):</p>
-              <div className="checkbox-options">
+              <div className="signup-checkbox-options">
                 {CLOTHES.map(cloth => (
-                  <label key={cloth} className="checkbox-label">
+                  <label key={cloth} className="signup-checkbox-label">
                     <input
                       type="checkbox"
                       name="notClothes"
@@ -403,7 +429,7 @@ export default function SignUp() {
                       checked={signupData.notClothes.includes(cloth)}
                       onChange={handleChange}
                       disabled={signupData.notClothes.length >= 3 && !signupData.notClothes.includes(cloth)}
-                      className="checkbox"
+                      className="signup-checkbox"
                     />
                     {cloth}
                   </label>
@@ -414,13 +440,13 @@ export default function SignUp() {
         );
       case 6:
         return (
-          <div className="step-content">
-            <h2 className="step-question">Últimos detalles para completar tu perfil</h2>
-            <div className="checkbox-group">
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">Últimos detalles para completar tu perfil</h2>
+            <div className="signup-checkbox-group">
               <p>Categorías con las que te identificas (máximo 5):</p>
-              <div className="checkbox-options">
+              <div className="signup-checkbox-options">
                 {CATEGORIES.map(category => (
-                  <label key={category} className="checkbox-label">
+                  <label key={category} className="signup-checkbox-label">
                     <input
                       type="checkbox"
                       name="categories"
@@ -428,27 +454,29 @@ export default function SignUp() {
                       checked={signupData.categories.includes(category)}
                       onChange={handleChange}
                       disabled={signupData.categories.length >= 5 && !signupData.categories.includes(category)}
-                      className="checkbox"
+                      className="signup-checkbox"
                     />
                     {category}
                   </label>
                 ))}
               </div>
             </div>
-            {errors.categories && <span className="error">{errors.categories}</span>}
-            <div className="input-group">
+            {errors.categories && <p className="signup-error-message">{errors.categories}</p>}
+            <div className="signup-input-group">
+              <label htmlFor="profession">Profesión</label>
               <select
+                id="profession"
                 name="profession"
                 value={signupData.profession}
                 onChange={handleChange}
-                className="input"
+                className="signup-select"
               >
                 <option value="">Selecciona tu profesión</option>
                 {PROFESSIONS.map(profession => (
                   <option key={profession} value={profession}>{profession}</option>
                 ))}
               </select>
-              {errors.profession && <span className="error">{errors.profession}</span>}
+              {errors.profession && <p className="signup-error-message">{errors.profession}</p>}
             </div>
           </div>
         );
@@ -460,37 +488,38 @@ export default function SignUp() {
   return (
     <div className="signup-container">
       <div className="signup-content">
-        <div className="animation-section">
-          <h2 className="step-title">{STEPS[step - 1].title}</h2>
-          <div className="animation-wrapper">
+        <div className="signup-animation-section">
+          <h2 className="signup-step-title">{STEPS[step - 1].title}</h2>
+          <div className="signup-animation-wrapper">
             <img
               src={STEPS[step - 1].src}
-              className="img-fluid"
+              alt={STEPS[step - 1].title}
+              className="signup-step-animation"
             />
           </div>
-          <p className="step-description">{STEPS[step - 1].description}</p>
+          <p className="signup-step-description">{STEPS[step - 1].description}</p>
         </div>
-        <div className="form-section">
+        <div className="signup-form-section">
           {step > 1 && (
-            <button className="back-button" onClick={() => setStep(prev => prev - 1)}>
+            <button className="signup-back-button" onClick={() => setStep(prev => prev - 1)}>
               ←
             </button>
           )}
           <form onSubmit={handleSubmit} noValidate>
             {renderStep()}
-            <div className="navigation-buttons">
+            <div className="signup-navigation-buttons">
               {step < 6 ? (
                 <button
                   type="button"
                   onClick={() => {
                     if (validateStep()) setStep(prev => prev + 1);
                   }}
-                  className="next-button"
+                  className="signup-next-button"
                 >
                   Continuar
                 </button>
               ) : (
-                <button type="submit" className="submit-button">
+                <button type="submit" className="signup-next-button">
                   Registrarse
                 </button>
               )}
