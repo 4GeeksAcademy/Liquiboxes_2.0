@@ -13,14 +13,14 @@ const NotFound = () => {
 
     // Redirigir a la página de inicio después de 5 segundos
     if (seconds === 0) {
-      navigate('/home');
+      navigate('/');
     }
 
     return () => clearInterval(countdown);
   }, [seconds, navigate]);
 
   const handleGoHome = () => {
-    navigate('/home');
+    navigate('/');
   };
 
   return (
@@ -35,7 +35,7 @@ const NotFound = () => {
       </p>
       <p>Te redirigiremos en <span>{seconds}</span> segundos...</p>
       <button onClick={handleGoHome} className="go-home-button">
-        Volver al inicio
+        Ir a login
       </button>
     </div>
   );
