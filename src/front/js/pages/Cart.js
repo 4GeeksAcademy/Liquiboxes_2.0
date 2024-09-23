@@ -13,6 +13,29 @@ const Cart = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Nueva función para eliminar artículos caducados del carrito
+  const removeExpiredCartItems = () => {
+    const cart = store.cart || [];
+    const currentTime = new Date().getTime();
+
+    // Definir el tiempo límite en milisegundos (5 minutos)
+    const TIME_LIMIT = 0.1 * 60 * 1000;
+
+    const validCart = cart.filter(cartItem => {
+      const timeElapsed = currentTime - cartItem.addedAt;
+      // Verifica si el artículo ha pasado el tiempo límite
+      if (timeElapsed > TIME_LIMIT) {
+        actions.removeFromCart(cartItem.mysterybox_id);
+        return false; // Elimina el artículo si ha caducado
+      }
+      return true; // Mantén el artículo si no ha caducado
+    });
+    // Actualizamos el carrito con los artículos válidos
+    setCartItems(validCart);
+  };
+
+
+
   const fetchCartDetails = useCallback(async () => {
     const cartIds = store.cart || [];
 
@@ -24,17 +47,23 @@ const Cart = () => {
     );
 
     const validItems = itemsWithDetails.filter(item => item !== null);
+    console.log('ESTO ES VALID ITEMS', validItems)
     setCartItems(validItems);
     actions.updateCartWithDetails(validItems)
 
     const cartTotal = validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    console.log('ESTO ES EL TOTAL', cartTotal)
     setTotal(cartTotal);
 
     setIsLoading(false);
   }, [actions, store.cart]);
 
   useEffect(() => {
-    fetchCartDetails();
+    const checkItems = async () => {
+        await removeExpiredCartItems()
+      fetchCartDetails()
+    }
+    checkItems()
   }, []);
 
   const updateLocalCart = useCallback((itemId, updateFn) => {
@@ -45,6 +74,7 @@ const Cart = () => {
 
       const newTotal = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       setTotal(newTotal);
+      console.log(newTotal, 'ESTO ES NEWTOTAL')
 
       return updatedItems;
     });
@@ -121,7 +151,7 @@ const Cart = () => {
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center">
                 <h3>Total:</h3>
-                <h3 className="text-primary">{total.toFixed(2)}€</h3>
+                <h3 className="text-primary">{(total || 0).toFixed(2)}€</h3> <h3 className="text-primary">{total.toFixed(2)}€</h3>
               </div>
             </div>
           </div>

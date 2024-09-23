@@ -106,14 +106,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 
             addToCart: (id) => {
                 let cart = [];
-
                 // Si el store no tiene el carrito, lo obtenemos del localStorage
                 if (!getStore().cart) {
                     cart = JSON.parse(localStorage.getItem("cart") || "[]");
                 } else {
                     cart = getStore().cart;
                 }
-
                 // Verificamos si el item con este mysterybox_id ya está en el carrito
                 const existingItemIndex = cart.findIndex(item => item.mysterybox_id == id);
 
@@ -121,18 +119,19 @@ const getState = ({ getStore, getActions, setStore }) => {
                     // Si ya existe, incrementamos la cantidad
                     cart[existingItemIndex] = {
                         ...cart[existingItemIndex],
-                        quantity: cart[existingItemIndex].quantity + 1
+                        quantity: cart[existingItemIndex].quantity + 1,
+                        addedAt: cart[existingItemIndex].addedAt // Mantiene el tiempo original
                     };
                 } else {
                     // Aseguramos que el id no sea null o undefined antes de agregar
                     if (id) {
                         let mysterybox_id = id;
-                        cart.push({ mysterybox_id, quantity: 1 });
+                        let addedAt = new Date().getTime();
+                        cart.push({ mysterybox_id, quantity: 1, addedAt }); // Guardamos el timestamp });
                     } else {
                         console.error("El ID es inválido, no se puede añadir al carrito");
                     }
                 }
-
                 // Actualizamos el carrito en el store y en localStorage
                 setStore({ cart });
                 localStorage.setItem("cart", JSON.stringify(cart));
@@ -142,13 +141,18 @@ const getState = ({ getStore, getActions, setStore }) => {
             removeFromCart: (id) => {
                 const store = getStore();
                 let cart = store.cart || JSON.parse(localStorage.getItem("cart") || "[]");
+                let cartWithDetails = store.cartWithDetails || JSON.parse(localStorage.getItem("cartWithDetails") || "[]");
 
                 // Filtramos el carrito para eliminar el item con el id especificado
                 cart = cart.filter(item => item.mysterybox_id != id);
+                cartWithDetails = cartWithDetails.filter(item => item.id != id);
 
                 // Actualizamos el carrito en el store y en localStorage
                 setStore({ cart });
+                setStore({ cartWithDetails });
                 localStorage.setItem("cart", JSON.stringify(cart));
+                localStorage.setItem("cartWithDetails", JSON.stringify(cartWithDetails));
+                
 
                 return cart;
             },

@@ -45,8 +45,6 @@ const Layout = () => {
   };
 
 
-
-
   return (
     <div className="layout">
       <GoogleOAuthProvider clientId={process.env.REACT_APP_ID_CLIENTE_GOOGLE}>
@@ -56,7 +54,6 @@ const Layout = () => {
               <Navbar />
               <div className="main-content">
                 <Routes>
-
 
                   {/* Vistas de cliente */}
                   <Route element={<Home />} path="/home" />
@@ -70,7 +67,6 @@ const Layout = () => {
                   <Route element={<ShopsSearch />} path="/shopssearch" />
                   <Route element={<MysteryBoxDetail />} path="/mysterybox/:id" />
                   <Route element={<ChooseRegistration />} path="/chooseregistration" />
-
 
                   {/* Vistas de Admin */}
                   <Route element={<AdminHome />} path="/adminhome" />
