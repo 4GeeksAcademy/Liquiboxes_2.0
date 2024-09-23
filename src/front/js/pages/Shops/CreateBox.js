@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBox, faInfoCircle, faCoins, faRuler, faList, faImage } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faBox, faCoins, faList, faImage } from '@fortawesome/free-solid-svg-icons';
+import Confetti from 'react-confetti';
+import ModalGlobal from '../../component/ModalGlobal';
+import "../../../styles/shops/createMysteryBox.css";
 
 const STEPS = [
-  { icon: faBox, title: "Información Básica", description: "Nombre y descripción de tu caja misteriosa" },
-  { icon: faCoins, title: "Precio", description: "Establece el valor de tu caja" },
-  { icon: faRuler, title: "Tamaño y Cantidad", description: "Define el tamaño y número de artículos" },
-  { icon: faList, title: "Contenido Posible", description: "Lista los posibles artículos en la caja" },
-  { icon: faImage, title: "Imagen", description: "Sube una imagen representativa" },
-  { icon: faInfoCircle, title: "Resumen", description: "Revisa y confirma los detalles" }
+    { icon: faBox, title: "Información Básica", description: "Nombre y descripción de tu caja misteriosa", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Package_fwghe4.gif" },
+    { icon: faCoins, title: "Precio y Tamaño", description: "Establece el valor y dimensiones de tu caja", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726856991/Price_Tag_h0xjli.gif" },
+    { icon: faList, title: "Contenido Posible", description: "Lista los posibles artículos en la caja", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726856985/Gift_Box_mzmnxc.gif" },
+    { icon: faImage, title: "Imagen y Resumen", description: "Sube una imagen y revisa los detalles", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850497/Checklist_l0hzyf.gif" }
 ];
 
 const CreateMysteryBox = () => {
@@ -25,18 +26,17 @@ const CreateMysteryBox = () => {
         numberOfItems: 1
     });
     const [newItem, setNewItem] = useState("");
-    const [token, setToken] = useState("");
     const [errors, setErrors] = useState({});
     const [previewImage, setPreviewImage] = useState(null);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [ mysteryBoxId, setMysteryBoxId] = useState(null)
     const navigate = useNavigate();
 
     useEffect(() => {
-        const storedToken = sessionStorage.getItem('token');
-        if (!storedToken) {
+        const token = sessionStorage.getItem('token');
+        if (!token) {
             alert('Debes iniciar sesión para crear una nueva caja misteriosa');
             navigate('/');
-        } else {
-            setToken(storedToken);
         }
     }, [navigate]);
 
@@ -49,17 +49,13 @@ const CreateMysteryBox = () => {
                 break;
             case 2:
                 if (!newBox.price) stepErrors.price = "El precio es requerido";
-                break;
-            case 3:
                 if (!newBox.size) stepErrors.size = "El tamaño es requerido";
                 break;
-            case 4:
+            case 3:
                 if (newBox.possibleItems.length === 0) stepErrors.possibleItems = "Debe añadir al menos un item posible";
                 break;
-            case 5:
+            case 4:
                 if (!newBox.image) stepErrors.image = "La imagen es requerida";
-                break;
-            default:
                 break;
         }
         setErrors(stepErrors);
@@ -67,11 +63,26 @@ const CreateMysteryBox = () => {
     };
 
     const handleChange = (e) => {
-        const { name, value, type } = e.target;
-        setNewBox(prevState => ({
-            ...prevState,
-            [name]: type === 'number' ? parseFloat(value) || '' : value
-        }));
+        const { name, value, type, files } = e.target;
+        if (type === 'file') {
+            handleImageChange(e);
+        } else {
+            setNewBox(prevState => ({
+                ...prevState,
+                [name]: type === 'number' ? parseFloat(value) || '' : value
+            }));
+        }
+    };
+
+    const handleImageChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setNewBox(prevState => ({
+                ...prevState,
+                image: file
+            }));
+            setPreviewImage(URL.createObjectURL(file));
+        }
     };
 
     const handleAddItem = (e) => {
@@ -92,56 +103,51 @@ const CreateMysteryBox = () => {
         }));
     };
 
-    const handleImageChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            setNewBox(prevState => ({
-                ...prevState,
-                image: file
-            
-            }));
-            
-            setPreviewImage(URL.createObjectURL(file));
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateStep()) return;
-    
-        const formData = new FormData();
-        for (const key in newBox) {
-            if (key === 'possibleItems') {
-                formData.append(key, newBox[key].join(','));
-            } else if (key === 'image') {
-                if (newBox[key]) {
-                    formData.append(key, newBox[key], newBox[key].name);
+
+        if (step < STEPS.length) {
+            setStep(prev => prev + 1);
+        } else {
+            const formData = new FormData();
+            for (const key in newBox) {
+                if (key === 'possibleItems') {
+                    formData.append(key, newBox[key].join(','));
+                } else if (key === 'image') {
+                    if (newBox[key]) {
+                        formData.append(key, newBox[key], newBox[key].name);
+                    }
+                } else {
+                    formData.append(key, newBox[key]);
                 }
-            } else {
-                formData.append(key, newBox[key]);
+            }
+
+            const token = sessionStorage.getItem('token');
+
+            try {
+                const response = await axios.post(
+                    `${process.env.BACKEND_URL}/shops/mystery-box`,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+                setMysteryBoxId(response.data.id)
+                setIsSuccess(true);
+            } catch (error) {
+                console.error('Error al crear la caja misteriosa:', error);
+                setErrors(prev => ({ ...prev, submit: error.response?.data?.error || 'Hubo un error al crear la caja misteriosa. Por favor, inténtalo de nuevo.' }));
             }
         }
-    
-        const token = sessionStorage.getItem('token');
-    
-        try {
-            const response = await axios.post(
-                `${process.env.BACKEND_URL}/shops/mystery-box`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'Authorization': `Bearer ${token}`
-                    }
-                }
-            );
-            console.log('Caja misteriosa creada:', response.data);
-            alert('Caja misteriosa creada con éxito!');
-            navigate(`/mysterybox/${response.data.id}`);
-        } catch (error) {
-            console.error('Error al crear la caja misteriosa:', error);
-            setErrors({ submit: error.response?.data?.error || 'Hubo un error al crear la caja misteriosa. Por favor, inténtalo de nuevo.' });
-        }
+    };
+
+    const handleCloseModal = (id) => {
+        setIsSuccess(false);
+        navigate(`/mysterybox/${id}`);
     };
 
     const renderStepContent = () => {
@@ -149,123 +155,141 @@ const CreateMysteryBox = () => {
             case 1:
                 return (
                     <>
-                        <input
-                            type="text"
-                            name="name"
-                            value={newBox.name}
-                            onChange={handleChange}
-                            placeholder="Nombre de la caja misteriosa"
-                            className={errors.name ? 'error' : ''}
-                        />
-                        {errors.name && <p className="error-message">{errors.name}</p>}
-                        <textarea
-                            name="description"
-                            value={newBox.description}
-                            onChange={handleChange}
-                            placeholder="Descripción de la caja misteriosa"
-                            className={errors.description ? 'error' : ''}
-                            rows="4"
-                        />
-                        {errors.description && <p className="error-message">{errors.description}</p>}
+                        <div className="input-group">
+                            <label htmlFor="name">Nombre de la caja misteriosa</label>
+                            <input
+                                id="name"
+                                type="text"
+                                name="name"
+                                value={newBox.name}
+                                onChange={handleChange}
+                                className={`input ${errors.name ? 'error' : ''}`}
+                            />
+                            {errors.name && <p className="error-message">{errors.name}</p>}
+                        </div>
+                        <div className="input-group">
+                            <label htmlFor="description">Descripción de la caja misteriosa</label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                value={newBox.description}
+                                onChange={handleChange}
+                                className={`input ${errors.description ? 'error' : ''}`}
+                                rows="4"
+                            />
+                            {errors.description && <p className="error-message">{errors.description}</p>}
+                        </div>
                     </>
                 );
             case 2:
                 return (
                     <>
-                        <input
-                            type="number"
-                            name="price"
-                            value={newBox.price}
-                            onChange={handleChange}
-                            placeholder="Precio de la caja misteriosa"
-                            step="0.01"
-                            className={errors.price ? 'error' : ''}
-                        />
-                        {errors.price && <p className="error-message">{errors.price}</p>}
+                        <div className="input-group">
+                            <label htmlFor="price">Precio de la caja misteriosa</label>
+                            <input
+                                id="price"
+                                type="number"
+                                name="price"
+                                value={newBox.price}
+                                onChange={handleChange}
+                                className={`input ${errors.price ? 'error' : ''}`}
+                                step="0.01"
+                            />
+                            {errors.price && <p className="error-message">{errors.price}</p>}
+                        </div>
+                        <div className="input-group">
+                            <label htmlFor="size">Tamaño de la caja</label>
+                            <select
+                                id="size"
+                                name="size"
+                                value={newBox.size}
+                                onChange={handleChange}
+                                className={`input ${errors.size ? 'error' : ''}`}
+                            >
+                                <option value="">Selecciona un tamaño</option>
+                                <option value="pequeño">Pequeño</option>
+                                <option value="mediano">Mediano</option>
+                                <option value="grande">Grande</option>
+                            </select>
+                            {errors.size && <p className="error-message">{errors.size}</p>}
+                        </div>
+                        <div className="input-group">
+                            <label htmlFor="numberOfItems">Número de artículos incluidos</label>
+                            <input
+                                id="numberOfItems"
+                                type="number"
+                                name="numberOfItems"
+                                value={newBox.numberOfItems}
+                                onChange={handleChange}
+                                className="input"
+                                min="1"
+                            />
+                        </div>
                     </>
                 );
             case 3:
                 return (
                     <>
-                        <select
-                            name="size"
-                            value={newBox.size}
-                            onChange={handleChange}
-                            className={errors.size ? 'error' : ''}
-                        >
-                            <option value="">Selecciona un tamaño</option>
-                            <option value="pequeño">Pequeño</option>
-                            <option value="mediano">Mediano</option>
-                            <option value="grande">Grande</option>
-                        </select>
-                        {errors.size && <p className="error-message">{errors.size}</p>}
-                        <input
-                            type="number"
-                            name="numberOfItems"
-                            value={newBox.numberOfItems}
-                            onChange={handleChange}
-                            placeholder="Número de artículos incluidos"
-                            min="1"
-                        />
+                        <div className="input-group d-flex flex-column">
+                            <label htmlFor="newItem">Añadir nuevo artículo</label>
+                            <div className="add-item-container d-flex justify-content-between">
+                                <input
+                                    id="newItem"
+                                    type="text"
+                                    value={newItem}
+                                    onChange={(e) => setNewItem(e.target.value)}
+                                    className="input my-auto"
+                                    placeholder="Ej: Camiseta, Libro, Taza..."
+                                />
+                                <button onClick={handleAddItem} className="add-button">Añadir</button>
+                            </div>
+                        </div>
+                        {errors.possibleItems && <p className="error-message">{errors.possibleItems}</p>}
+                        <div className="items-grid">
+                            {newBox.possibleItems.map((item, index) => (
+                                <div key={index} className="item-card">
+                                    <span className="item-name">{item}</span>
+                                    <button onClick={() => handleRemoveItem(index)} className="remove-button">
+                                        <FontAwesomeIcon icon={faArrowLeft} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </>
                 );
             case 4:
                 return (
                     <>
                         <div className="input-group">
+                            <label htmlFor="image">Imagen de la caja misteriosa</label>
                             <input
-                                type="text"
-                                value={newItem}
-                                onChange={(e) => setNewItem(e.target.value)}
-                                placeholder="Añadir nuevo item"
+                                id="image"
+                                type="file"
+                                onChange={handleImageChange}
+                                name="image"
+                                accept="image/*"
+                                className={`input ${errors.image ? 'error' : ''}`}
                             />
-                            <button onClick={handleAddItem}>Añadir</button>
+                            {errors.image && <p className="error-message">{errors.image}</p>}
                         </div>
-                        {errors.possibleItems && <p className="error-message">{errors.possibleItems}</p>}
-                        <ul className="items-list">
-                            {newBox.possibleItems.map((item, index) => (
-                                <li key={index}>
-                                    {item}
-                                    <button onClick={() => handleRemoveItem(index)}>Eliminar</button>
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                );
-            case 5:
-                return (
-                    <>
-                        <input
-                            type="file"
-                            onChange={handleImageChange}
-                            accept="image/*"
-                            className={errors.image ? 'error' : ''}
-                        />
-                        {errors.image && <p className="error-message">{errors.image}</p>}
                         {previewImage && (
                             <img src={previewImage} alt="Vista previa" className="preview-image" />
                         )}
+                        <div className="summary">
+                            <h3>Resumen de la Caja Misteriosa</h3>
+                            <p><strong>Nombre:</strong> {newBox.name}</p>
+                            <p><strong>Descripción:</strong> {newBox.description}</p>
+                            <p><strong>Precio:</strong> ${newBox.price}</p>
+                            <p><strong>Tamaño:</strong> {newBox.size}</p>
+                            <p><strong>Número de artículos:</strong> {newBox.numberOfItems}</p>
+                            <p><strong>Posibles artículos:</strong></p>
+                            <ul>
+                                {newBox.possibleItems.map((item, index) => (
+                                    <li key={index}>{item}</li>
+                                ))}
+                            </ul>
+                        </div>
                     </>
-                );
-            case 6:
-                return (
-                    <div className="summary">
-                        <h3>Resumen de la Caja Misteriosa</h3>
-                        <p><strong>Nombre:</strong> {newBox.name}</p>
-                        <p><strong>Descripción:</strong> {newBox.description}</p>
-                        <p><strong>Precio:</strong> ${newBox.price}</p>
-                        <p><strong>Tamaño:</strong> {newBox.size}</p>
-                        <p><strong>Número de artículos:</strong> {newBox.numberOfItems}</p>
-                        <p><strong>Posibles artículos:</strong></p>
-                        <ul>
-                            {newBox.possibleItems.map((item, index) => (
-                                <li key={index}>{item}</li>
-                            ))}
-                        </ul>
-                        {previewImage && (
-                            <img src={previewImage} alt="Imagen de la caja" className="preview-image" />
-                        )}
-                    </div>
                 );
             default:
                 return null;
@@ -273,48 +297,51 @@ const CreateMysteryBox = () => {
     };
 
     return (
-        <div className="signup-container">
-            <div className="signup-progress">
-                {STEPS.map((s, index) => (
-                    <div key={index} className={`step ${index + 1 === step ? 'active' : ''} ${index + 1 < step ? 'completed' : ''}`}>
-                        <div className="step-icon">
-                            <FontAwesomeIcon icon={s.icon} />
-                        </div>
-                        <div className="step-label">{s.title}</div>
+        <div className="create-mystery-box-container">
+            <div className="create-mystery-box-content">
+                <div className="animation-section">
+                    <h2 className="step-title">{STEPS[step - 1].title}</h2>
+                    <div className="animation-wrapper">
+                        <img src={STEPS[step - 1].src} alt={STEPS[step - 1].title} className="step-animation" />
                     </div>
-                ))}
-            </div>
-            <div className="signup-content">
-                <div className="step-info">
-                    <h2>{STEPS[step - 1].title}</h2>
-                    <p>{STEPS[step - 1].description}</p>
+                    <p className="step-description">{STEPS[step - 1].description}</p>
                 </div>
-                <div className="step-form">
-                    <form onSubmit={handleSubmit}>
-                        {renderStepContent()}
+                <div className="form-section">
+                    {step > 1 && (
+                        <button className="back-button" onClick={() => setStep(prev => prev - 1)}>
+                            <FontAwesomeIcon icon={faArrowLeft} />
+                        </button>
+                    )}
+                    <form onSubmit={handleSubmit} noValidate>
+                        <div className="step-content">
+                            <h2 className="step-question">{STEPS[step - 1].title}</h2>
+                            {renderStepContent()}
+                        </div>
                         {errors.submit && <p className="error-message">{errors.submit}</p>}
                         <div className="navigation-buttons">
-                            {step > 1 && (
-                                <button type="button" onClick={() => setStep(step - 1)}>
-                                    Anterior
-                                </button>
-                            )}
-                            {step < STEPS.length ? (
-                                <button 
-                                    type="button" 
-                                    onClick={() => {
-                                        if (validateStep()) setStep(step + 1);
-                                    }}
-                                >
-                                    Siguiente
-                                </button>
-                            ) : (
-                                <button type="submit">Crear Caja Misteriosa</button>
-                            )}
+                            <button 
+                                type="submit" 
+                                className="next-button"
+                            >
+                                {step < STEPS.length ? "Continuar" : "Crear Caja Misteriosa"}
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
+            {isSuccess && (
+                <>
+                    <Confetti width={window.innerWidth} height={window.innerHeight} />
+                    <ModalGlobal
+                        isOpen={true}
+                        onClose={() => {handleCloseModal(mysteryBoxId)}}
+                        title="¡Caja Misteriosa Creada!"
+                        body="Tu caja misteriosa ha sido creada con éxito. ¡Esperamos que los usuarios disfruten descubriendo su contenido!"
+                        buttonBody="Continuar"
+                        className="welcome-modal"
+                    />
+                </>
+            )}
         </div>
     );
 };

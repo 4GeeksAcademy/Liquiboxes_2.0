@@ -179,20 +179,6 @@ const getState = ({ getStore, getActions, setStore }) => {
                 return cart;
             },
 
-
-
-            getCartItemDetails: async (id) => {
-                try {
-                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`);
-                    if (response.data) {
-                        return response.data;
-                    }
-                } catch (error) {
-                    console.log("Error al obtener detalles del item del carrito:", error);
-                    return null;
-                }
-            },
-
             fetchSingleItemDetail: async (id) => {
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`);
