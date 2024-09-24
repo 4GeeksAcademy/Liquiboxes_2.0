@@ -67,15 +67,19 @@ const ContactSupport = () => {
   };
 
   const closeSuccessModal = () => {
+    console.log("Tipo de usuario", userType)
     setIsModalSuccessOpen(false);
-    if (userType === 'user'){
+    if (userType === 'user') {
       navigate('/home');
+      return
     }
-    navigate('/shophome');
+    else {
+      navigate('/shophome');
+    }
   };
 
   return (
-    <div className="contact-support-container mt-5">
+    <div className="contact-support-container my-5">
       <h2>Contacto con Soporte</h2>
       <form onSubmit={handleSubmit} className="contact-support-form">
         <div className="form-group">

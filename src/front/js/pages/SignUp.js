@@ -147,37 +147,6 @@ export default function SignUp() {
   }
 
 
-  const renderCheckboxGroup = (name, options, maxItems) => (
-    <div className="checkbox-group">
-      <p>{name === 'notColors' ? 'Colores que menos te gustan' : 'Prendas que menos te gustan'} (máximo {maxItems}):</p>
-      {options.map(option => (
-        <label key={option}>
-          <input
-            type="checkbox"
-            name={name}
-            value={option}
-            checked={signupData[name].includes(option)}
-            onChange={handleChange}
-            disabled={signupData[name].length >= maxItems && !signupData[name].includes(option)}
-          /> {option}
-        </label>
-      ))}
-    </div>
-  );
-
-  const renderSelect = (name, options, placeholder) => (
-    <select name={name} value={signupData[name]} onChange={handleChange} required>
-      <option value="">{placeholder}</option>
-      {options.map(option => (
-        <option key={option} value={typeof option === 'number' ? option : option.toLowerCase()}>
-          {option}
-        </option>
-      ))}
-    </select>
-  );
-
-
-
   const renderStep = () => {
     switch (step) {
       case 1:

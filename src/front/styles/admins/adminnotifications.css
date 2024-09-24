@@ -30,6 +30,7 @@
   padding: 0.75rem 1.5rem !important;
   font-weight: 500 !important;
   transition: all 0.3s ease !important;
+  margin-right: 0.05rem !important;
 }
 
 .admin-notifications .nav-tabs .nav-link:hover,
@@ -38,8 +39,8 @@
 }
 
 .admin-notifications .nav-tabs .nav-link.active {
-  color: var(--primary-color) !important;
-  background-color: transparent !important;
+  color: var(--background-color) !important;
+  background-color: var(--secondary-color) !important;
   border-bottom: 3px solid var(--primary-color) !important;
 }
 
