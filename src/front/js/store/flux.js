@@ -103,15 +103,16 @@ const getState = ({ getStore, getActions, setStore }) => {
                 // Después de cerrar sesión, osea después de llamar a esta función habría que redireccionar al usuario a login (useNavigate('/'))
             },
 
-
             addToCart: (id) => {
                 let cart = [];
+
                 // Si el store no tiene el carrito, lo obtenemos del localStorage
                 if (!getStore().cart) {
                     cart = JSON.parse(localStorage.getItem("cart") || "[]");
                 } else {
                     cart = getStore().cart;
                 }
+
                 // Verificamos si el item con este mysterybox_id ya está en el carrito
                 const existingItemIndex = cart.findIndex(item => item.mysterybox_id == id);
 
@@ -119,19 +120,18 @@ const getState = ({ getStore, getActions, setStore }) => {
                     // Si ya existe, incrementamos la cantidad
                     cart[existingItemIndex] = {
                         ...cart[existingItemIndex],
-                        quantity: cart[existingItemIndex].quantity + 1,
-                        addedAt: cart[existingItemIndex].addedAt // Mantiene el tiempo original
+                        quantity: cart[existingItemIndex].quantity + 1
                     };
                 } else {
                     // Aseguramos que el id no sea null o undefined antes de agregar
                     if (id) {
                         let mysterybox_id = id;
-                        let addedAt = new Date().getTime();
-                        cart.push({ mysterybox_id, quantity: 1, addedAt }); // Guardamos el timestamp });
+                        cart.push({ mysterybox_id, quantity: 1 });
                     } else {
                         console.error("El ID es inválido, no se puede añadir al carrito");
                     }
                 }
+
                 // Actualizamos el carrito en el store y en localStorage
                 setStore({ cart });
                 localStorage.setItem("cart", JSON.stringify(cart));
