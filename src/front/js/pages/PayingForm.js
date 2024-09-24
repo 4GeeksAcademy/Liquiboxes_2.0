@@ -8,6 +8,7 @@ import StripePaymentForm from '../component/PayingForm/StripePaymentForm';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCreditCard, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { faPaypal } from '@fortawesome/free-brands-svg-icons';
+import { useNavigate } from 'react-router-dom';
 
 const stripePromise = loadStripe(process.env.STRIPE_PK);
 
@@ -19,6 +20,7 @@ const PayingForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('stripe');
+  const navigate = useNavigate ()
 
   useEffect(() => {
     const fetchCartData = async () => {
@@ -106,7 +108,10 @@ const PayingForm = () => {
 
       console.log('Respuesta del backend:', response.data);
       alert('Compra realizada con éxito. ID de la venta: ' + response.data.sale_id);
+      // TODO: MOSTRAR MODAL EN VEZ DLE ALERT
+
       actions.clearCart();
+      navigate("/home")
     } catch (err) {
       console.error("Error completo:", err);
       const errorMessage = err.response?.data?.error || err.message;

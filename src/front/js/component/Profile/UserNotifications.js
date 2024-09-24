@@ -104,17 +104,6 @@ const UserNotifications = () => {
         fetchNotifications();
     };
 
-    const renderNotificationDetails = () => {
-        if (!selectedNotification) return null;
-
-        return (
-            <div className="notification-details">
-                <h3>{getNotificationConfig(selectedNotification.type).label}</h3>
-                <p>{selectedNotification.content}</p>
-                <p>{formatDate(selectedNotification.created_at)}</p>
-            </div>
-        );
-    };
 
     const notificationConfig = {
         purchase_confirmation: {
@@ -147,7 +136,7 @@ const UserNotifications = () => {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const FilterButtons = ({ currentFilter, setFilter }) => {
+    const FilterButtons = ({ currentFilter }) => {
         const filters = [
             { key: 'all', label: 'Todas', icon: faList },
             { key: 'unread', label: 'No leídas', icon: faEnvelope },
@@ -185,18 +174,8 @@ const UserNotifications = () => {
                 </div>
             </div>
 
-            <div className="filter-buttons mb-4">
-                {['all', 'unread', 'read', 'purchase_confirmation', 'confirmation', 'sale_sent'].map((filterType) => (
-                    <Button
-                        key={filterType}
-                        onClick={() => setFilter(filterType)}
-                        className={`filter-button ${filter === filterType ? 'active' : ''}`}
-                    >
-                        <FontAwesomeIcon icon={getNotificationConfig(filterType).icon} className="me-2" />
-                        {getNotificationConfig(filterType).label}
-                    </Button>
-                ))}
-            </div>
+            <FilterButtons currentFilter={filter} />
+
 
             <Button onClick={handleMarkAllRead} variant="secondary" className="mb-4 custom-dropdown-toggle">
                 Marcar todas como leídas

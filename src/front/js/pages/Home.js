@@ -7,7 +7,7 @@ import ScrollHorizontalMysteryBoxes from "../component/Home/ScrollHorizontalMyst
 import CarruselTopSellers from "../component/Home/CarruselTopSellers";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Slide } from "react-awesome-reveal";
+import { Slide, Fade } from "react-awesome-reveal";
 
 export const Home = () => {
     const { store, actions } = useContext(Context);
@@ -94,30 +94,40 @@ export const Home = () => {
     };
 
     return (
-        <div className="text-center my-5 mx-5">
-            <h1>LiquiBoxes</h1>
-            {store.userData && (
-                <div className="greeting-section">
-                    <Slide triggerOnce>
-                        <h2 className="greeting-text">¡Hola, {store.userData.name}!</h2>
-                    </Slide>
+        <div className="text-center mt-2 mb-5 mx-5">
+            <Fade >
+                <header className="home-header mb-5 ms-0 ms-md-3 ms-lg-5" >
+                    <h1 className="site-title  text-start">
+                        <span className="title-highlight">Liqui</span>Boxes
+                    </h1>
+                </header>
+            </Fade>
+            <div className="row d-flex align-items-center mx-lg-5">
+
+                <div className="col-12 col-lg-6 grid-2">
+                    {store.userData && (
+                        <div className="greeting-section">
+                            <Slide triggerOnce>
+                                <h2 className="greeting-text">¡Hola, {store.userData.name}!</h2>
+                            </Slide>
+                        </div>
+                    )}
+                    <SearchBar
+                        onSearch={(term) => {
+                            navigate(`/shopssearch?search=${encodeURIComponent(term)}`);
+                        }}
+                        shops={store.allShops}
+                        categories={store.userData ? store.userData.categories : []}
+                        initialSearchTerm=""
+                        onCategoryChange={() => { }} // Esta función no se usa en la página de inicio, pero la pasamos para evitar errores
+                    />
                 </div>
-            )}
-            <div>
-                <SearchBar
-                    onSearch={(term) => {
-                        navigate(`/shopssearch?search=${encodeURIComponent(term)}`);
-                    }}
-                    shops={store.allShops}
-                    categories={store.userData ? store.userData.categories : []}
-                    initialSearchTerm=""
-                    onCategoryChange={() => { }} // Esta función no se usa en la página de inicio, pero la pasamos para evitar errores
-                />
+                <div className="col-12 col-lg-6">
+                    <CarruselTopSellers shopData={topSellingShops} />
+                </div>
             </div>
-            <div>
-                <h3>Estas son las tiendas más vendidas en este momento:</h3>
-                <CarruselTopSellers shopData={topSellingShops} />
-            </div>
+
+
             {token ? (
                 <>
                     {isLoadingMysteryBoxes ? (
