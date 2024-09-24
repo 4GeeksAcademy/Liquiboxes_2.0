@@ -66,7 +66,7 @@
 
 .signup-back-button {
   position: absolute !important;
-  top: 1rem !important;
+  top: 0 !important;
   left: 1rem !important;
   background: none !important;
   border: none !important;
@@ -74,6 +74,16 @@
   cursor: pointer !important;
   color: var(--text-color) !important;
 }
+
+.signup-back-button:hover {
+  background: none !important;
+  border: none !important;
+  font-size: 1.5rem !important;
+  cursor: pointer !important;
+  color: var(--text-color) !important;
+}
+
+
 
 .signup-step-content {
   margin-top: 2rem !important;
@@ -118,17 +128,17 @@
   font-size: 0.875rem !important;
   margin-top: 0.25rem !important;
 }
-.checkbox-group {
+.signup-checkbox-group {
   margin-bottom: 1.5rem !important;
 }
 
-.checkbox-options {
+.signup-checkbox-options {
   display: grid !important;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
   gap: 0.5rem !important;
 }
 
-.checkbox-label {
+.signup-checkbox-label {
   display: flex !important;
   align-items: center !important;
   padding: 0.5rem !important;
@@ -138,21 +148,21 @@
   transition: background-color 0.3s ease !important;
 }
 
-.checkbox-label:hover {
+.signup-checkbox-label:hover {
   background-color: var(--background-secondary-color) !important;
 }
 
-.checkbox {
+.signup-checkbox {
   margin-right: 0.5rem !important;
 }
 
-.navigation-buttons {
+.signup-navigation-buttons {
   display: flex !important;
   justify-content: flex-end !important;
   margin-top: 2rem !important;
 }
 
-.next-button, .submit-button {
+.signup-next-button, .signup-submit-button {
   padding: 0.75rem 1.5rem !important;
   background-color: var(--primary-color) !important;
   color: white !important;
@@ -163,7 +173,7 @@
   transition: background-color 0.3s ease !important;
 }
 
-.next-button:hover, .submit-button:hover {
+.signup-next-button:hover, .signup-submit-button:hover {
   background-color: var(--secondary-color) !important;
 }
 

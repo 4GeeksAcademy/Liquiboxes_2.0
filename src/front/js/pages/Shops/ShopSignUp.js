@@ -279,7 +279,7 @@ export default function ShopSignUp() {
           <div className="signup-step-content">
             <h2 className="signup-step-question">Categorías</h2>
             <div className="signup-checkbox-group">
-              <p>Selecciona las categorías de tus productos:</p>
+              <p>Selecciona las categorías de tus productos (máximo 3):</p>
               <div className="signup-checkbox-options">
                 {CATEGORIES.map(category => (
                   <label key={category} className="signup-checkbox-label">
@@ -289,6 +289,7 @@ export default function ShopSignUp() {
                       value={category}
                       checked={signupData.categories.includes(category)}
                       onChange={handleChange}
+                      disabled={signupData.categories.length >= 3 && !signupData.categories.includes(category)}
                       className="signup-checkbox"
                     /> {category}
                   </label>

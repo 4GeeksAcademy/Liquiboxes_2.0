@@ -98,53 +98,6 @@
   transform: translateY(-2px) !important;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-select,
-textarea {
-  width: 100% !important;
-  padding: 1rem !important;
-  margin-bottom: 1.5rem !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 5px !important;
-  font-size: 1rem !important;
-  transition: all 0.3s ease !important;
-  background-color: var(--background-color) !important;
-  color: var(--text-color) !important;
-}
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-select:focus,
-textarea:focus {
-  border-color: var(--primary-color) !important;
-  box-shadow: 0 0 0 2px rgba(106, 142, 127, 0.2) !important;
-  outline: none !important;
-}
-
-button {
-  background-color: var(--primary-color) !important;
-  color: var(--background-color) !important;
-  border: none !important;
-  border-radius: 5px;
-  cursor: pointer !important;
-  transition: all 0.3s ease !important;
-  font-weight: 600 !important;
-}
-
-button:hover:not(:disabled) {
-  background-color: var(--secondary-color) !important;
-  color: var(--background-color) !important;
-  transform: translateY(-2px) !important;
-}
-
-button:disabled {
-  background-color: var(--border-color) !important;
-  cursor: not-allowed !important;
-}
-
 @media (min-width: 992px) {
   #sidebar-wrapper {
     transform: translateX(0) !important;

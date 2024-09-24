@@ -138,6 +138,7 @@ function ShopHome() {
     const renderInput = () => {
       if (isListField) {
         const availableCategories = categoryOptions.filter(cat => !value.includes(cat));
+        const canAddMore = value.length < 3;
         return (
           <div>
             {Array.isArray(value) && value.map((item, index) => (
@@ -146,7 +147,7 @@ function ShopHome() {
                 <button className='btn mx-1' onClick={() => handleRemoveItem(field, item)}>x</button>
               </span>
             ))}
-            {availableCategories.length > 0 ? (
+            {canAddMore && availableCategories.length > 0 ? (
               <select
                 onChange={(e) => {
                   if (e.target.value) {
@@ -161,17 +162,17 @@ function ShopHome() {
                 ))}
               </select>
             ) : (
-              <p>Has seleccionado todas las categorías posibles.</p>
+              <p>{value.length >= 3 ? "Has alcanzado el límite de 3 categorías." : "Has seleccionado todas las categorías posibles."}</p>
             )}
           </div>
         );
       } else if (isImageField) {
         return (
           <div className="d-flex align-items-center">
-            <img 
-              src={value} 
-              alt="Profile" 
-              style={{ width: '100px', height: '100px', objectFit: 'cover', marginRight: '10px' }} 
+            <img
+              src={value}
+              alt="Profile"
+              style={{ width: '100px', height: '100px', objectFit: 'cover', marginRight: '10px' }}
             />
             {editMode[field] && (
               <input
@@ -210,7 +211,7 @@ function ShopHome() {
   };
 
   const handleAddItem = (field, item) => {
-    if (item && Array.isArray(shopData[field]) && !shopData[field].includes(item)) {
+    if (item && Array.isArray(shopData[field]) && !shopData[field].includes(item) && shopData[field].length < 3) {
       setShopData(prev => ({
         ...prev,
         [field]: [...prev[field], item]
