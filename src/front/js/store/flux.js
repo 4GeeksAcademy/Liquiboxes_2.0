@@ -16,9 +16,21 @@ const getState = ({ getStore, getActions, setStore }) => {
             userData: null,
             shopDetail: {},
             showError: true,
-            token: ""
+            token: "",
+            modalToken: false,
+            modalType: false
         },
         actions: {
+            setModalToken: (boolean) => {
+                let trueOrFalse = boolean
+                setStore( {modalToken: trueOrFalse})
+            },
+
+            setModalType: (boolean) => {
+                let trueOrFalse = boolean
+                setStore( {modalType: trueOrFalse})
+            },
+
             getMessage: async () => {
                 try {
                     const resp = await fetch(process.env.BACKEND_URL + "/hello");
