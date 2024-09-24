@@ -117,7 +117,6 @@ const AdminHome = () => {
 
   return (
     <div className="admin-home">
-      <h1>Admin Dashboard</h1>
       <Tabs defaultActiveKey="notifications" id="admin-dashboard-tabs">
         <Tab eventKey="notifications" title="Notifications and Change Requests">
           <AdminNotifications />

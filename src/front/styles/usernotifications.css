@@ -1,7 +1,6 @@
 .user-notifications {
   max-width: 800px;
   margin: 0 auto !important;
-  padding: 2rem !important;
 }
 
 .user-notifications h2 {
@@ -174,10 +173,6 @@
 
   .user-notifications .filter-button {
     width: 100% !important;
-  }
-
-  .user-notifications {
-    padding: 1rem;
   }
 
   .notifications-table,

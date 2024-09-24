@@ -213,18 +213,7 @@ const UserMessages = () => {
                 </div>
             </div>
 
-            <div className="filter-buttons mb-4">
-                {['all', 'unread', 'read', 'contact_support', 'contact_shop', 'contact_user'].map((filterType) => (
-                    <Button
-                        key={filterType}
-                        onClick={() => setFilter(filterType)}
-                        className={`filter-button ${filter === filterType ? 'active' : ''}`}
-                    >
-                        <FontAwesomeIcon icon={getMessageConfig(filterType).icon} className="me-2" />
-                        {getMessageConfig(filterType).label}
-                    </Button>
-                ))}
-            </div>
+            <FilterButtons currentFilter={filter} setFilter={setFilter} />
 
             <Button onClick={handleMarkAllRead} variant="secondary" className="mb-4 custom-dropdown-toggle">
                 Marcar todos como leídos
@@ -282,34 +271,13 @@ const UserMessages = () => {
                     <Modal.Title>Detalles del Mensaje</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <div className="message-details">
-                        <h3>
-                            <FontAwesomeIcon icon={getMessageConfig(selectedMessage?.type).icon} className="me-2" />
-                            {getMessageConfig(selectedMessage?.type).label}
-                        </h3>
-                        <p>{selectedMessage?.content}</p>
-                        <Form onSubmit={handleReplySubmit} className="message-reply-form">
-                            <Form.Group>
-                                <Form.Label>Responder:</Form.Label>
-                                <Form.Control
-                                    as="textarea"
-                                    rows={3}
-                                    value={replyMessage}
-                                    onChange={(e) => setReplyMessage(e.target.value)}
-                                    placeholder="Escribe tu respuesta aquí..."
-                                />
-                            </Form.Group>
-                            <Button type="submit" className="send-reply-button">
-                                <FontAwesomeIcon icon={faEnvelope} className="me-2" />
-                                Enviar Respuesta
-                            </Button>
-                        </Form>
-                    </div>
+                    {renderMessageDetails()}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
                 </Modal.Footer>
             </Modal>
+            
         </div>
     );
 };

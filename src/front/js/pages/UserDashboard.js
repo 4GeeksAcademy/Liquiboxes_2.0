@@ -18,7 +18,8 @@ import {
   faBell,
   faShoppingBag,
   faHeadset,
-  faBars
+  faBars,
+  faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/userdashboard.css";
 import ProfileField from '../component/Profile/ProfileField';
@@ -82,6 +83,10 @@ function UserDashboard() {
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
   };
 
   const handleEdit = (field) => {
@@ -343,9 +348,11 @@ function UserDashboard() {
   };
 
   return (
-    <div className={`d-flex wrapper ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+    <div className={`wrapper ${isSidebarOpen ? 'sidebar-open' : ''}`}>
       <div className="bg-light border-right" id="sidebar-wrapper">
-        <div className="sidebar-heading"><strong>Opciones:</strong></div>
+        <div className="sidebar-heading d-flex justify-content-between align-items-center">
+          <strong>Panel de control</strong>
+        </div>
         <div className="list-group list-group-flush">
           <button
             className={`list-group-item list-group-item-action ${activeSection === 'notifications' ? 'active' : ''}`}
@@ -378,18 +385,18 @@ function UserDashboard() {
             <FontAwesomeIcon icon={faHeadset} className="mr-2" /> Contacto con Soporte
           </button>
         </div>
-      </div>
+        </div>
       <div id="page-content-wrapper">
-        <nav className=" border-bottom d-flex justify-content-between align-items-center">
-          <button className="" id="menu-toggle" onClick={toggleSidebar}>
-            <FontAwesomeIcon icon={faBars} />
+          <button className="btn" id="menu-toggle" onClick={toggleSidebar}>
+            Mostrar Panel de Control
           </button>
-          <h2 className="ml-3 my-md-3 ms-md-5 me-3 fs-1"><strong>Mi Cuenta</strong></h2>
-        </nav>
-        <div className="container-fluid">
-          {renderContent()}
+        <div className="container-fluid profile-container">
+          <div className="profile-content">
+            {renderContent()}
+          </div>
         </div>
       </div>
+      <div className="overlay" onClick={closeSidebar}></div>
     </div>
   );
 }
