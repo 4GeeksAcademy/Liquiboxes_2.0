@@ -102,7 +102,7 @@ export const Home = () => {
                     </h1>
                 </header>
             </Fade>
-            <div className="row d-flex align-items-center mx-5">
+            <div className="row d-flex align-items-center mx-lg-5">
 
                 <div className="col-12 col-lg-6 grid-2">
                     {store.userData && (
