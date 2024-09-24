@@ -9,7 +9,9 @@ import {
   faShoppingCart,
   faPlus,
   faBoxes,
-  faStore
+  faStore,
+  faEnvelope,
+  faImage
 } from '@fortawesome/free-solid-svg-icons';
 import ProfileField from '../../component/Profile/ProfileField';
 import { Context } from '../../store/appContext';
@@ -18,7 +20,7 @@ import BoxesOnSale from '../../component/ShopHome/BoxesOnSale';
 import ContactSupport from '../../component/ShopHome/ContactSupport';
 import ShopNotifications from '../../component/ShopHome/ShopNotifications';
 import ShopSales from '../../component/ShopHome/ShopSales';
-
+import { faSignalMessenger } from '@fortawesome/free-brands-svg-icons';
 
 function ShopHome() {
   const navigate = useNavigate();
@@ -28,6 +30,7 @@ function ShopHome() {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { store } = useContext(Context);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const categoryOptions = store.categories;
 
@@ -46,9 +49,7 @@ function ShopHome() {
           }
         });
 
-        // Procesar las categorías
         const processedCategories = response.data.categories.map(cat => {
-          // Eliminar las comillas extras y los caracteres de escape
           return cat.replace(/^"/, '').replace(/"$/, '').replace(/\\"/g, '"');
         });
 
@@ -72,13 +73,17 @@ function ShopHome() {
     const token = sessionStorage.getItem('token');
     try {
       let value = shopData[field];
+      const formData = new FormData();
+
       if (field === 'categories' && Array.isArray(value)) {
-        // Convertir el array de categorías a un formato que el backend pueda procesar
         value = JSON.stringify(value.map(cat => `"${cat}"`));
       }
 
-      const formData = new FormData();
-      formData.append(field, value);
+      if (field === 'image_shop_url' && previewImage) {
+        formData.append('image_shop_url', previewImage);
+      } else {
+        formData.append(field, value);
+      }
 
       await axios.patch(`${process.env.BACKEND_URL}/shops/profile`,
         formData,
@@ -91,6 +96,16 @@ function ShopHome() {
       );
       setEditMode(prev => ({ ...prev, [field]: false }));
       setError(null);
+
+      // Actualizar la imagen en shopData si se subió una nueva
+      if (field === 'image_shop_url' && previewImage) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setShopData(prev => ({ ...prev, image_shop_url: reader.result }));
+        };
+        reader.readAsDataURL(previewImage);
+      }
+
     } catch (error) {
       console.error("Error updating shop data:", error);
       setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
@@ -101,11 +116,24 @@ function ShopHome() {
     setShopData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setPreviewImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setShopData(prev => ({ ...prev, image_shop_url: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const renderField = (field, icon, label) => {
     if (!shopData || !shopData[field]) return null;
 
     const value = shopData[field];
     const isListField = field === 'categories';
+    const isImageField = field === 'image_shop_url';
 
     const renderInput = () => {
       if (isListField) {
@@ -137,27 +165,45 @@ function ShopHome() {
             )}
           </div>
         );
+      } else if (isImageField) {
+        return (
+          <div className="d-flex align-items-center">
+            <img 
+              src={value} 
+              alt="Profile" 
+              style={{ width: '100px', height: '100px', objectFit: 'cover', marginRight: '10px' }} 
+            />
+            {editMode[field] && (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+              />
+            )}
+          </div>
+        );
+      } else {
+        return (
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => handleChange(field, e.target.value)}
+          />
+        );
       }
-      return (
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => handleChange(field, e.target.value)}
-        />
-      );
     };
 
     return (
-      <div className='col-12 mb-3'>
+      <div className='col-12 col-lg-6 mb-3'>
         <ProfileField
           icon={icon}
           label={label}
-          value={isListField && Array.isArray(value) ? value.join(', ') : value}
+          value={isImageField ? renderInput() : (isListField && Array.isArray(value) ? value.join(', ') : value)}
           onEdit={() => handleEdit(field)}
           onSave={() => handleSave(field)}
           isEditing={editMode[field]}
         >
-          {renderInput()}
+          {isImageField ? renderInput() : (editMode[field] ? renderInput() : null)}
         </ProfileField>
       </div>
     );
@@ -198,10 +244,13 @@ function ShopHome() {
             {renderField('shop_name', faStore, 'Nombre de la Tienda')}
             {renderField('shop_address', faStore, 'Dirección de la Tienda')}
             {renderField('postal_code', faStore, 'Código Postal')}
+            {renderField('email', faEnvelope, 'Correo electrónico')}
             {renderField('categories', faStore, 'Categorías')}
             {renderField('business_core', faStore, 'Actividad Principal')}
             {renderField('shop_description', faStore, 'Descripción de la Tienda')}
             {renderField('shop_summary', faStore, 'Resumen de la Tienda')}
+            {renderField('image_shop_url', faImage, 'Imagen de la tienda')}
+            {renderField('name', faSignalMessenger, 'Nombre de la tienda')}
           </div>
         );
       case 'support':
