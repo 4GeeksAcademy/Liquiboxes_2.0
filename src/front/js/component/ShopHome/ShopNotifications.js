@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faFilter, faCheck, faTimes, faExchange, faTruck, faPrint, faDownload, faCaretDown, faList, faShoppingCart, faComment } from '@fortawesome/free-solid-svg-icons';
-import { Modal, Button, Form, Table, Tabs, Tab, Dropdown } from 'react-bootstrap';
+import { faBell, faEnvelope, faEnvelopeOpen, faCheck, faTimes, faExchange, faTruck, faDownload, faList, faShoppingCart, faComment } from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button, Form, Table, Tabs, Tab } from 'react-bootstrap';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import '../../../styles/shops/shopnotifications.css';
@@ -13,7 +13,6 @@ const ShopNotifications = () => {
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState('all');
-  const [confirmationProgress, setConfirmationProgress] = useState(0);
   const [orderDetails, setOrderDetails] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -432,10 +431,6 @@ const ShopNotifications = () => {
     return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
   };
 
-  const formatArray = (arr) => {
-    return Array.isArray(arr) ? arr.map(capitalize).join(', ') : '';
-  };
-
   const handleReplySubmit = async (e) => {
     e.preventDefault();
     try {
@@ -482,8 +477,9 @@ const ShopNotifications = () => {
             <div className="order-details">
               <h4>Detalles de la orden</h4>
               <p><strong>ID Orden:</strong> {orderDetails.id}</p>
+              <p><strong>ID venta:</strong> {selectedNotification.extra_data.shop_sale_id}</p>
               <p><strong>Fecha de la compra:</strong> {new Date(orderDetails.date).toLocaleString()}</p>
-              <p><strong>Cantidad Total:</strong> {orderDetails.total_amount} €</p>
+              <p><strong>Cantidad Total:</strong> {orderDetails.total_amount.toFixed(2)} €</p>
             </div>
             {userPreferences && (
               <div className="user-preferences">

@@ -135,11 +135,6 @@ def create_sale():
             quantity = item['quantity']
             subtotal = item['subtotal']
 
-            logging.info(f"Processing mystery box {mystery_box.id}: {mystery_box.name}")
-            logging.info(f"Number of possible items: {len(mystery_box.possible_items)}")
-            logging.info(f"Number of items per box: {mystery_box.number_of_items}")
-            logging.info(f"Quantity ordered: {quantity}")
-
             # Calcular cuántos artículos necesitamos en total
             total_items_needed = mystery_box.number_of_items * quantity
 
@@ -162,8 +157,6 @@ def create_sale():
             )
             db.session.add(sale_detail)
             db.session.flush()  # Esto asigna un ID a sale_detail sin hacer commit
-
-            logging.info(f"Created SaleDetail with id: {sale_detail.id}")
 
 
             shop_sale = ShopSale(
@@ -266,6 +259,7 @@ def get_sale(sale_id):
     # Verificar si el usuario es el propietario de la venta o es una tienda involucrada
     if current_user['type'] == 'user' and sale.user_id != current_user['id']:
         return jsonify({'error': 'Unauthorized'}), 403
+    
     elif current_user['type'] == 'shop':
         shop_sale = ShopSale.query.filter_by(sale_id=sale_id, shop_id=current_user['id']).first()
         if not shop_sale:
@@ -346,14 +340,16 @@ def confirm_shop_sale(sale_id):
             type="new_sale",
             recipient_type="shop",
             recipient_id=current_shop.id,
-            sale_id=sale_id
+            extra_data={
+                "shop_sale_id": shop_sale.id
+            }
         ).first()
 
         if original_notification:
             original_notification.type = "confirmed"
             original_notification.is_read = False
             original_notification.updated_at = datetime.utcnow()
-            original_notification.content = f"Has confirmado la venta con ID: {sale_id}. Por favor, prepara el pedido para su envío."
+            original_notification.content = f"Has confirmado la venta con ID: {shop_sale.id}, del pedido con ID: {sale_id}. Por favor, prepara el pedido para su envío."
         else:
             # Si no se encuentra la notificación original, crear una nueva
             new_notification = Notification(
@@ -363,7 +359,7 @@ def confirm_shop_sale(sale_id):
                 sender_type="platform",
                 sale_id=sale_id,
                 shop_id=current_shop.id,
-                content=f"Has confirmado la venta con ID: {sale_id}. Por favor, prepara el pedido para su envío."
+                content=f"Has confirmado la venta con ID: {shop_sale.id}, del pedido con ID: {sale_id}. Por favor, prepara el pedido para su envío."
             )
             db.session.add(new_notification)
 
