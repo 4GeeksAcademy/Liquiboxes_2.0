@@ -92,6 +92,19 @@ const UserNotifications = () => {
         }
     };
 
+    const handleMarkAsUnread = async (e, notificationId) => {
+        e.stopPropagation();
+        const success = await markNotificationAsRead(notificationId, false);
+        if (success) {
+            setNotifications(notifications.map(n =>
+                n.id === notificationId ? { ...n, is_read: false } : n
+            ));
+            if (filter === 'read') {
+                setFilteredNotifications(prevFiltered => prevFiltered.filter(n => n.id !== notificationId));
+            }
+        }
+    };
+
     const handleMarkAllRead = async () => {
         const results = await Promise.all(
             notifications.filter(n => !n.is_read).map(n => markNotificationAsRead(n.id, true))
@@ -103,7 +116,6 @@ const UserNotifications = () => {
         }
         fetchNotifications();
     };
-
 
     const notificationConfig = {
         purchase_confirmation: {
@@ -163,7 +175,7 @@ const UserNotifications = () => {
     };
 
     return (
-        <div className="user-notifications container mt-4">
+        <div className="user-notifications container">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Notificaciones</h2>
                 <div className="d-flex align-items-center">
@@ -176,7 +188,6 @@ const UserNotifications = () => {
 
             <FilterButtons currentFilter={filter} />
 
-
             <Button onClick={handleMarkAllRead} variant="secondary" className="mb-4 custom-dropdown-toggle">
                 Marcar todas como leídas
             </Button>
@@ -188,6 +199,7 @@ const UserNotifications = () => {
                         <th>Contenido</th>
                         <th>Fecha</th>
                         <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -197,6 +209,7 @@ const UserNotifications = () => {
                             <tr
                                 key={notification.id}
                                 onClick={() => handleNotificationClick(notification)}
+                                className='py-3 py-lg-0'
                             >
                                 <td data-label="Tipo">
                                     <FontAwesomeIcon icon={config.icon} className="me-2" />
@@ -209,6 +222,17 @@ const UserNotifications = () => {
                                         <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" />
                                     ) : (
                                         <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
+                                    )}
+                                </td>
+                                <td data-label="Acciones">
+                                    {notification.is_read && (
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            onClick={(e) => handleMarkAsUnread(e, notification.id)}
+                                        >
+                                            Marcar como no leída
+                                        </Button>
                                     )}
                                 </td>
                             </tr>
