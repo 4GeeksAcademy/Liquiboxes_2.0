@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBox, faCoins, faList, faImage } from '@fortawesome/free-solid-svg-icons';
 import Confetti from 'react-confetti';
 import ModalGlobal from '../../component/ModalGlobal';
+import {Context} from '../../store/appContext'
 import "../../../styles/shops/createMysteryBox.css";
+import ModalToken from '../../component/Modals/ModalToken';
+import ModalType from '../../component/Modals/ModalType';
 
 const STEPS = [
     { icon: faBox, title: "Información Básica", description: "Nombre y descripción de tu caja misteriosa", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Package_fwghe4.gif" },
@@ -30,14 +33,20 @@ const CreateMysteryBox = () => {
     const [previewImage, setPreviewImage] = useState(null);
     const [isSuccess, setIsSuccess] = useState(false);
     const [ mysteryBoxId, setMysteryBoxId] = useState(null)
+    const {store, actions} = useContext(Context)
     const navigate = useNavigate();
 
     useEffect(() => {
         const token = sessionStorage.getItem('token');
+        const userType = sessionStorage.getItem('userType')
         if (!token) {
-            alert('Debes iniciar sesión para crear una nueva caja misteriosa');
-            navigate('/');
+            actions.setModalToken(true)
+            return
         }
+        if (userType !== 'shop'){
+            actions.setModalType(true)
+        }
+        
     }, [navigate]);
 
     const validateStep = () => {
@@ -346,6 +355,12 @@ const CreateMysteryBox = () => {
                         className="welcome-modal"
                     />
                 </>
+            )}
+            {store.modalToken && (
+                <ModalToken />
+            )}
+            {store.modalType && (
+                <ModalType type='user' />
             )}
         </div>
     );
