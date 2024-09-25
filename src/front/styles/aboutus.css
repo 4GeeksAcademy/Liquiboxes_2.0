@@ -1,0 +1,70 @@
+.about-us-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.company-info, .mission-section, .how-it-works, .contact-section {
+  margin-bottom: 3rem;
+}
+
+h1, h2, h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.team-section {
+  text-align: center;
+}
+
+.team-members {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.team-member {
+  background-color: var(--background-secondary-color);
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.team-member:hover {
+  transform: translateY(-5px);
+}
+
+.team-photo {
+  width: 100%;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.social-icon {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  transition: color 0.3s ease;
+}
+
+.social-icon:hover {
+  color: var(--secondary-color);
+}
+
+.contact-link {
+  color: var(--secondary-color);
+  text-decoration: underline;
+}
+
+.contact-link:hover {
+  color: var(--primary-color);
+}
