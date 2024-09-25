@@ -128,17 +128,14 @@ const getState = ({ getStore, getActions, setStore }) => {
                 });
             },
 
-
             addToCart: (id) => {
                 let cart = [];
-
                 // Si el store no tiene el carrito, lo obtenemos del localStorage
                 if (!getStore().cart) {
                     cart = JSON.parse(localStorage.getItem("cart") || "[]");
                 } else {
                     cart = getStore().cart;
                 }
-
                 // Verificamos si el item con este mysterybox_id ya está en el carrito
                 const existingItemIndex = cart.findIndex(item => item.mysterybox_id == id);
 
@@ -146,34 +143,77 @@ const getState = ({ getStore, getActions, setStore }) => {
                     // Si ya existe, incrementamos la cantidad
                     cart[existingItemIndex] = {
                         ...cart[existingItemIndex],
-                        quantity: cart[existingItemIndex].quantity + 1
-                    };
+                        quantity: cart[existingItemIndex].quantity + 1,
+                        added_at: new Date().getTime()
+                    }
                 } else {
                     // Aseguramos que el id no sea null o undefined antes de agregar
                     if (id) {
+                        let added_at = new Date().getTime()
                         let mysterybox_id = id;
-                        cart.push({ mysterybox_id, quantity: 1 });
+                        cart.push({ mysterybox_id, quantity: 1, added_at});
                     } else {
                         console.error("El ID es inválido, no se puede añadir al carrito");
                     }
                 }
-
                 // Actualizamos el carrito en el store y en localStorage
                 setStore({ cart });
                 localStorage.setItem("cart", JSON.stringify(cart));
                 return cart;
             },
 
+            removeExpiredCartItems: () => {
+                const store = getStore();
+                const currentTime = new Date().getTime();
+                const TIME_LIMIT = 10000; //10 segundos
+
+                let updatedCart = store.cart.filter(cartItem => {
+                    const timeElapsed = currentTime - cartItem.added_at;
+                    
+                    if (timeElapsed > TIME_LIMIT) {
+                        // Si ha caducado, no lo incluimos en el nuevo carrito
+                        return false;
+                    }
+                    return true;
+                });
+
+                // Actualiza el store y el localStorage
+                setStore({ cart: updatedCart });
+                localStorage.setItem("cart", JSON.stringify(updatedCart));
+
+                // cartWithDetails
+                let updatedCartWithDetails = store.cartWithDetails.filter(cartItem => {
+                    const timeElapsed = currentTime - cartItem.addedAt;
+                    return timeElapsed <= TIME_LIMIT;
+                });
+
+                setStore({ cartWithDetails: updatedCartWithDetails });
+                localStorage.setItem("cartWithDetails", JSON.stringify(updatedCartWithDetails));
+            },
+
+            startCartExpirationCheck: () => {
+                //  revisión periódica del carrito cada minuto
+                setInterval(() => {
+                    const actions = getActions();
+                    actions.removeExpiredCartItems();
+                }, 5000);
+            },
+
             removeFromCart: (id) => {
                 const store = getStore();
                 let cart = store.cart || JSON.parse(localStorage.getItem("cart") || "[]");
+                let cartWithDetails = store.cartWithDetails || JSON.parse(localStorage.getItem("cartWithDetails") || "[]");
 
                 // Filtramos el carrito para eliminar el item con el id especificado
                 cart = cart.filter(item => item.mysterybox_id != id);
+                cartWithDetails = cartWithDetails.filter(item => item.id != id);
 
                 // Actualizamos el carrito en el store y en localStorage
                 setStore({ cart });
+                setStore({ cartWithDetails });
                 localStorage.setItem("cart", JSON.stringify(cart));
+                localStorage.setItem("cartWithDetails", JSON.stringify(cartWithDetails));
+
 
                 return cart;
             },
@@ -189,7 +229,8 @@ const getState = ({ getStore, getActions, setStore }) => {
                         // Si la cantidad es mayor que 1, la reducimos
                         cart[existingItemIndex] = {
                             ...cart[existingItemIndex],
-                            quantity: cart[existingItemIndex].quantity - 1
+                            quantity: cart[existingItemIndex].quantity - 1,
+                            added_at: new Date().getTime()
                         };
                     } else {
                         // Si la cantidad es 1, eliminamos el item del carrito
@@ -202,6 +243,18 @@ const getState = ({ getStore, getActions, setStore }) => {
                 }
 
                 return cart;
+            },
+
+            getCartItemDetails: async (id) => {
+                try {
+                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`);
+                    if (response.data) {
+                        return [];
+                    }
+                } catch (error) {
+                    console.log("Error al obtener detalles del item del carrito:", error);
+                    return null;
+                }
             },
 
             fetchSingleItemDetail: async (id) => {
@@ -262,7 +315,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/${id}`)
                     if (response.data) {
-                        setStore({ shopDetail: response.data, showError: false, isLoading: false})
+                        setStore({ shopDetail: response.data, showError: false, isLoading: false })
                         console.log(first)
                     }
                 } catch (error) {
@@ -275,7 +328,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                     }
                 }
             },
-         
+
         }
     };
 };
