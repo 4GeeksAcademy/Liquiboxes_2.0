@@ -19,7 +19,8 @@ import {
   faShoppingBag,
   faHeadset,
   faBars,
-  faTimes
+  faTimes,
+  faPowerOff
 } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/userdashboard.css";
 import ProfileField from '../component/Profile/ProfileField';
@@ -27,6 +28,8 @@ import { Context } from '../store/appContext'
 import UserNotifications from '../component/Profile/UserNotifications';
 import UserMessages from '../component/Profile/UserMessages';
 import ContactSupport from '../component/ShopHome/ContactSupport';
+import { useNavigate } from 'react-router-dom';
+import ModalLogout from '../component/Modals/ModalLogout'
 
 function UserDashboard() {
   const [userData, setUserData] = useState(null);
@@ -34,7 +37,8 @@ function UserDashboard() {
   const [error, setError] = useState(null);
   const [activeSection, setActiveSection] = useState('notifications');
   const [isLoading, setIsLoading] = useState(true);
-  const { store } = useContext(Context)
+  const { store, actions } = useContext(Context)
+  const navigate = useNavigate()
 
   // Definiciones para opciones de selección
   const sizeOptions = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
@@ -383,6 +387,9 @@ function UserDashboard() {
           >
             <FontAwesomeIcon icon={faHeadset} className="mr-2" /> Contacto con Soporte
           </button>
+          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => {actions.setModalLogout(true)}}>
+            <FontAwesomeIcon icon={faPowerOff} className="mr-2" /> Cerrar sesión
+          </button>
         </div>
       </div>
       <div id="page-content-wrapper">
@@ -396,6 +403,12 @@ function UserDashboard() {
         </div>
       </div>
       <div className="overlay" onClick={closeSidebar}></div>
+    
+      {store.modalLogout && (
+        <div>
+          <ModalLogout />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const getState = ({ getStore, getActions, setStore }) => {
+
     return {
         store: {
             message: null,
@@ -18,7 +19,8 @@ const getState = ({ getStore, getActions, setStore }) => {
             showError: true,
             token: "",
             modalToken: false,
-            modalType: false
+            modalType: false,
+            modalLogout: false
         },
         actions: {
             setModalToken: (boolean) => {
@@ -29,6 +31,11 @@ const getState = ({ getStore, getActions, setStore }) => {
             setModalType: (boolean) => {
                 let trueOrFalse = boolean
                 setStore( {modalType: trueOrFalse})
+            },
+
+            setModalLogout: (boolean) => {
+                let trueOrFalse = boolean
+                setStore( {modalLogout: trueOrFalse})
             },
 
             getMessage: async () => {
@@ -112,7 +119,6 @@ const getState = ({ getStore, getActions, setStore }) => {
                     userData: null,
                     error: null
                 });
-                // Después de cerrar sesión, osea después de llamar a esta función habría que redireccionar al usuario a login (useNavigate('/'))
             },
 
 
