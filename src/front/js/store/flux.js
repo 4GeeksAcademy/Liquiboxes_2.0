@@ -17,7 +17,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             userData: null,
             shopDetail: {},
             showError: true,
-            token: "",
+            token: sessionStorage.getItem('token') || "",
             modalToken: false,
             modalType: false,
             modalLogout: false
@@ -36,6 +36,11 @@ const getState = ({ getStore, getActions, setStore }) => {
             setModalLogout: (boolean) => {
                 let trueOrFalse = boolean
                 setStore( {modalLogout: trueOrFalse})
+            },
+
+            setLogin: (boolean) => {
+                let trueOrFalse = boolean
+                setStore( {login: trueOrFalse})
             },
 
             getMessage: async () => {
@@ -117,7 +122,9 @@ const getState = ({ getStore, getActions, setStore }) => {
                 sessionStorage.removeItem('userType');
                 setStore({
                     userData: null,
-                    error: null
+                    token: "",
+                    error: null,
+                    modalLogout: false
                 });
             },
 

@@ -16,56 +16,26 @@ export const Navbar = () => {
 
     return (
         <nav className="navbar navbar-expand-lg">
-            <div className="container">
-                <Link to="/" className="navbar-brand">Liquiboxes</Link>
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                    <span className="navbar-toggler-icon"></span>
-                </button>
-                <div className="collapse navbar-collapse" id="navbarNavDropdown">
-                    <ul className="navbar-nav me-auto">
-                        <li className="nav-item dropdown">
-                            <a className="nav-link dropdown-toggle" href="#" id="clienteDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Cliente
-                            </a>
-                            <ul className="dropdown-menu" aria-labelledby="clienteDropdown">
-                                <li><Link to="/signup" className="dropdown-item">Registro</Link></li>
-                                <li><Link to="/home" className="dropdown-item">Home</Link></li>
-                                <li><Link to="/cart" className="dropdown-item">Carrito</Link></li>
-                                <li><Link to="/aboutus" className="dropdown-item">Sobre Nosotros</Link></li>
-                                <li><Link to="/payingform" className="dropdown-item">Formulario de Pago</Link></li>
-                                <li><Link to="/userdashboard" className="dropdown-item">Panel de Control</Link></li>
-                                <li><Link to="/shopssearch" className="dropdown-item">Buscar Tiendas</Link></li>
-                            </ul>
-                        </li>
-                        <li className="nav-item dropdown">
-                            <a className="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Admin
-                            </a>
-                            <ul className="dropdown-menu" aria-labelledby="adminDropdown">
-                                <li><Link to="/adminhome" className="dropdown-item">Inicio Admin</Link></li>
-                                <li><Link to="/adminlogin" className="dropdown-item">Login Admin</Link></li>
-                            </ul>
-                        </li>
-                        <li className="nav-item dropdown">
-                            <a className="nav-link dropdown-toggle" href="#" id="tiendaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Tienda
-                            </a>
-                            <ul className="dropdown-menu" aria-labelledby="tiendaDropdown">
-                                <li><Link to="/shophome" className="dropdown-item">Inicio Tienda</Link></li>
-                                <li><Link to="/shopsignup" className="dropdown-item">Registro Tienda</Link></li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <Link to="/cart" className="nav-link position-relative">
-                        <FontAwesomeIcon icon={faShoppingCart} size="lg" />
-                        {cartItemCount > 0 && (
-                            <span className="position-absolute top-25 start-100 translate-middle badge rounded-pill">
-                                {cartItemCount}
-                                <span className="visually-hidden">items en el carrito</span>
-                            </span>
-                        )}
-                    </Link>
-                </div>
+            <div className="container-fluid mx-5">
+                <Link to="/home" className="navbar-brand">Liquiboxes</Link>
+                <ul className="navbar-nav me-auto">
+                    <li><Link to="/aboutus" className="single-item">Sobre Nosotros</Link></li>
+                    <li><Link to="/shopssearch" className="single-item">Buscar Tiendas</Link></li>
+                    {store.token ? (
+                        <li><Link to="/userdashboard" className="single-item">Panel de Control</Link></li>
+                    ) : (
+                        <li><Link to="/" className="single-item">Iniciar Sesión</Link></li>
+                    )}
+                </ul>
+                <Link to="/cart" className="nav-link position-relative">
+                    <FontAwesomeIcon icon={faShoppingCart} size="lg" />
+                    {cartItemCount > 0 && (
+                        <span className="position-absolute top-25 start-100 translate-middle badge rounded-pill">
+                            {cartItemCount}
+                            <span className="visually-hidden">items en el carrito</span>
+                        </span>
+                    )}
+                </Link>
             </div>
         </nav>
     );

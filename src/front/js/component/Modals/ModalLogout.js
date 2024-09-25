@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 
 export default function ModalToken() {
-    const {store, actions} = useContext(Context)
+    const {actions} = useContext(Context)
     const navigate = useNavigate ()
 
     const handleCloseModal = ()=> {

@@ -141,7 +141,7 @@ function BoxesOnSale({ shopData }) {
               <p>No hay imagen disponible</p>
             )}
             <button type="button" className="btn btn-link"  //NAVIGATE PARA IR A MYSTERY BOX
-              onClick={() => navigate(`/mysterybox/${box.id}`)}>Ir a mystery Box
+              onClick={() => navigate(`/mysteryboxpreview/${box.id}`)}>Ir a mystery Box
             </button>
           </div>
 

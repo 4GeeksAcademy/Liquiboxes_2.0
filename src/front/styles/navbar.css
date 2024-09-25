@@ -37,6 +37,18 @@
     transition: color 0.3s ease, transform 0.3s ease !important;
 }
 
+.navbar .single-item {
+    color: var(--background-color) !important;
+    transition: color 0.3s ease, transform 0.3s ease !important;
+    margin: 0 2rem 0 2rem !important;
+    text-decoration: none;
+}
+.navbar .single-item:hover {
+    background-color: transparent !important;
+    color: var(--primary-color) !important;
+    transform: translateX(5px) !important;
+}
+
 .navbar .dropdown-item:hover {
     background-color: transparent !important;
     color: var(--primary-color) !important;

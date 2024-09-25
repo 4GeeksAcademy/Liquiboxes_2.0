@@ -12,7 +12,8 @@ import {
   faStore,
   faEnvelope,
   faImage,
-  faPowerOff
+  faPowerOff,
+  faShop
 } from '@fortawesome/free-solid-svg-icons';
 import ProfileField from '../../component/Profile/ProfileField';
 import { Context } from '../../store/appContext';
@@ -300,6 +301,9 @@ function ShopHome() {
           </button>
           <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => { navigate("/createbox") }}>
             <FontAwesomeIcon icon={faPlus} className="mr-2" /> Crear Nueva Caja
+          </button>
+          <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => { navigate(`/shoppreview/${shopData.id}`) }}>
+            <FontAwesomeIcon icon={faShop} className="mr-2" /> Ver Perfil de tu tienda
           </button>
           <button type='button' className={`btn btn-danger rounded-0`} onClick={() => {actions.setModalLogout(true)}}>
             <FontAwesomeIcon icon={faPowerOff} className="mr-2" /> Cerrar sesión
