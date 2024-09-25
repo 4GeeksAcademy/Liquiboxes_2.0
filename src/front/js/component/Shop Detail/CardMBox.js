@@ -1,10 +1,9 @@
 import React, { useContext } from "react";
-import { Card, Button } from 'react-bootstrap';
 import { Context } from "../../store/appContext";
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStore, faEuroSign, faBoxOpen, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
-import '../../../styles/cardmbox.css'
+import { faStore, faEuroSign, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import '../../../styles/cardtienda.css' // Asegúrate de que este archivo exista y contenga los estilos de cardtienda
 
 function CardMBox({ data }) {
   const navigate = useNavigate();
@@ -36,34 +35,42 @@ function CardMBox({ data }) {
   };
 
   return (
-    <Card className='card-container my-4'>
-      <div className="card-img-wrapper">
-        <Card.Img
+    <div className="card-tienda-shop">
+      <div className="card-img-wrapper-shop">
+        <img
           src={data.image_url}
           alt={data.name}
+          className="card-img-shop"
         />
       </div>
-      <Card.Body className='card-body'>
-        <Card.Title className='card-title'>{data.name}</Card.Title>
-        <Card.Subtitle className='card-subtitle'>
-          <FontAwesomeIcon icon={faStore} /> {data.shop_name}
-        </Card.Subtitle>
-        <Card.Text className='card-text'>
-          <FontAwesomeIcon icon={faEuroSign} /> {Number(data.price).toFixed(2)}
-        </Card.Text>
-        <Button className='card-button' onClick={handleButtonClick}>
-          <FontAwesomeIcon icon={faBoxOpen} /> Ver detalles
-        </Button>
-        {token ? <Button className='card-button' onClick={() => { handleBuyNow(data.id) }}>
-          <FontAwesomeIcon icon={faShoppingCart} /> Comprar Ya
-        </Button>
-            : <Button className='card-button' onClick={() => { navigate('/', { state: { from: location.pathname } }) }}>
+      <div className="card-body-shop">
+        <h2 className="card-title-shop">{data.name}</h2>
+        <p className="card-text-shop">
+          <FontAwesomeIcon icon={faStore} className="icon-shop" />
+          {data.shop_name}
+        </p>
+        <p className="card-text-shop">
+          <FontAwesomeIcon icon={faEuroSign} className="icon-shop" />
+          {Number(data.price).toFixed(2)}
+        </p>
+        <p className="card-text-shop card-address-shop">
+          <FontAwesomeIcon icon={faMapMarkerAlt} className="icon-shop" />
+          {data.address || 'Dirección no disponible'}
+        </p>
+        <button className="card-button-shop" onClick={handleButtonClick}>
+          Ver detalles
+        </button>
+        {token ? (
+          <button className="card-button-shop btn-secondary" onClick={() => handleBuyNow(data.id)}>
+            Comprar Ya
+          </button>
+        ) : (
+          <button className="card-button-shop btn-secondary" onClick={() => navigate('/', { state: { from: location.pathname } })}>
             Inicia sesión para comprar ya
-          </Button>
-            }
-        
-      </Card.Body>
-    </Card>
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
