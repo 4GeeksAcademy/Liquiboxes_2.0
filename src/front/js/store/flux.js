@@ -124,8 +124,9 @@ const getState = ({ getStore, getActions, setStore }) => {
                 } else {
                     // Aseguramos que el id no sea null o undefined antes de agregar
                     if (id) {
+                        let added_at = new Date().getTime()
                         let mysterybox_id = id;
-                        cart.push({ mysterybox_id, quantity: 1 });
+                        cart.push({ mysterybox_id, quantity: 1, added_at});
                     } else {
                         console.error("El ID es inválido, no se puede añadir al carrito");
                     }
@@ -136,11 +137,10 @@ const getState = ({ getStore, getActions, setStore }) => {
                 return cart;
             },
 
-
             removeExpiredCartItems: () => {
                 const store = getStore();
                 const currentTime = new Date().getTime();
-                const TIME_LIMIT = 10000; // 5 minutos en milisegundos (ajusta este valor)
+                const TIME_LIMIT = 10000; //10 segundos
 
                 let updatedCart = store.cart.filter(cartItem => {
                     const timeElapsed = currentTime - cartItem.added_at;
@@ -156,7 +156,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                 setStore({ cart: updatedCart });
                 localStorage.setItem("cart", JSON.stringify(updatedCart));
 
-                // `cartWithDetails`
+                // cartWithDetails
                 let updatedCartWithDetails = store.cartWithDetails.filter(cartItem => {
                     const timeElapsed = currentTime - cartItem.addedAt;
                     return timeElapsed <= TIME_LIMIT;

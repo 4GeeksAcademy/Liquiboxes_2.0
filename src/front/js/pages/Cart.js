@@ -36,13 +36,9 @@ const Cart = () => {
   useEffect(() => {
     // Traemos la informacion del carrito
     fetchCartDetails();
-
     // Comenzamos la revisión periódica del carrito
-    actions.startCartExpirationCheck();
+    // actions.startCartExpirationCheck();   //Esta funcion hace que los articulos se borren del carrito, pero hay que moverla a global
   }, []);
-
-
-
 
   const updateLocalCart = useCallback((itemId, updateFn) => {
     setCartItems(prevItems => {
