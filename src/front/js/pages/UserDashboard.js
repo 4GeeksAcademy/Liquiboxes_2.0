@@ -28,7 +28,6 @@ import { Context } from '../store/appContext'
 import UserNotifications from '../component/Profile/UserNotifications';
 import UserMessages from '../component/Profile/UserMessages';
 import ContactSupport from '../component/ShopHome/ContactSupport';
-import { useNavigate } from 'react-router-dom';
 import ModalLogout from '../component/Modals/ModalLogout'
 
 function UserDashboard() {
@@ -38,7 +37,6 @@ function UserDashboard() {
   const [activeSection, setActiveSection] = useState('notifications');
   const [isLoading, setIsLoading] = useState(true);
   const { store, actions } = useContext(Context)
-  const navigate = useNavigate()
 
   // Definiciones para opciones de selección
   const sizeOptions = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];

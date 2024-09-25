@@ -33,6 +33,28 @@ import NotFound from "./pages/NotFound";
 
 import injectContext from "./store/appContext"; // Asegúrate de importar correctamente
 
+// Previews
+import { NavbarPreview } from "./component/Previews/navbarPreview";
+import FooterPreview from "./component/Previews/FooterPreview";
+import ShopPreview from "./pages/Shops/Previews/ShopPreview";
+import MisteryBoxPreview from "./pages/Shops/Previews/MysteryBoxPreview";
+
+const NavbarWrapper = ({ children }) => (
+  <>
+    <Navbar />
+    {children}
+    <Footer />
+  </>
+);
+
+const PreviewWrapper = ({ children }) => (
+  <>
+    <NavbarPreview />
+    {children}
+    <FooterPreview />
+  </>
+)
+
 const Layout = () => {
   const basename = process.env.BASENAME || "";
 
@@ -42,47 +64,42 @@ const Layout = () => {
     intent: "capture",
   };
 
-
-
-
   return (
     <div className="layout">
       <GoogleOAuthProvider clientId={process.env.REACT_APP_ID_CLIENTE_GOOGLE}>
         <PayPalScriptProvider options={initialOptions}>
           <BrowserRouter basename={basename}>
             <ScrollToTop>
-              <Navbar />
               <div className="main-content">
                 <Routes>
+                  {/* Rutas con Navbar */}
+                  <Route element={<NavbarWrapper><Login /></NavbarWrapper>} path="/" />
+                  <Route element={<NavbarWrapper><Home /></NavbarWrapper>} path="/home" />
+                  <Route element={<NavbarWrapper><SignUp /></NavbarWrapper>} path="/signup" />
+                  <Route element={<NavbarWrapper><Cart /></NavbarWrapper>} path="/cart" />
+                  <Route element={<NavbarWrapper><AboutUs /></NavbarWrapper>} path="/aboutus" />
+                  <Route element={<NavbarWrapper><PayingForm /></NavbarWrapper>} path="/payingform" />
+                  <Route element={<NavbarWrapper><Profile /></NavbarWrapper>} path="/userdashboard" />
+                  <Route element={<NavbarWrapper><ShopDetail /></NavbarWrapper>} path="/shops/:id" />
+                  <Route element={<NavbarWrapper><ShopsSearch /></NavbarWrapper>} path="/shopssearch" />
+                  <Route element={<NavbarWrapper><MysteryBoxDetail /></NavbarWrapper>} path="/mysterybox/:id" />
+                  <Route element={<NavbarWrapper><ChooseRegistration /></NavbarWrapper>} path="/chooseregistration" />
 
-
-                  {/* Vistas de cliente */}
-                  <Route element={<Home />} path="/home" />
-                  <Route element={<SignUp />} path="/signup" />
-                  <Route element={<Login />} path="/" />
-                  <Route element={<Cart />} path="/cart" />
-                  <Route element={<AboutUs />} path="/aboutus" />
-                  <Route element={<PayingForm />} path="/payingform" />
-                  <Route element={<Profile />} path="/userdashboard" />
-                  <Route element={<ShopDetail />} path="/shops/:id" />
-                  <Route element={<ShopsSearch />} path="/shopssearch" />
-                  <Route element={<MysteryBoxDetail />} path="/mysterybox/:id" />
-                  <Route element={<ChooseRegistration />} path="/chooseregistration" />
-
-
-                  {/* Vistas de Admin */}
+                  {/* Rutas sin Navbar */}
                   <Route element={<AdminHome />} path="/adminhome" />
                   <Route element={<AdminLogin />} path="/adminlogin" />
-
-                  {/* Vistas de Tienda */}
                   <Route element={<ShopHome />} path="/shophome" />
+
                   <Route element={<ShopSignUp />} path="/shopsignup" />
                   <Route element={<CreateBox />} path="/createbox" />
+
+                  {/* Vistas Preview */}
+                  <Route element={<PreviewWrapper><ShopPreview /></PreviewWrapper>} path="/shoppreview/:id" />
+                  <Route element={<PreviewWrapper><MisteryBoxPreview /></PreviewWrapper>} path="/mysteryboxpreview/:id" />
 
                   <Route element={<NotFound />} path="*" />
                 </Routes>
               </div>
-              <Footer />
             </ScrollToTop>
           </BrowserRouter>
         </PayPalScriptProvider>
@@ -91,5 +108,4 @@ const Layout = () => {
   );
 };
 
-// Aplica injectContext al Layout
 export default injectContext(Layout);
