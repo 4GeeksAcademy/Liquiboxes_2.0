@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faSave } from '@fortawesome/free-solid-svg-icons';
+import { faSave, faEdit } from '@fortawesome/free-solid-svg-icons';
 
 export default function ProfileField({ icon, label, value, onEdit, onSave, isEditing, children }) {
   return (
@@ -13,20 +13,28 @@ export default function ProfileField({ icon, label, value, onEdit, onSave, isEdi
         <div className="mt-2">
           {isEditing ? (
             <div className="d-flex justify-content-between align-items-center">
-              {children}
+              <div className="flex-grow-1">
+                {children}
+              </div>
               <button
                 onClick={onSave}
-                className="ms-2"
+                className="btn btn-primary ms-2"
               >
                 <FontAwesomeIcon icon={faSave} className="me-1" /> Guardar
               </button>
             </div>
           ) : (
             <div className="d-flex justify-content-between align-items-center">
-              <span className="">{value}</span>
+              <div className="flex-grow-1">
+                {typeof value === 'string' ? (
+                  <span>{value}</span>
+                ) : (
+                  value
+                )}
+              </div>
               <button
                 onClick={onEdit}
-                className="p-1"
+                className="btn btn-secondary"
               >
                 <FontAwesomeIcon icon={faEdit} className="me-1" /> Editar
               </button>

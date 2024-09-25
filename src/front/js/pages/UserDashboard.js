@@ -18,7 +18,9 @@ import {
   faBell,
   faShoppingBag,
   faHeadset,
-  faBars
+  faBars,
+  faTimes,
+  faPowerOff
 } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/userdashboard.css";
 import ProfileField from '../component/Profile/ProfileField';
@@ -26,6 +28,7 @@ import { Context } from '../store/appContext'
 import UserNotifications from '../component/Profile/UserNotifications';
 import UserMessages from '../component/Profile/UserMessages';
 import ContactSupport from '../component/ShopHome/ContactSupport';
+import ModalLogout from '../component/Modals/ModalLogout'
 
 function UserDashboard() {
   const [userData, setUserData] = useState(null);
@@ -33,7 +36,7 @@ function UserDashboard() {
   const [error, setError] = useState(null);
   const [activeSection, setActiveSection] = useState('notifications');
   const [isLoading, setIsLoading] = useState(true);
-  const { store } = useContext(Context)
+  const { store, actions } = useContext(Context)
 
   // Definiciones para opciones de selección
   const sizeOptions = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
@@ -71,7 +74,7 @@ function UserDashboard() {
         setUserData({ ...response.data, categories });
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching user data:", error.response || error);
+        console.error("Error al obtener datos del usuario:", error.response || error);
         setError(error.response?.data?.msg || error.message);
         setIsLoading(false);
       }
@@ -82,6 +85,10 @@ function UserDashboard() {
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
   };
 
   const handleEdit = (field) => {
@@ -110,7 +117,7 @@ function UserDashboard() {
       setEditMode(prev => ({ ...prev, [field]: false }));
       setError(null);
     } catch (error) {
-      console.error("Error updating user data:", error);
+      console.error("Error al actualizar datos del usuario:", error);
       setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
     }
   };
@@ -183,7 +190,7 @@ function UserDashboard() {
                 }
               }}
             >
-              <option value="">Seleccionar {field.replace('_', ' ')}...</option>
+              <option value="">Seleccionar {label.toLowerCase()}...</option>
               {(field === 'not_colors' ? colorOptions :
                 field === 'not_clothes' ? clothesOptions :
                   categoryOptions).filter(option => !value.includes(option)).map(option => (
@@ -319,7 +326,7 @@ function UserDashboard() {
           <div className="row my-3">
             {renderField('name', faUser, 'Nombre')}
             {renderField('surname', faUser, 'Apellido')}
-            {renderField('email', faEnvelope, 'Email')}
+            {renderField('email', faEnvelope, 'Correo electrónico')}
             {renderField('gender', faVenusMars, 'Género')}
             {renderField('address', faMapMarkerAlt, 'Dirección')}
             {renderField('postal_code', faMapPin, 'Código Postal')}
@@ -330,8 +337,8 @@ function UserDashboard() {
             {renderField('stamps', faPalette, 'Preferencia de Estampado')}
             {renderField('fit', faTape, 'Preferencia de Ajuste')}
             {renderField('profession', faBriefcase, 'Profesión')}
-            {renderField('not_colors', faBan, 'Colores no preferidos')}
-            {renderField('not_clothes', faBan, 'Prendas no preferidas')}
+            {renderField('not_colors', faBan, 'Colores que menos te gustan')}
+            {renderField('not_clothes', faBan, 'Prendas que menos te gustan')}
             {renderField('categories', faList, 'Categorías')}
           </div>
         );
@@ -341,11 +348,12 @@ function UserDashboard() {
         return <div>Selecciona una opción del menú</div>;
     }
   };
-
   return (
-    <div className={`d-flex wrapper ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+    <div className={`wrapper ${isSidebarOpen ? 'sidebar-open' : ''}`}>
       <div className="bg-light border-right" id="sidebar-wrapper">
-        <div className="sidebar-heading"><strong>Opciones:</strong></div>
+        <div className="sidebar-heading d-flex justify-content-between align-items-center">
+          <strong>Panel de control</strong>
+        </div>
         <div className="list-group list-group-flush">
           <button
             className={`list-group-item list-group-item-action ${activeSection === 'notifications' ? 'active' : ''}`}
@@ -377,19 +385,28 @@ function UserDashboard() {
           >
             <FontAwesomeIcon icon={faHeadset} className="mr-2" /> Contacto con Soporte
           </button>
+          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => {actions.setModalLogout(true)}}>
+            <FontAwesomeIcon icon={faPowerOff} className="mr-2" /> Cerrar sesión
+          </button>
         </div>
       </div>
       <div id="page-content-wrapper">
-        <nav className=" border-bottom d-flex justify-content-between align-items-center">
-          <button className="" id="menu-toggle" onClick={toggleSidebar}>
-            <FontAwesomeIcon icon={faBars} />
-          </button>
-          <h2 className="ml-3 my-md-3 ms-md-5 me-3 fs-1"><strong>Mi Cuenta</strong></h2>
-        </nav>
-        <div className="container-fluid">
-          {renderContent()}
+        <button className="btn" id="menu-toggle" onClick={toggleSidebar}>
+          Mostrar Panel de Control
+        </button>
+        <div className="container-fluid profile-container">
+          <div className="profile-content">
+            {renderContent()}
+          </div>
         </div>
       </div>
+      <div className="overlay" onClick={closeSidebar}></div>
+    
+      {store.modalLogout && (
+        <div>
+          <ModalLogout />
+        </div>
+      )}
     </div>
   );
 }

@@ -92,6 +92,19 @@ const UserNotifications = () => {
         }
     };
 
+    const handleMarkAsUnread = async (e, notificationId) => {
+        e.stopPropagation();
+        const success = await markNotificationAsRead(notificationId, false);
+        if (success) {
+            setNotifications(notifications.map(n =>
+                n.id === notificationId ? { ...n, is_read: false } : n
+            ));
+            if (filter === 'read') {
+                setFilteredNotifications(prevFiltered => prevFiltered.filter(n => n.id !== notificationId));
+            }
+        }
+    };
+
     const handleMarkAllRead = async () => {
         const results = await Promise.all(
             notifications.filter(n => !n.is_read).map(n => markNotificationAsRead(n.id, true))
@@ -102,18 +115,6 @@ const UserNotifications = () => {
             console.error('Some notifications could not be marked as read');
         }
         fetchNotifications();
-    };
-
-    const renderNotificationDetails = () => {
-        if (!selectedNotification) return null;
-
-        return (
-            <div className="notification-details">
-                <h3>{getNotificationConfig(selectedNotification.type).label}</h3>
-                <p>{selectedNotification.content}</p>
-                <p>{formatDate(selectedNotification.created_at)}</p>
-            </div>
-        );
     };
 
     const notificationConfig = {
@@ -147,7 +148,7 @@ const UserNotifications = () => {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const FilterButtons = ({ currentFilter, setFilter }) => {
+    const FilterButtons = ({ currentFilter }) => {
         const filters = [
             { key: 'all', label: 'Todas', icon: faList },
             { key: 'unread', label: 'No leídas', icon: faEnvelope },
@@ -174,7 +175,7 @@ const UserNotifications = () => {
     };
 
     return (
-        <div className="user-notifications container mt-4">
+        <div className="user-notifications container">
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2>Notificaciones</h2>
                 <div className="d-flex align-items-center">
@@ -185,18 +186,7 @@ const UserNotifications = () => {
                 </div>
             </div>
 
-            <div className="filter-buttons mb-4">
-                {['all', 'unread', 'read', 'purchase_confirmation', 'confirmation', 'sale_sent'].map((filterType) => (
-                    <Button
-                        key={filterType}
-                        onClick={() => setFilter(filterType)}
-                        className={`filter-button ${filter === filterType ? 'active' : ''}`}
-                    >
-                        <FontAwesomeIcon icon={getNotificationConfig(filterType).icon} className="me-2" />
-                        {getNotificationConfig(filterType).label}
-                    </Button>
-                ))}
-            </div>
+            <FilterButtons currentFilter={filter} />
 
             <Button onClick={handleMarkAllRead} variant="secondary" className="mb-4 custom-dropdown-toggle">
                 Marcar todas como leídas
@@ -209,6 +199,7 @@ const UserNotifications = () => {
                         <th>Contenido</th>
                         <th>Fecha</th>
                         <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -218,6 +209,7 @@ const UserNotifications = () => {
                             <tr
                                 key={notification.id}
                                 onClick={() => handleNotificationClick(notification)}
+                                className='py-3 py-lg-0'
                             >
                                 <td data-label="Tipo">
                                     <FontAwesomeIcon icon={config.icon} className="me-2" />
@@ -230,6 +222,17 @@ const UserNotifications = () => {
                                         <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" />
                                     ) : (
                                         <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
+                                    )}
+                                </td>
+                                <td data-label="Acciones">
+                                    {notification.is_read && (
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            onClick={(e) => handleMarkAsUnread(e, notification.id)}
+                                        >
+                                            Marcar como no leída
+                                        </Button>
                                     )}
                                 </td>
                             </tr>

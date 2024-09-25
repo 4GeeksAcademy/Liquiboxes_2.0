@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const getState = ({ getStore, getActions, setStore }) => {
+
     return {
         store: {
             message: null,
@@ -16,9 +17,32 @@ const getState = ({ getStore, getActions, setStore }) => {
             userData: null,
             shopDetail: {},
             showError: true,
-            token: ""
+            token: sessionStorage.getItem('token') || "",
+            modalToken: false,
+            modalType: false,
+            modalLogout: false
         },
         actions: {
+            setModalToken: (boolean) => {
+                let trueOrFalse = boolean
+                setStore( {modalToken: trueOrFalse})
+            },
+
+            setModalType: (boolean) => {
+                let trueOrFalse = boolean
+                setStore( {modalType: trueOrFalse})
+            },
+
+            setModalLogout: (boolean) => {
+                let trueOrFalse = boolean
+                setStore( {modalLogout: trueOrFalse})
+            },
+
+            setLogin: (boolean) => {
+                let trueOrFalse = boolean
+                setStore( {login: trueOrFalse})
+            },
+
             getMessage: async () => {
                 try {
                     const resp = await fetch(process.env.BACKEND_URL + "/hello");
@@ -98,9 +122,10 @@ const getState = ({ getStore, getActions, setStore }) => {
                 sessionStorage.removeItem('userType');
                 setStore({
                     userData: null,
-                    error: null
+                    token: "",
+                    error: null,
+                    modalLogout: false
                 });
-                // Después de cerrar sesión, osea después de llamar a esta función habría que redireccionar al usuario a login (useNavigate('/'))
             },
 
             addToCart: (id) => {

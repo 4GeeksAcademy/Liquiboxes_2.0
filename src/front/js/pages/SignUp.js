@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faEnvelope, faLock, faTshirt, faShoePrints, faPalette, faTextHeight, faBriefcase } from '@fortawesome/free-solid-svg-icons';
-import "../../styles/signup.css";
+import '../../styles/signup.css';
 import { Context } from "../store/appContext";
 import { registerAndLogin } from "../component/AuthenticationUtils";
 import Confetti from 'react-confetti';
@@ -11,12 +8,12 @@ import ModalGlobal from '../component/ModalGlobal'
 
 
 const STEPS = [
-  { icon: faUser, title: "Datos Personales", description: "Cuéntanos un poco sobre ti" },
-  { icon: faEnvelope, title: "Cuenta", description: "Crea tu cuenta segura" },
-  { icon: faTshirt, title: "Tallas", description: "Ayúdanos a personalizar tu experiencia" },
-  { icon: faPalette, title: "Estilo", description: "Define tus preferencias de estilo" },
-  { icon: faTextHeight, title: "Preferencias", description: "Dinos qué te gusta y qué no" },
-  { icon: faBriefcase, title: "Finalizar", description: "Últimos detalles para completar tu perfil" }
+  { title: "Datos Personales", description: "Cuéntanos un poco sobre ti", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850499/Smartphone_User_y6d64l.gif" },
+  { title: "Cuenta", description: "Crea tu cuenta segura", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Smartphone_Lock_cvnebi.gif" },
+  { title: "Tallas", description: "Ayúdanos a personalizar tu experiencia", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850497/Filter_Item_altaic.gif" },
+  { title: "Estilo", description: "Define tus preferencias de estilo", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Shopping_Bag_jlntsk.gif" },
+  { title: "Preferencias", description: "Dinos qué te gusta y qué no", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Remove_Item_sqgou4.gif" },
+  { title: "Finalizar", description: "Últimos detalles para completar tu perfil", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850497/Checklist_l0hzyf.gif" }
 ];
 
 const SIZES = {
@@ -150,108 +147,307 @@ export default function SignUp() {
   }
 
 
-  const renderCheckboxGroup = (name, options, maxItems) => (
-    <div className="checkbox-group">
-      <p>{name === 'notColors' ? 'Colores que menos te gustan' : 'Prendas que menos te gustan'} (máximo {maxItems}):</p>
-      {options.map(option => (
-        <label key={option}>
-          <input
-            type="checkbox"
-            name={name}
-            value={option}
-            checked={signupData[name].includes(option)}
-            onChange={handleChange}
-            disabled={signupData[name].length >= maxItems && !signupData[name].includes(option)}
-          /> {option}
-        </label>
-      ))}
-    </div>
-  );
-
-  const renderSelect = (name, options, placeholder) => (
-    <select name={name} value={signupData[name]} onChange={handleChange} required>
-      <option value="">{placeholder}</option>
-      {options.map(option => (
-        <option key={option} value={typeof option === 'number' ? option : option.toLowerCase()}>
-          {option}
-        </option>
-      ))}
-    </select>
-  );
-
   const renderStep = () => {
     switch (step) {
       case 1:
         return (
-          <>
-            <input type="text" name="name" value={signupData.name} onChange={handleChange} placeholder="Nombre" required aria-label="Nombre" />
-            {errors.name && <span className="error">{errors.name}</span>}
-            <input type="text" name="surname" value={signupData.surname} onChange={handleChange} placeholder="Apellido" required aria-label="Apellido" />
-            {errors.surname && <span className="error">{errors.surname}</span>}
-            {renderSelect("gender", ["Masculino", "Femenino", "No especificado"], "Selecciona género")}
-            {errors.gender && <span className="error">{errors.gender}</span>}
-            <input type="text" name="address" value={signupData.address} onChange={handleChange} placeholder="Dirección" required aria-label="Dirección" />
-            {errors.address && <span className="error">{errors.address}</span>}
-            <input type="text" name="postalCode" value={signupData.postalCode} onChange={handleChange} placeholder="Código Postal" required aria-label="Código Postal" maxLength="5" pattern="\d{5}" />
-            {errors.postalCode && <span className="error">{errors.postalCode}</span>}
-          </>
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">¿Cuáles son tus datos personales?</h2>
+            <div className="signup-input-group">
+              <label htmlFor="name">Nombre</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={signupData.name}
+                onChange={handleChange}
+                placeholder="Nombre"
+                className="signup-input"
+              />
+              {errors.name && <p className="signup-error-message">{errors.name}</p>}
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="surname">Apellido</label>
+              <input
+                type="text"
+                id="surname"
+                name="surname"
+                value={signupData.surname}
+                onChange={handleChange}
+                placeholder="Apellido"
+                className="signup-input"
+              />
+              {errors.surname && <p className="signup-error-message">{errors.surname}</p>}
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="gender">Género</label>
+              <select
+                id="gender"
+                name="gender"
+                value={signupData.gender}
+                onChange={handleChange}
+                className="signup-select"
+              >
+                <option value="">Selecciona género</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="No especificado">No especificado</option>
+              </select>
+              {errors.gender && <p className="signup-error-message">{errors.gender}</p>}
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="address">Dirección</label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                value={signupData.address}
+                onChange={handleChange}
+                placeholder="Dirección"
+                className="signup-input"
+              />
+              {errors.address && <p className="signup-error-message">{errors.address}</p>}
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="postalCode">Código Postal</label>
+              <input
+                type="text"
+                id="postalCode"
+                name="postalCode"
+                value={signupData.postalCode}
+                onChange={handleChange}
+                placeholder="Código Postal"
+                className="signup-input"
+                maxLength="5"
+                pattern="\d{5}"
+              />
+              {errors.postalCode && <p className="signup-error-message">{errors.postalCode}</p>}
+            </div>
+          </div>
         );
       case 2:
         return (
-          <>
-            <input type="email" name="email" value={signupData.email} onChange={handleChange} placeholder="Email" required aria-label="Email" />
-            {errors.email && <span className="error">{errors.email}</span>}
-            <input type="password" name="password" value={signupData.password} onChange={handleChange} placeholder="Contraseña" required aria-label="Contraseña" minLength="8" />
-            {errors.password && <span className="error">{errors.password}</span>}
-          </>
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">Crea tu cuenta</h2>
+            <div className="signup-input-group">
+              <label htmlFor="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={signupData.email}
+                onChange={handleChange}
+                placeholder="Email"
+                className="signup-input"
+              />
+              {errors.email && <p className="signup-error-message">{errors.email}</p>}
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="password">Contraseña</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={signupData.password}
+                onChange={handleChange}
+                placeholder="Contraseña"
+                className="signup-input"
+              />
+              {errors.password && <p className="signup-error-message">{errors.password}</p>}
+            </div>
+          </div>
         );
       case 3:
         return (
-          <>
-            {renderSelect("upperSize", SIZES.upper, "Talla Superior")}
-            {errors.upperSize && <span className="error">{errors.upperSize}</span>}
-            {renderSelect("lowerSize", SIZES.lower, "Talla Inferior")}
-            {errors.lowerSize && <span className="error">{errors.lowerSize}</span>}
-            {renderSelect("capSize", SIZES.upper, "Talla de Gorra o Sombrero")}
-            {errors.capSize && <span className="error">{errors.capSize}</span>}
-            {renderSelect("shoeSize", SIZES.shoe, "Talla de Zapato (EU)")}
-            {errors.shoeSize && <span className="error">{errors.shoeSize}</span>}
-          </>
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">¿Cuáles son tus tallas?</h2>
+            <div className="signup-input-group">
+              <label htmlFor="upperSize">Talla Superior</label>
+              <select
+                id="upperSize"
+                name="upperSize"
+                value={signupData.upperSize}
+                onChange={handleChange}
+                className="signup-select"
+              >
+                <option value="">Selecciona talla superior</option>
+                {SIZES.upper.map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              {errors.upperSize && <p className="signup-error-message">{errors.upperSize}</p>}
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="lowerSize">Talla Inferior</label>
+              <select
+                id="lowerSize"
+                name="lowerSize"
+                value={signupData.lowerSize}
+                onChange={handleChange}
+                className="signup-select"
+              >
+                <option value="">Selecciona talla inferior</option>
+                {SIZES.lower.map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              {errors.lowerSize && <p className="signup-error-message">{errors.lowerSize}</p>}
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="capSize">Talla de Gorra</label>
+              <select
+                id="capSize"
+                name="capSize"
+                value={signupData.capSize}
+                onChange={handleChange}
+                className="signup-select"
+              >
+                <option value="">Selecciona talla de gorra</option>
+                {SIZES.upper.map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              {errors.capSize && <p className="signup-error-message">{errors.capSize}</p>}
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="shoeSize">Talla de Zapato</label>
+              <select
+                id="shoeSize"
+                name="shoeSize"
+                value={signupData.shoeSize}
+                onChange={handleChange}
+                className="signup-select"
+              >
+                <option value="">Selecciona talla de zapato</option>
+                {SIZES.shoe.map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+              {errors.shoeSize && <p className="signup-error-message">{errors.shoeSize}</p>}
+            </div>
+          </div>
         );
       case 4:
         return (
-          <>
-            {renderCheckboxGroup("notColors", COLORS, 3)}
-            {renderSelect("stamps", ["Estampados", "Lisos"], "Preferencia de Estampado")}
-            {errors.stamps && <span className="error">{errors.stamps}</span>}
-            {renderSelect("fit", ["Ajustado", "Holgado"], "Preferencia de Ajuste")}
-            {errors.fit && <span className="error">{errors.fit}</span>}
-          </>
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">Define tus preferencias de estilo</h2>
+            <div className="signup-checkbox-group">
+              <p>Colores que menos te gustan (máximo 3):</p>
+              <div className="signup-checkbox-options">
+                {COLORS.map(color => (
+                  <label key={color} className="signup-checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="notColors"
+                      value={color}
+                      checked={signupData.notColors.includes(color)}
+                      onChange={handleChange}
+                      disabled={signupData.notColors.length >= 3 && !signupData.notColors.includes(color)}
+                      className="signup-checkbox"
+                    />
+                    {color}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="stamps">Preferencia de Estampado</label>
+              <select
+                id="stamps"
+                name="stamps"
+                value={signupData.stamps}
+                onChange={handleChange}
+                className="signup-select"
+              >
+                <option value="">Selecciona preferencia de estampado</option>
+                <option value="Estampados">Estampados</option>
+                <option value="Lisos">Lisos</option>
+              </select>
+              {errors.stamps && <p className="signup-error-message">{errors.stamps}</p>}
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="fit">Preferencia de Ajuste</label>
+              <select
+                id="fit"
+                name="fit"
+                value={signupData.fit}
+                onChange={handleChange}
+                className="signup-select"
+              >
+                <option value="">Selecciona preferencia de ajuste</option>
+                <option value="Ajustado">Ajustado</option>
+                <option value="Holgado">Holgado</option>
+              </select>
+              {errors.fit && <p className="signup-error-message">{errors.fit}</p>}
+            </div>
+          </div>
         );
       case 5:
-        return renderCheckboxGroup("notClothes", CLOTHES, 3);
+        return (
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">Dinos qué prendas prefieres</h2>
+            <div className="signup-checkbox-group">
+              <p>Prendas que menos te gustan (máximo 3):</p>
+              <div className="signup-checkbox-options">
+                {CLOTHES.map(cloth => (
+                  <label key={cloth} className="signup-checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="notClothes"
+                      value={cloth}
+                      checked={signupData.notClothes.includes(cloth)}
+                      onChange={handleChange}
+                      disabled={signupData.notClothes.length >= 3 && !signupData.notClothes.includes(cloth)}
+                      className="signup-checkbox"
+                    />
+                    {cloth}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
       case 6:
         return (
-          <>
-            <div className="checkbox-group">
+          <div className="signup-step-content">
+            <h2 className="signup-step-question">Últimos detalles para completar tu perfil</h2>
+            <div className="signup-checkbox-group">
               <p>Categorías con las que te identificas (máximo 5):</p>
-              {CATEGORIES.map(category => (
-                <label key={category}>
-                  <input
-                    type="checkbox"
-                    name="categories"
-                    value={category}
-                    checked={signupData.categories.includes(category)}
-                    onChange={handleChange}
-                    disabled={signupData.categories.length >= 5 && !signupData.categories.includes(category)}
-                  /> {category}
-                </label>
-              ))}
+              <div className="signup-checkbox-options">
+                {CATEGORIES.map(category => (
+                  <label key={category} className="signup-checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="categories"
+                      value={category}
+                      checked={signupData.categories.includes(category)}
+                      onChange={handleChange}
+                      disabled={signupData.categories.length >= 5 && !signupData.categories.includes(category)}
+                      className="signup-checkbox"
+                    />
+                    {category}
+                  </label>
+                ))}
+              </div>
             </div>
-            {errors.categories && <span className="error">{errors.categories}</span>}
-            {renderSelect("profession", PROFESSIONS, "Selecciona tu profesión")}
-            {errors.profession && <span className="error">{errors.profession}</span>}
-          </>
+            {errors.categories && <p className="signup-error-message">{errors.categories}</p>}
+            <div className="signup-input-group">
+              <label htmlFor="profession">Profesión</label>
+              <select
+                id="profession"
+                name="profession"
+                value={signupData.profession}
+                onChange={handleChange}
+                className="signup-select"
+              >
+                <option value="">Selecciona tu profesión</option>
+                {PROFESSIONS.map(profession => (
+                  <option key={profession} value={profession}>{profession}</option>
+                ))}
+              </select>
+              {errors.profession && <p className="signup-error-message">{errors.profession}</p>}
+            </div>
+          </div>
         );
       default:
         return null;
@@ -260,43 +456,59 @@ export default function SignUp() {
 
   return (
     <div className="signup-container">
-      <div className="signup-progress" role="progressbar" aria-valuenow={step} aria-valuemin="1" aria-valuemax="6">
-        {STEPS.map((s, index) => (
-          <div key={index} className={`step ${index + 1 === step ? 'active' : ''} ${index + 1 < step ? 'completed' : ''}`}>
-            <div className="step-icon">
-              <FontAwesomeIcon icon={s.icon} aria-hidden="true" />
-            </div>
-            <div className="step-label">{s.title}</div>
+      <div className="signup-content">
+        <div className="signup-animation-section">
+          <h2 className="signup-step-title">{STEPS[step - 1].title}</h2>
+          <div className="signup-animation-wrapper">
+            <img
+              src={STEPS[step - 1].src}
+              alt={STEPS[step - 1].title}
+              className="signup-step-animation"
+            />
           </div>
-        ))}
-      </div>
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="signup-content">
-          <div className="step-info">
-            <h2>{STEPS[step - 1].title}</h2>
-            <p>{STEPS[step - 1].description}</p>
-          </div>
-          <div className="step-form">
-            {renderStep()}
-          </div>
+          <p className="signup-step-description">{STEPS[step - 1].description}</p>
         </div>
-        {errors.submit && <div className="error-message">{errors.submit}</div>}
-        <div className="navigation-buttons">
-          {step > 1 && <button type="button" onClick={() => setStep(prev => prev - 1)}>Anterior</button>}
-          {step < 6 ? (
-            <button
-              type="button"
-              onClick={() => {
-                if (validateStep()) setStep(prev => prev + 1);
-              }}
-            >
-              Siguiente
+        <div className="signup-form-section">
+          {step > 1 && (
+            <button className="signup-back-button" onClick={() => setStep(prev => prev - 1)}>
+              ←
             </button>
-          ) : (
-            <button type="submit">Registrarse</button>
           )}
+          <form onSubmit={handleSubmit} noValidate>
+            {renderStep()}
+            <div className="signup-navigation-buttons">
+              {step < 6 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (validateStep()) setStep(prev => prev + 1);
+                  }}
+                  className="signup-next-button"
+                >
+                  Continuar
+                </button>
+              ) : (
+                <button type="submit" className="signup-next-button">
+                  Registrarse
+                </button>
+              )}
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
+      {isSuccess && (
+        <>
+          <Confetti width={window.innerWidth} height={window.innerHeight} />
+          <ModalGlobal
+            isOpen={true}
+            onClose={handleCloseModal}
+            title="¡Bienvenido a Liquiboxes!"
+            body={`Enhorabuena, ya eres un ${userType === "user" ? "usuario" : "comercio"} de Liquiboxes. ¡Esperamos que disfrutes de nuestra plataforma!`}
+            buttonBody="Continuar"
+            className="welcome-modal"
+          />
+        </>
+      )}
     </div>
   );
 }

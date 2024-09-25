@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import '../../styles/modal-global.css';
 
-const ModalGlobal = ({ isOpen, onClose, title, body, buttonBody, className }) => {
+const ModalGlobal = ({ isOpen, onClose, title, body, buttonBody, className, image, onClick }) => {
     const modalRef = useRef(null);
 
     useEffect(() => {
@@ -53,11 +53,14 @@ const ModalGlobal = ({ isOpen, onClose, title, body, buttonBody, className }) =>
                         ×
                     </button>
                 </div>
+                <div className='m-0 p-0'>
+                <img src={image} className='img-fluid w-100' />
+                </div>
                 <div className="modal-global-body">
                     <p>{body}</p>
                 </div>
                 <div className="modal-global-footer">
-                    <button onClick={onClose} className="modal-global-button">
+                    <button onClick={onClick || onClose} className="modal-global-button">
                         {buttonBody}
                     </button>
                 </div>

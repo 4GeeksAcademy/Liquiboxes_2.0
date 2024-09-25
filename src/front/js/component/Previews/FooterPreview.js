@@ -1,15 +1,10 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFacebookF, faInstagram } from '@fortawesome/free-brands-svg-icons';
+import { faFacebookF, faInstagram} from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope, faPhone, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
-import "../../styles/footer.css"
-import { Context } from '../store/appContext';
-import ModalLogout from '../component/Modals/ModalLogout'
+import "../../../styles/footer.css"
 
-const Footer = () => {
-  const {store, actions} = useContext(Context)
-
-
+const FooterPreview = () => {
   return (
     <footer className="footer">
       <div className="container py-5">
@@ -21,13 +16,10 @@ const Footer = () => {
           <div className="col-lg-2 col-md-6">
             <h5 className="mb-4">Enlaces Rápidos</h5>
             <ul className="list-unstyled">
-              <li><a href="/aboutus" className="footer-link">Sobre Nosotros</a></li>
-              <li><a href="/shopssearch" className="footer-link">Buscador</a></li>
-              {store.token ? (
-                <li><a className="footer-link" onClick={() => {actions.setModalLogout(true)}}>Cerrar sesión</a></li>
-              ) : (
-                <li><a href="/" className="footer-link">Inciar sesión</a></li>
-              )}
+              <li>Sobre Nosotros</li>
+              <li>Buscador</li>
+              <li>Cerrar sesión</li>
+              <li>Inciar sesión</li>
             </ul>
           </div>
           <div className="col-lg-3 col-md-6">
@@ -63,13 +55,8 @@ const Footer = () => {
       <div className="text-center py-3 copyright">
         © {new Date().getFullYear()} Liquiboxes. Todos los derechos reservados.
       </div>
-      {store.modalLogout && (
-        <div>
-          <ModalLogout />
-        </div>
-      )}
     </footer>
   );
 };
 
-export default Footer;
+export default FooterPreview;
