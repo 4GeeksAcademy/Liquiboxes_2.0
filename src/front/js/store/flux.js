@@ -118,8 +118,9 @@ const getState = ({ getStore, getActions, setStore }) => {
                     // Si ya existe, incrementamos la cantidad
                     cart[existingItemIndex] = {
                         ...cart[existingItemIndex],
-                        quantity: cart[existingItemIndex].quantity + 1
-                    };
+                        quantity: cart[existingItemIndex].quantity + 1,
+                        added_at: new Date().getTime()
+                    }
                 } else {
                     // Aseguramos que el id no sea null o undefined antes de agregar
                     if (id) {
@@ -127,8 +128,8 @@ const getState = ({ getStore, getActions, setStore }) => {
                         cart.push({ mysterybox_id, quantity: 1 });
                     } else {
                         console.error("El ID es inválido, no se puede añadir al carrito");
-                    } 
-                } 
+                    }
+                }
                 // Actualizamos el carrito en el store y en localStorage
                 setStore({ cart });
                 localStorage.setItem("cart", JSON.stringify(cart));
@@ -139,10 +140,11 @@ const getState = ({ getStore, getActions, setStore }) => {
             removeExpiredCartItems: () => {
                 const store = getStore();
                 const currentTime = new Date().getTime();
-                const TIME_LIMIT = 1 * 60 * 1000; // 5 minutos en milisegundos (ajusta este valor)
+                const TIME_LIMIT = 10000; // 5 minutos en milisegundos (ajusta este valor)
 
                 let updatedCart = store.cart.filter(cartItem => {
-                    const timeElapsed = currentTime - cartItem.addedAt;
+                    const timeElapsed = currentTime - cartItem.added_at;
+                    
                     if (timeElapsed > TIME_LIMIT) {
                         // Si ha caducado, no lo incluimos en el nuevo carrito
                         return false;
@@ -169,7 +171,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                 setInterval(() => {
                     const actions = getActions();
                     actions.removeExpiredCartItems();
-                }, 1* 60 * 1000); 
+                }, 5000);
             },
 
             removeFromCart: (id) => {
@@ -186,7 +188,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                 setStore({ cartWithDetails });
                 localStorage.setItem("cart", JSON.stringify(cart));
                 localStorage.setItem("cartWithDetails", JSON.stringify(cartWithDetails));
-                
+
 
                 return cart;
             },
@@ -202,7 +204,8 @@ const getState = ({ getStore, getActions, setStore }) => {
                         // Si la cantidad es mayor que 1, la reducimos
                         cart[existingItemIndex] = {
                             ...cart[existingItemIndex],
-                            quantity: cart[existingItemIndex].quantity - 1
+                            quantity: cart[existingItemIndex].quantity - 1,
+                            added_at: new Date().getTime()
                         };
                     } else {
                         // Si la cantidad es 1, eliminamos el item del carrito
@@ -287,7 +290,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/${id}`)
                     if (response.data) {
-                        setStore({ shopDetail: response.data, showError: false, isLoading: false})
+                        setStore({ shopDetail: response.data, showError: false, isLoading: false })
                         console.log(first)
                     }
                 } catch (error) {
@@ -300,7 +303,7 @@ const getState = ({ getStore, getActions, setStore }) => {
                     }
                 }
             },
-         
+
         }
     };
 };
