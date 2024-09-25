@@ -39,9 +39,10 @@ h1, h2, h3 {
 }
 
 .team-photo {
-  width: 100%;
-  border-radius: 50%;
+  max-height: 300px;
+  border-radius: 10%;
   margin-bottom: 1rem;
+  filter: grayscale(100%);
 }
 
 .social-links {
