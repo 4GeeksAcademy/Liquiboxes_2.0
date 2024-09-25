@@ -41,7 +41,6 @@ h1 {
   font-size: 8rem;
   margin: 0;
   color: var(--primary-color);
-  animation: float 3s ease-in-out infinite;
 }
 
 .animation-circle {

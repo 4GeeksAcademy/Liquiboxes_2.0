@@ -72,8 +72,11 @@ const Layout = () => {
             <ScrollToTop>
               <div className="main-content">
                 <Routes>
+                  <Route element={<Login />} path="/" />
+                  <Route element={<ChooseRegistration />} path="/chooseregistration" />
+
+
                   {/* Rutas con Navbar */}
-                  <Route element={<NavbarWrapper><Login /></NavbarWrapper>} path="/" />
                   <Route element={<NavbarWrapper><Home /></NavbarWrapper>} path="/home" />
                   <Route element={<NavbarWrapper><SignUp /></NavbarWrapper>} path="/signup" />
                   <Route element={<NavbarWrapper><Cart /></NavbarWrapper>} path="/cart" />
@@ -83,7 +86,6 @@ const Layout = () => {
                   <Route element={<NavbarWrapper><ShopDetail /></NavbarWrapper>} path="/shops/:id" />
                   <Route element={<NavbarWrapper><ShopsSearch /></NavbarWrapper>} path="/shopssearch" />
                   <Route element={<NavbarWrapper><MysteryBoxDetail /></NavbarWrapper>} path="/mysterybox/:id" />
-                  <Route element={<NavbarWrapper><ChooseRegistration /></NavbarWrapper>} path="/chooseregistration" />
 
                   {/* Rutas sin Navbar */}
                   <Route element={<AdminHome />} path="/adminhome" />

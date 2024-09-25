@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { Context } from "../store/appContext";
@@ -128,47 +128,66 @@ export default function Login() {
 
     return (
         <div className="login-container">
-            <div className="login-form-wrapper">
-                <h2 className="login-title">Iniciar Sesión</h2>
-                <form onSubmit={handleSubmit} className="login-form">
-                    <div className="form-group">
-                        <label htmlFor="email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            value={loginData.email}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="password">Contraseña</label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            value={loginData.password}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-                    {showError && (
-                        <div className="error-message">
-                            {errorMessage}
+            <div className="login-content">
+                <div className="liquiboxes-logo">
+                    <h1><strong>Liquiboxes</strong></h1>
+                    <p>Descubre el misterio en cada caja</p>
+                </div>
+                <div className="login-sections-wrapper">
+                    <div className="login-form-wrapper">
+                        <h2 className="login-title">Iniciar Sesión</h2>
+                        <form onSubmit={handleSubmit} className="login-form">
+                            <div className="form-group">
+                                <label htmlFor="email">Email</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={loginData.email}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="tu@email.com"
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="password">Contraseña</label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    value={loginData.password}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="Tu contraseña"
+                                />
+                            </div>
+                            {showError && <div className="error-message">{errorMessage}</div>}
+                            <button type="submit">Iniciar Sesión</button>
+                        </form>
+                        <div className="google-login-wrapper">
+                            <GoogleLogin
+                                onSuccess={handleGoogleLogin}
+                                onError={() => {
+                                    setShowError(true);
+                                    setErrorMessage("Error en la autenticación con Google");
+                                }}
+                            />
                         </div>
-                    )}
-                    <button type="submit" className="login-button">Iniciar Sesión</button>
-                </form>
-                <div className="google-login-wrapper">
-                    <GoogleLogin
-                        onSuccess={handleGoogleLogin}
-                        onError={() => {
-                            console.log('Login Failed');
-                            setShowError(true);
-                            setErrorMessage("Error en la autenticación con Google");
-                        }}
-                    />
+                        <div className="mt-3 text-center"> 
+                            <a onClick={() => {navigate('/adminlogin')}} className="text-success">Acceso a Administradores</a>
+                        </div>
+                    </div>
+                    <div className="create-account-section my-auto">
+                        <h2>Crea tu cuenta</h2>
+                        <ul className="benefits-list">
+                            <li>Accede a mystery boxes exclusivas</li>
+                            <li>Realiza tus compras con total seguridad</li>
+                            <li>Elige tus preferencias para las mistery boxes</li>
+                            <li>Encuentra las tiendas que más se parecen a tí</li>
+                            <li>Descubre productos de calidad a un precio inmejorable</li>
+                        </ul>
+                        <button onClick={() => navigate('/chooseregistration')} className="w-100">Crear cuenta</button>
+                    </div>
                 </div>
             </div>
         </div>

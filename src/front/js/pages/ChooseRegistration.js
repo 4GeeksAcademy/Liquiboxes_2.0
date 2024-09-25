@@ -31,7 +31,7 @@ const ChooseRegistration = () => {
             <div className="option-icon shop-icon"></div>
             <h2>Como Tienda</h2>
             <p>Expande tu negocio y llega a más clientes en nuestra plataforma.</p>
-            <button className="btn btn-secondary">Registrarse como Tienda</button>
+            <button className="btn btn-primary">Registrarse como Tienda</button>
           </div>
         </div>
       </div>
