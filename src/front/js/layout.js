@@ -72,8 +72,10 @@ const Layout = () => {
             <ScrollToTop>
               <div className="main-content">
                 <Routes>
+
                   <Route element={<Login />} path="/" />
                   <Route element={<ChooseRegistration />} path="/chooseregistration" />
+
 
 
                   {/* Rutas con Navbar */}
