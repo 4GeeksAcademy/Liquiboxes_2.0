@@ -34,16 +34,12 @@ const Cart = () => {
   }, [actions, store.cart]);
 
   useEffect(() => {
+    // Traemos la informacion del carrito
     fetchCartDetails();
-  }, [fetchCartDetails]);
 
-
-  
-
-  useEffect(() => {
     // Comenzamos la revisión periódica del carrito
     actions.startCartExpirationCheck();
-  }, [actions]);
+  }, []);
 
 
 
