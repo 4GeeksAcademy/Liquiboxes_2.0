@@ -35,7 +35,18 @@ const Cart = () => {
 
   useEffect(() => {
     fetchCartDetails();
-  }, []);
+  }, [fetchCartDetails]);
+
+
+  
+
+  useEffect(() => {
+    // Comenzamos la revisión periódica del carrito
+    actions.startCartExpirationCheck();
+  }, [actions]);
+
+
+
 
   const updateLocalCart = useCallback((itemId, updateFn) => {
     setCartItems(prevItems => {

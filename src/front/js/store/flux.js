@@ -105,14 +105,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 
             addToCart: (id) => {
                 let cart = [];
-
                 // Si el store no tiene el carrito, lo obtenemos del localStorage
                 if (!getStore().cart) {
                     cart = JSON.parse(localStorage.getItem("cart") || "[]");
                 } else {
                     cart = getStore().cart;
                 }
-
                 // Verificamos si el item con este mysterybox_id ya está en el carrito
                 const existingItemIndex = cart.findIndex(item => item.mysterybox_id == id);
 
@@ -129,13 +127,49 @@ const getState = ({ getStore, getActions, setStore }) => {
                         cart.push({ mysterybox_id, quantity: 1 });
                     } else {
                         console.error("El ID es inválido, no se puede añadir al carrito");
-                    }
-                }
-
+                    } 
+                } 
                 // Actualizamos el carrito en el store y en localStorage
                 setStore({ cart });
                 localStorage.setItem("cart", JSON.stringify(cart));
                 return cart;
+            },
+
+
+            removeExpiredCartItems: () => {
+                const store = getStore();
+                const currentTime = new Date().getTime();
+                const TIME_LIMIT = 1 * 60 * 1000; // 5 minutos en milisegundos (ajusta este valor)
+
+                let updatedCart = store.cart.filter(cartItem => {
+                    const timeElapsed = currentTime - cartItem.addedAt;
+                    if (timeElapsed > TIME_LIMIT) {
+                        // Si ha caducado, no lo incluimos en el nuevo carrito
+                        return false;
+                    }
+                    return true;
+                });
+
+                // Actualiza el store y el localStorage
+                setStore({ cart: updatedCart });
+                localStorage.setItem("cart", JSON.stringify(updatedCart));
+
+                // `cartWithDetails`
+                let updatedCartWithDetails = store.cartWithDetails.filter(cartItem => {
+                    const timeElapsed = currentTime - cartItem.addedAt;
+                    return timeElapsed <= TIME_LIMIT;
+                });
+
+                setStore({ cartWithDetails: updatedCartWithDetails });
+                localStorage.setItem("cartWithDetails", JSON.stringify(updatedCartWithDetails));
+            },
+
+            startCartExpirationCheck: () => {
+                //  revisión periódica del carrito cada minuto
+                setInterval(() => {
+                    const actions = getActions();
+                    actions.removeExpiredCartItems();
+                }, 1* 60 * 1000); 
             },
 
             removeFromCart: (id) => {
@@ -183,13 +217,11 @@ const getState = ({ getStore, getActions, setStore }) => {
                 return cart;
             },
 
-
-
             getCartItemDetails: async (id) => {
                 try {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`);
                     if (response.data) {
-                        return response.data;
+                        return [];
                     }
                 } catch (error) {
                     console.log("Error al obtener detalles del item del carrito:", error);
