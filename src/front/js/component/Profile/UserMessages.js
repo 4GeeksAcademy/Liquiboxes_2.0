@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faEnvelope, faEnvelopeOpen, faList, faUser, faStore, faHeadset, faComments } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Form, Table } from 'react-bootstrap';
+import { ClimbingBoxLoader } from "react-spinners";
 import '../../../styles/usermessages.css';
 
 const UserMessages = () => {
@@ -14,112 +15,94 @@ const UserMessages = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [messagesPerPage] = useState(10);
     const [replyMessage, setReplyMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     const messageConfig = {
-        contact_support: {
-            label: 'Soporte',
-            icon: faHeadset,
-        },
-        contact_shop: {
-            label: 'Tienda',
-            icon: faStore,
-        },
-        contact_user: {
-            label: 'Usuario',
-            icon: faUser,
-        },
+        contact_support: { label: 'Soporte', icon: faHeadset },
+        contact_shop: { label: 'Tienda', icon: faStore },
+        contact_user: { label: 'Usuario', icon: faUser },
     };
 
-    const getMessageConfig = (type) => {
+    const getMessageConfig = useCallback((type) => {
         return messageConfig[type] || { label: 'Mensaje', icon: faComments };
-    };
+    }, []);
+
+    const fetchMessages = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.get(`${process.env.BACKEND_URL}/notifications/user`, {
+                headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
+            });
+            setMessages(response.data.filter(msg => ['contact_support', 'contact_shop', 'contact_user'].includes(msg.type)));
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        } finally {
+            setTimeout(() => setIsLoading(false), 500);
+        }
+    }, []);
 
     useEffect(() => {
         fetchMessages();
-        const interval = setInterval(fetchMessages, 30000); // Poll every 30 seconds
+        const interval = setInterval(fetchMessages, 30000);
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchMessages]);
 
     useEffect(() => {
         filterMessages();
     }, [messages, filter]);
 
-    const fetchMessages = async () => {
-        try {
-            const response = await axios.get(`${process.env.BACKEND_URL}/notifications/user`, {
-                headers: {
-                    Authorization: `Bearer ${sessionStorage.getItem('token')}`
-                }
-            });
-            setMessages(response.data.filter(msg => ['contact_support', 'contact_shop', 'contact_user'].includes(msg.type)));
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-        }
-    };
-
-    const filterMessages = () => {
+    const filterMessages = useCallback(() => {
         let filtered = messages;
         switch (filter) {
-            case 'unread':
-                filtered = messages.filter(m => !m.is_read);
-                break;
-            case 'read':
-                filtered = messages.filter(m => m.is_read);
-                break;
+            case 'unread': filtered = messages.filter(m => !m.is_read); break;
+            case 'read': filtered = messages.filter(m => m.is_read); break;
             case 'contact_support':
             case 'contact_shop':
-            case 'contact_user':
-                filtered = messages.filter(m => m.type === filter);
-                break;
-            default:
-                filtered = messages;
+            case 'contact_user': filtered = messages.filter(m => m.type === filter); break;
+            default: filtered = messages;
         }
         setFilteredMessages(filtered);
-    };
+    }, [messages, filter]);
 
-    const markMessageAsRead = async (messageId, isRead) => {
+    const markMessageAsRead = useCallback(async (messageId, isRead) => {
         try {
             await axios.patch(`${process.env.BACKEND_URL}/notifications/${messageId}/read`,
                 { is_read: isRead },
-                {
-                    headers: {
-                        Authorization: `Bearer ${sessionStorage.getItem('token')}`
-                    }
-                }
+                { headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` } }
             );
             return true;
         } catch (error) {
             console.error(`Error marking message ${messageId} as ${isRead ? 'read' : 'unread'}:`, error);
             return false;
         }
-    };
+    }, []);
 
-    const handleMessageClick = async (message) => {
+    const handleMessageClick = useCallback(async (message) => {
         setSelectedMessage(message);
         setIsModalOpen(true);
         if (!message.is_read) {
             const success = await markMessageAsRead(message.id, true);
             if (success) {
-                setMessages(messages.map(m =>
+                setMessages(prevMessages => prevMessages.map(m =>
                     m.id === message.id ? { ...m, is_read: true } : m
                 ));
             }
         }
-    };
+    }, [markMessageAsRead]);
 
-    const handleMarkAllRead = async () => {
+    const handleMarkAllRead = useCallback(async () => {
         const results = await Promise.all(
             messages.filter(m => !m.is_read).map(m => markMessageAsRead(m.id, true))
         );
         if (results.every(result => result)) {
-            setMessages(messages.map(m => ({ ...m, is_read: true })));
+            setMessages(prevMessages => prevMessages.map(m => ({ ...m, is_read: true })));
         } else {
             console.error('Some messages could not be marked as read');
         }
         fetchMessages();
-    };
+    }, [messages, markMessageAsRead, fetchMessages]);
 
-    const handleReplySubmit = async (e) => {
+    const handleReplySubmit = useCallback(async (e) => {
         e.preventDefault();
         try {
             await axios.post(`${process.env.BACKEND_URL}/notifications/reply`, {
@@ -133,9 +116,7 @@ const UserMessages = () => {
                 type: selectedMessage.type,
                 message: replyMessage
             }, {
-                headers: {
-                    Authorization: `Bearer ${sessionStorage.getItem('token')}`
-                }
+                headers: { Authorization: `Bearer ${sessionStorage.getItem('token')}` }
             });
             setReplyMessage('');
             setIsModalOpen(false);
@@ -143,11 +124,10 @@ const UserMessages = () => {
         } catch (error) {
             console.error('Error sending reply:', error);
         }
-    };
+    }, [selectedMessage, replyMessage, fetchMessages]);
 
-    const renderMessageDetails = () => {
+    const renderMessageDetails = useCallback(() => {
         if (!selectedMessage) return null;
-
         const config = getMessageConfig(selectedMessage.type);
         return (
             <div className="message-details">
@@ -173,15 +153,9 @@ const UserMessages = () => {
                 </Form>
             </div>
         );
-    };
+    }, [selectedMessage, getMessageConfig, handleReplySubmit, replyMessage]);
 
-    const indexOfLastMessage = currentPage * messagesPerPage;
-    const indexOfFirstMessage = indexOfLastMessage - messagesPerPage;
-    const currentMessages = filteredMessages.slice(indexOfFirstMessage, indexOfLastMessage);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    const FilterButtons = ({ currentFilter, setFilter }) => {
+    const FilterButtons = useCallback(({ currentFilter, setFilter }) => {
         const filters = [
             { key: 'all', label: 'Todos', icon: faList },
             { key: 'unread', label: 'No leídos', icon: faEnvelope },
@@ -205,7 +179,15 @@ const UserMessages = () => {
                 ))}
             </div>
         );
-    };
+    }, []);
+
+    if (isLoading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <ClimbingBoxLoader color="#6a8e7f" loading={true} size={40} speedMultiplier={1} />
+            </div>
+        );
+    }
 
     return (
         <div className="user-messages container mt-4">
@@ -235,13 +217,10 @@ const UserMessages = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {currentMessages.map((message) => {
+                    {filteredMessages.slice((currentPage - 1) * messagesPerPage, currentPage * messagesPerPage).map((message) => {
                         const config = getMessageConfig(message.type);
                         return (
-                            <tr
-                                key={message.id}
-                                onClick={() => handleMessageClick(message)}
-                            >
+                            <tr key={message.id} onClick={() => handleMessageClick(message)}>
                                 <td data-label="Tipo">
                                     <FontAwesomeIcon icon={config.icon} className="me-2" />
                                     {config.label}
@@ -255,9 +234,8 @@ const UserMessages = () => {
                                     }
                                 </td>
                             </tr>
-                        )
-                    }
-                    )}
+                        );
+                    })}
                 </tbody>
             </Table>
 
@@ -265,7 +243,7 @@ const UserMessages = () => {
                 {[...Array(Math.ceil(filteredMessages.length / messagesPerPage)).keys()].map(number => (
                     <Button
                         key={number + 1}
-                        onClick={() => paginate(number + 1)}
+                        onClick={() => setCurrentPage(number + 1)}
                         className={currentPage === number + 1 ? 'active' : ''}
                     >
                         {number + 1}
@@ -284,7 +262,6 @@ const UserMessages = () => {
                     <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
                 </Modal.Footer>
             </Modal>
-
         </div>
     );
 };

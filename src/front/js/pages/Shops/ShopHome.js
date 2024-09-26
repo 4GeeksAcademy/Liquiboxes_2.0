@@ -19,6 +19,7 @@ import ProfileField from '../../component/Profile/ProfileField';
 import { Context } from '../../store/appContext';
 import ModalLogout from '../../component/Modals/ModalLogout'
 
+
 import BoxesOnSale from '../../component/ShopHome/BoxesOnSale';
 import ContactSupport from '../../component/ShopHome/ContactSupport';
 import ShopNotifications from '../../component/ShopHome/ShopNotifications';
@@ -31,7 +32,6 @@ function ShopHome() {
   const [shopData, setShopData] = useState(null);
   const [editMode, setEditMode] = useState({});
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const { store, actions } = useContext(Context);
   const [previewImage, setPreviewImage] = useState(null);
 
@@ -42,7 +42,6 @@ function ShopHome() {
       const token = sessionStorage.getItem('token');
       if (!token) {
         setError("No se encontró el token de autenticación");
-        setIsLoading(false);
         return;
       }
       try {
@@ -57,11 +56,9 @@ function ShopHome() {
         });
 
         setShopData({ ...response.data, categories: processedCategories });
-        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching shop data:", error.response || error);
         setError(error.response?.data?.msg || error.message);
-        setIsLoading(false);
       }
     };
 
@@ -205,7 +202,7 @@ function ShopHome() {
           value={isImageField ? renderInput() : (isListField && Array.isArray(value) ? value.join(', ') : value)}
           onEdit={() => handleEdit(field)}
           onSave={() => handleSave(field)}
-          isEditing={editMode[field]} 
+          isEditing={editMode[field]}
         >
           {isImageField ? renderInput() : (editMode[field] ? renderInput() : null)}
         </ProfileField>
@@ -232,7 +229,6 @@ function ShopHome() {
   };
 
   const renderContent = () => {
-    if (isLoading) return <div>Cargando...</div>;
     if (error) return <div className="error-message">Error: {error}</div>;
 
     switch (activeSection) {
@@ -305,13 +301,12 @@ function ShopHome() {
           <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => { navigate(`/shoppreview/${shopData.id}`) }}>
             <FontAwesomeIcon icon={faShop} className="mr-2" /> Ver Perfil de tu tienda
           </button>
-          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => {actions.setModalLogout(true)}}>
+          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => { actions.setModalLogout(true) }}>
             <FontAwesomeIcon icon={faPowerOff} className="mr-2" /> Cerrar sesión
           </button>
         </div>
       </div>
       <div id="page-content-wrapper" className="flex-grow-1 p-4">
-        <h2 className="mb-4">Panel de Control de la Tienda</h2>
         {renderContent()}
       </div>
 

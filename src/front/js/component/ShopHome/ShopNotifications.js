@@ -6,6 +6,8 @@ import { Modal, Button, Form, Table, Tabs, Tab } from 'react-bootstrap';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import '../../../styles/shops/shopnotifications.css';
+import { ClimbingBoxLoader } from "react-spinners";
+
 
 const ShopNotifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -16,6 +18,7 @@ const ShopNotifications = () => {
   const [orderDetails, setOrderDetails] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingModal, setLoadingModal] = useState(true);
   const [error, setError] = useState(null);
   const [shippingDetails, setShippingDetails] = useState(null);
   const [changeRequests, setChangeRequests] = useState([]);
@@ -66,6 +69,9 @@ const ShopNotifications = () => {
       setChangeRequests(response.data);
     } catch (error) {
       console.error('Error fetching change requests:', error);
+    }
+    finally {
+      setTimeout(() => setLoading(false), 500);
     }
   };
 
@@ -177,7 +183,7 @@ const ShopNotifications = () => {
   };
 
   const fetchOrderDetails = async (saleId) => {
-    setLoading(true);
+    setLoadingModal(true);
     setError(null);
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/sales/${saleId}`, {
@@ -189,17 +195,18 @@ const ShopNotifications = () => {
       const allItems = response.data.sale_details.flatMap(detail => detail.box_items);
       setItems(allItems.map(item => ({ ...item, isConfirmed: undefined })));
       fetchUserPreferences(response.data.user_id);
-      await delay(1000);
-      setLoading(false);
+      await delay(500);
+      setLoadingModal(false)
+
     } catch (error) {
       console.error('Error fetching order details:', error);
       setError('Failed to fetch order details. Please try again.');
-      setLoading(false);
+      setLoadingModal(false)
     }
   };
 
   const fetchUserPreferences = async (userId) => {
-    setLoading(true)
+    setLoadingModal(true)
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/users/${userId}`, {
         headers: {
@@ -208,10 +215,11 @@ const ShopNotifications = () => {
       });
       setUserPreferences(response.data);
       console.log(response.data)
-      setLoading(false)
+      setTimeout(() => setLoadingModal(false), 500);
     } catch (error) {
       console.error('Error fetching user preferences:', error);
       setError('Failed to fetch user preferences. Please try again.');
+      setLoadingModal(false)
     }
   };
 
@@ -223,9 +231,9 @@ const ShopNotifications = () => {
 
   const handleItemChange = async (item) => {
     setSelectedItemForChange(item);
-    setLoading(true);
+    setLoadingModal(true);
     await delay(2000);
-    setLoading(false);
+    setLoadingModal(false);
     setShowChangeRequestForm(true);
   };
 
@@ -317,7 +325,7 @@ const ShopNotifications = () => {
     const primaryColor = '#6a8e7f';
     const secondaryColor = '#073b3a';
     const textColor = '#28112b';
-    
+
 
     // Encabezado
     doc.setFillColor(primaryColor);
@@ -455,12 +463,19 @@ const ShopNotifications = () => {
   const renderNotificationDetails = () => {
     if (!selectedNotification) return null;
 
+    if (loadingModal) {
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <ClimbingBoxLoader color="#6a8e7f" loading={true} size={40} speedMultiplier={1} />
+        </div>
+      );
+    }
+
     switch (selectedNotification.type) {
       case 'new_sale':
       case 'item_change_approved':
       case 'item_change_rejected':
       case 'confirmed':
-        if (loading) return <div className="loading-spinner">Cargando...</div>;
         if (error) return <div className="error-message">{error}</div>;
         if (!orderDetails) return <div className="no-data-message">No se encontraron detalles del pedido.</div>;
 
@@ -614,6 +629,14 @@ const ShopNotifications = () => {
       </div>
     );
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <ClimbingBoxLoader color="#6a8e7f" loading={true} size={40} speedMultiplier={1} />
+      </div>
+    );
+  }
 
   return (
     <div className="shop-notifications container mt-4">
