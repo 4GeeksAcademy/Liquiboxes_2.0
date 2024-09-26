@@ -1,0 +1,128 @@
+/* UserPurchases.css */
+.user-purchases-container {
+    padding: 2rem !important;
+    background-color: var(--background-secondary-color)!important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) ;
+    margin-bottom: 2rem ;
+    margin-top: 2rem;
+}
+
+.user-purchases-container h2 {
+    color: var(--primary-color) !important;
+    margin-bottom: 1.5rem !important;
+    font-weight: 600 !important;
+}
+
+.user-purchases-table {
+    background-color: var(--background-color) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.user-purchases-table th {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 0.9rem !important;
+    padding: 1rem !important;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease !important;
+}
+
+.user-purchases-table th:hover {
+    background-color: var(--secondary-color) !important;
+}
+
+.user-purchases-table td {
+    padding: 1rem  !important; 
+    vertical-align: middle  !important;
+}
+
+.user-purchases-table tbody tr {
+    transition: background-color 0.3s ease  !important;
+}
+
+.user-purchases-table tbody tr:hover {
+    background-color: rgba(106, 142, 127, 0.1) ;
+}
+
+.mystery-box-detail {
+    background-color: var(--background-color)  !important;
+    transition: all 0.3s ease !important;
+    border: none  !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05)  !important;
+}
+
+.mystery-box-detail:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)  !important;
+}
+
+.mystery-box-detail img {
+    max-height: 200px ;
+    object-fit: cover ;
+    border-radius: 8px ;
+}
+
+.modal-content {
+    background-color: var(--background-color) ;
+    border-radius: 12px ;
+}
+
+.modal-header {
+    background-color: var(--primary-color) ;
+    color: white;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color) ;
+}
+
+.badge {
+    font-size: 0.8rem  !important;
+    padding: 0.6em 0.8em  !important;
+}
+
+@media (max-width: 768px) {
+    .user-purchases-container {
+        padding: 1rem  !important;
+        margin-top: 0;
+    }
+
+    .user-purchases-table {
+        border: 0;
+    }
+
+    .user-purchases-table thead {
+        display: none;
+    }
+
+    .user-purchases-table tr {
+        margin-bottom: 1rem  !important;
+        display: block  !important;
+        border-bottom: 2px solid var(--border-color)  !important;
+    }
+
+    .user-purchases-table td {
+        display: block;
+        text-align: right;
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .user-purchases-table td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        text-transform: uppercase  !important;
+    }
+
+    .user-purchases-table td:last-child {
+        border-bottom: 0;
+    }
+
+}

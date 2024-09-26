@@ -427,19 +427,17 @@ const ShopNotifications = () => {
     }
   };
 
-  const capitalize = (str) => {
-    return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
-  };
 
   const handleReplySubmit = async (e) => {
     e.preventDefault();
     try {
       console.log('Recipient Type:', selectedNotification.sender_type);
-      await axios.post(`${process.env.BACKEND_URL}/notifications/contactsupport/reply`, {
+      await axios.post(`${process.env.BACKEND_URL}/notifications/reply`, {
         subjectAffair: selectedNotification.extra_data.subject_affair,
         saleId: selectedNotification.sale_id || null,
         recipientId: selectedNotification.extra_data.user_id || selectedNotification.shop_id || null,
         recipientType: selectedNotification.sender_type,
+        type: selectedNotification.type,
         message: replyMessage
       }, {
         headers: {

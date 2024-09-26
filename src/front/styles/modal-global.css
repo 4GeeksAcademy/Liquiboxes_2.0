@@ -42,6 +42,7 @@
   padding: 1.5rem 2rem;
   position: relative;
   overflow: hidden;
+  color: var(--background-color) !important;
 }
 
 .modal-global-header::before {
@@ -60,13 +61,13 @@
   pointer-events: none;
 }
 
-.modal-global-header h2 {
-  color: var(--background-color);
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  position: relative;
+#modal-global-title {
+  color: var(--background-color) !important;
+  margin: 0 !important;
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px !important;
+  position: relative !important;
 }
 
 .modal-global-close-button {
@@ -94,15 +95,15 @@
 }
 
 .modal-global-body {
-  padding: 2rem 2rem 1rem;
-  color: var(--text-color);
+  padding: 2rem 2rem 1rem !important;
+  color: var(--text-color) !important;
 }
 
 .modal-global-body p {
-  margin-bottom: 1rem;
-  line-height: 1.8;
-  font-size: 1.1rem;
-  opacity: 0.9;
+  margin-bottom: 1rem !important;
+  line-height: 1.8 !important;
+  font-size: 1.1rem !important;
+  opacity: 0.9 !important;
 }
 
 .modal-global-footer {

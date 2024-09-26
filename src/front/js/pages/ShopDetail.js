@@ -41,7 +41,6 @@ export default function ShopDetail() {
         {boxVisible && mysteryBoxes && (
           <div className='row mx-5'>
             {mysteryBoxes.map((mysterybox) => {
-              console.log("Renderizando mystery box:", mysterybox);
               return (
                 <div key={mysterybox.id} className='col-12 col-md-6 col-lg-4 col-xl-3 col-xxl-2'>
                   <CardMBox data={mysterybox} />
