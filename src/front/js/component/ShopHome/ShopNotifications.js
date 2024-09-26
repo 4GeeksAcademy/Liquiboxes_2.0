@@ -427,19 +427,17 @@ const ShopNotifications = () => {
     }
   };
 
-  const capitalize = (str) => {
-    return str ? str.charAt(0).toUpperCase() + str.slice(1).toLowerCase() : '';
-  };
 
   const handleReplySubmit = async (e) => {
     e.preventDefault();
     try {
       console.log('Recipient Type:', selectedNotification.sender_type);
-      await axios.post(`${process.env.BACKEND_URL}/notifications/contactsupport/reply`, {
+      await axios.post(`${process.env.BACKEND_URL}/notifications/reply`, {
         subjectAffair: selectedNotification.extra_data.subject_affair,
         saleId: selectedNotification.sale_id || null,
         recipientId: selectedNotification.extra_data.user_id || selectedNotification.shop_id || null,
         recipientType: selectedNotification.sender_type,
+        type: selectedNotification.type,
         message: replyMessage
       }, {
         headers: {
@@ -476,8 +474,8 @@ const ShopNotifications = () => {
             </h3>
             <div className="order-details">
               <h4>Detalles de la orden</h4>
-              <p><strong>ID Orden:</strong> {orderDetails.id}</p>
-              <p><strong>ID venta:</strong> {selectedNotification.extra_data.shop_sale_id}</p>
+              <p><strong>ID Orden:</strong> {selectedNotification.extra_data.shop_sale_id}</p>
+              <p><strong>ID venta:</strong> {orderDetails.id}</p>
               <p><strong>Fecha de la compra:</strong> {new Date(orderDetails.date).toLocaleString()}</p>
               <p><strong>Cantidad Total:</strong> {orderDetails.total_amount.toFixed(2)} €</p>
             </div>
@@ -551,6 +549,7 @@ const ShopNotifications = () => {
             <h3 className="notification-title">
               {selectedNotification.type === 'contact_support' ? 'Mensaje de Soporte' : 'Mensaje del Usuario'}
             </h3>
+            <h5> Venta con ID: {selectedNotification.sale_id}</h5>
             <p className="message-content">{selectedNotification.content}</p>
             <Form onSubmit={handleReplySubmit} className="message-reply-form">
               <Form.Group>

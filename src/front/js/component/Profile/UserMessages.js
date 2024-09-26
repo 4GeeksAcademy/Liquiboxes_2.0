@@ -122,10 +122,16 @@ const UserMessages = () => {
     const handleReplySubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${process.env.BACKEND_URL}/notifications/user/contactsupport`, {
+            await axios.post(`${process.env.BACKEND_URL}/notifications/reply`, {
                 messageId: selectedMessage.id,
                 subjectAffair: selectedMessage.extra_data.subject_affair,
-                content: replyMessage
+                content: replyMessage,
+                saleId: selectedMessage.sale_id,
+                recipientId: selectedMessage.shop_id,
+                shopId:  selectedMessage.shop_id,
+                recipientType: selectedMessage.sender_type,
+                type: selectedMessage.type,
+                message: replyMessage
             }, {
                 headers: {
                     Authorization: `Bearer ${sessionStorage.getItem('token')}`
@@ -249,7 +255,8 @@ const UserMessages = () => {
                                     }
                                 </td>
                             </tr>
-                        )}
+                        )
+                    }
                     )}
                 </tbody>
             </Table>
@@ -277,7 +284,7 @@ const UserMessages = () => {
                     <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
                 </Modal.Footer>
             </Modal>
-            
+
         </div>
     );
 };

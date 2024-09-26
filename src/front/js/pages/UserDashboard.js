@@ -29,6 +29,7 @@ import UserNotifications from '../component/Profile/UserNotifications';
 import UserMessages from '../component/Profile/UserMessages';
 import ContactSupport from '../component/ShopHome/ContactSupport';
 import ModalLogout from '../component/Modals/ModalLogout'
+import UserPurchases from '../component/Profile/UserPurchases';
 
 function UserDashboard() {
   const [userData, setUserData] = useState(null);
@@ -320,7 +321,7 @@ function UserDashboard() {
       case 'messages':
         return <UserMessages />;
       case 'purchases':
-        return <div>Aquí iría el historial de compras</div>;
+        return <div><UserPurchases id={userData.id} /></div>;
       case 'profile':
         return (
           <div className="row my-3">
