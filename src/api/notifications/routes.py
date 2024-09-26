@@ -407,6 +407,33 @@ def reply_to_notification():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
+    
+@notifications.route('/<int:notification_id>/delete', methods=['DELETE'])
+@jwt_required()
+def delete_notification(notification_id):
+    current_user = get_jwt_identity()
 
+    # Buscar la notificación por su ID
+    notification = Notification.query.get(notification_id)
+    
+    if not notification:
+        return jsonify({"error": "Notification not found"}), 404
+
+    # Verificar si el usuario actual es el destinatario o el remitente
+    if (notification.recipient_type == current_user['type'] and 
+        notification.recipient_id == current_user['id']) or \
+       (notification.sender_type == current_user['type'] and 
+        notification.sender_id == current_user['id']) or \
+       current_user['type'] in ['SuperAdmin', 'Admin']:
+        try:
+            db.session.delete(notification)
+            db.session.commit()
+            return jsonify({"success": True, "message": "Notification deleted successfully"}), 200
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            logging.error(f"Database error: {str(e)}")
+            return jsonify({"error": "Failed to delete notification due to a database error"}), 500
+    else:
+        return jsonify({"error": "Unauthorized: You do not have permission to delete this notification"}), 403
 
 

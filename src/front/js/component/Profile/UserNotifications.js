@@ -157,7 +157,7 @@ const UserNotifications = () => {
             { key: 'confirmation', label: 'Confirmaciones', icon: faCheck },
             { key: 'sale_sent', label: 'Pedidos enviados', icon: faShoppingCart },
         ];
-        
+
         return (
             <div className="filter-buttons mb-4">
                 {filters.map(({ key, label, icon }) => (
@@ -173,6 +173,25 @@ const UserNotifications = () => {
             </div>
         );
     };
+
+    const handleDelete = async (notificationId) => { //BOTON ELIMINAR NOTIFICACIONES
+        try {
+            const response = await axios.delete(`${process.env.BACKEND_URL}/notifications/${notificationId}/delete`, {
+                headers: {
+                    Authorization: `Bearer ${sessionStorage.getItem('token')}`
+                }
+            });
+
+            if (response.status === 200) {
+                setNotifications(notifications.filter(n => n.id !== notificationId));
+            } else {
+                console.error('Error al eliminar la notificación:', response.data);
+            }
+        } catch (error) {
+            console.error('Error al eliminar la notificación:', error);
+        }
+    };
+
 
     return (
         <div className="user-notifications container">
@@ -234,6 +253,17 @@ const UserNotifications = () => {
                                             Marcar como no leída
                                         </Button>
                                     )}
+                                </td>
+                                <td>
+                                    <Button //BOTON ELIMINAR NOTIFICACIONES
+                                        onClick={(e) => {
+                                            e.stopPropagation();  // Evita que se dispare el evento de click en la fila
+                                            handleDelete(notification.id);
+                                        }}
+                                        variant="danger"
+                                    >
+                                        Borrar Notificación
+                                    </Button>
                                 </td>
                             </tr>
                         );
