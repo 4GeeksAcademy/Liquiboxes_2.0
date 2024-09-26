@@ -4,6 +4,7 @@ import { Context } from '../store/appContext';
 import { useParams } from 'react-router-dom';
 import CardMBox from '../component/Shop Detail/CardMBox';
 import SwitchButtons from '../component/Shop Detail/SwitchButtons';
+import RatingSystem from '../component/Shop Detail/RatingSystem';
 
 export default function ShopDetail() {
   const [mysteryBoxes, setMysteryBoxes] = useState([]);
@@ -54,7 +55,7 @@ export default function ShopDetail() {
         {/* Si boxVisible es false, se muestran las Valoraciones" */}
         {!boxVisible && (
           <div className="text-center mt-5">
-            <p>Aquí van las Valoraciones</p>
+            <RatingSystem />
           </div>
         )}
       </div>
