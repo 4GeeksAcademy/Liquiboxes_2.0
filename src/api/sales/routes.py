@@ -379,7 +379,10 @@ def confirm_shop_sale(sale_id):
                 sender_type="platform",
                 sale_id=sale_id,
                 shop_id=current_shop.id,
-                content=f"Has confirmado la venta con ID: {shop_sale.id}, del pedido con ID: {sale_id}. Por favor, prepara el pedido para su envío."
+                content=f"Has confirmado la orden con ID: {shop_sale.id}, del pedido (venta) con ID: {sale_id}. Por favor, prepara el pedido para su envío.",
+                extra_data={
+                "shop_sale_id": shop_sale.id
+            }
             )
             db.session.add(new_notification)
 
