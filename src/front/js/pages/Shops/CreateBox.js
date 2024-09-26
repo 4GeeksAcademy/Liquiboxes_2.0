@@ -36,18 +36,19 @@ const CreateMysteryBox = () => {
     const {store, actions} = useContext(Context)
     const navigate = useNavigate();
 
-    useEffect(() => {
+    useEffect(() => {                                                   // FUNCIÓN PARA COMPROBAR QUE HA INICIADO SESIÓN Y QUE ES EL TIPO DE USUARIO QUE QUEREMOS.
         const token = sessionStorage.getItem('token');
         const userType = sessionStorage.getItem('userType')
+
         if (!token) {
             actions.setModalToken(true)
             return
         }
-        if (userType !== 'shop'){
+        if (userType !== 'shop'){  // Tipo de usuario, si queremos que sea una tienda utilizamos 'shop'. Si queremos que sea un usuario normal utilziamos 'user'.
             actions.setModalType(true)
         }
         
-    }, [navigate]);
+    }, [navigate]);                                                     // COPIAR Y PEGAR ESTA FUNCIÓN ¡¡¡¡¡CUIDADO CON QUE EL COTNEXTO ESTÉ BIEN IMPORTADO!!!!!
 
     const validateStep = () => {
         let stepErrors = {};
@@ -360,7 +361,7 @@ const CreateMysteryBox = () => {
                 <ModalToken />
             )}
             {store.modalType && (
-                <ModalType type='user' />
+                <ModalType />
             )}
         </div>
     );

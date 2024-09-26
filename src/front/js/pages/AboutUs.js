@@ -31,7 +31,7 @@ const AboutUs = () => {
       </section>
 
       <section className="how-it-works">
-        <Zoom triggerOnce>
+        <Fade triggerOnce>
           <h2>¿Cómo funciona Liquiboxes?</h2>
           <p>
            Las tiendas crean <strong>Mistery Boxes</strong> de diferentes tamaños y precios, seleccionando los productos posibles que pueden tocar en esa caja y el número de artículos que va a contener la Mystery Box.
@@ -49,7 +49,7 @@ const AboutUs = () => {
           <p>
             Una vez todo ha sido confirmado al usario tienda se le descarga un PDF con la orden de envío, los artículos seleccionados y los datos del usuario.
           </p>
-        </Zoom>
+        </Fade>
       </section>
 
       <section className="team-section">

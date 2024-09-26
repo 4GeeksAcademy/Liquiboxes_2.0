@@ -11,10 +11,13 @@ import {
   faBoxes,
   faStore,
   faEnvelope,
-  faImage
+  faImage,
+  faPowerOff,
+  faShop
 } from '@fortawesome/free-solid-svg-icons';
 import ProfileField from '../../component/Profile/ProfileField';
 import { Context } from '../../store/appContext';
+import ModalLogout from '../../component/Modals/ModalLogout'
 
 import BoxesOnSale from '../../component/ShopHome/BoxesOnSale';
 import ContactSupport from '../../component/ShopHome/ContactSupport';
@@ -29,7 +32,7 @@ function ShopHome() {
   const [editMode, setEditMode] = useState({});
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { store } = useContext(Context);
+  const { store, actions } = useContext(Context);
   const [previewImage, setPreviewImage] = useState(null);
 
   const categoryOptions = store.categories;
@@ -202,7 +205,7 @@ function ShopHome() {
           value={isImageField ? renderInput() : (isListField && Array.isArray(value) ? value.join(', ') : value)}
           onEdit={() => handleEdit(field)}
           onSave={() => handleSave(field)}
-          isEditing={editMode[field]}
+          isEditing={editMode[field]} 
         >
           {isImageField ? renderInput() : (editMode[field] ? renderInput() : null)}
         </ProfileField>
@@ -299,12 +302,25 @@ function ShopHome() {
           <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => { navigate("/createbox") }}>
             <FontAwesomeIcon icon={faPlus} className="mr-2" /> Crear Nueva Caja
           </button>
+          <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => { navigate(`/shoppreview/${shopData.id}`) }}>
+            <FontAwesomeIcon icon={faShop} className="mr-2" /> Ver Perfil de tu tienda
+          </button>
+          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => {actions.setModalLogout(true)}}>
+            <FontAwesomeIcon icon={faPowerOff} className="mr-2" /> Cerrar sesión
+          </button>
         </div>
       </div>
       <div id="page-content-wrapper" className="flex-grow-1 p-4">
         <h2 className="mb-4">Panel de Control de la Tienda</h2>
         {renderContent()}
       </div>
+
+      {store.modalLogout && (
+        <div>
+          <ModalLogout />
+        </div>
+      )}
+
     </div>
   );
 }
