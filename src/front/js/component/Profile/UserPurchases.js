@@ -1,9 +1,10 @@
 import '../../../styles/userpurchases.css'
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { Modal, Button, Table, Badge } from 'react-bootstrap';
+import { Modal, Button, Table, Badge, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEnvelope, faShoppingCart, faClock, faDollarSign, faSort, faEuroSign } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEnvelope, faShoppingCart, faClock, faSort, faEuroSign } from '@fortawesome/free-solid-svg-icons';
+import ModalGlobal from '../ModalGlobal';
 
 const UserPurchases = ({ id }) => {
     const [purchases, setPurchases] = useState([]);
@@ -11,6 +12,14 @@ const UserPurchases = ({ id }) => {
     const [showModal, setShowModal] = useState(false);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
     const token = sessionStorage.getItem('token');
+    const [showContactModal, setShowContactModal] = useState(false);
+    const [contactForm, setContactForm] = useState({
+        content: '',
+        subjectAffair: '',
+        shopId: null,
+        saleId: null
+    });
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
     useEffect(() => {
         fetchUserPurchases(id);
@@ -33,6 +42,7 @@ const UserPurchases = ({ id }) => {
     };
 
     const handleShowDetails = (purchase) => {
+        console.log(purchase)
         setSelectedPurchase(purchase);
         setShowModal(true);
     };
@@ -42,8 +52,31 @@ const UserPurchases = ({ id }) => {
         setSelectedPurchase(null);
     };
 
-    const handleContactSeller = (shopId) => {
-        console.log(`Contactar al vendedor de la tienda ${shopId}`);
+    const handleContactSeller = (shopId, saleId) => {
+        setContactForm(prev => ({ ...prev, shopId, saleId }));
+        setShowContactModal(true);
+    };
+
+    const handleContactFormChange = (e) => {
+        const { name, value } = e.target;
+        setContactForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleContactFormSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(`${process.env.BACKEND_URL}/notifications/user/contactshop`, contactForm, {
+                headers: {
+                    Authorization: `Bearer ${sessionStorage.getItem('token')}`
+                }
+            });
+            setShowContactModal(false);
+            setShowConfirmationModal(true);
+            setContactForm({ content: '', subjectAffair: '', shopId: null, saleId: null });
+        } catch (error) {
+            console.error('Error sending message:', error);
+            // Handle error (e.g., show error message to user)
+        }
     };
 
     const translateStatus = (status) => {
@@ -179,6 +212,7 @@ const UserPurchases = ({ id }) => {
                             </div>
                             <h5>Cajas Compradas</h5>
                             {selectedPurchase.sale_details.map((detail) => (
+                                
                                 <div key={detail.id} className="mystery-box-detail mb-3 p-3 border rounded">
                                     <div className="row">
                                         <div className="col-md-4">
@@ -194,7 +228,7 @@ const UserPurchases = ({ id }) => {
                                             <Button 
                                                 variant="primary" 
                                                 size="sm" 
-                                                onClick={() => handleContactSeller(detail.shop_id)}
+                                                onClick={() => handleContactSeller(detail.shop_id, detail.sale_id)}
                                             >
                                                 <FontAwesomeIcon icon={faEnvelope} className="me-2" />
                                                 Contactar Vendedor
@@ -212,6 +246,49 @@ const UserPurchases = ({ id }) => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+            <Modal show={showContactModal} onHide={() => setShowContactModal(false)} className='mt-5'>
+                <Modal.Header closeButton>
+                    <Modal.Title>Contactar al Vendedor</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form onSubmit={handleContactFormSubmit}>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Asunto</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="subjectAffair"
+                                value={contactForm.subjectAffair}
+                                onChange={handleContactFormChange}
+                                required
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Mensaje</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                name="content"
+                                value={contactForm.content}
+                                onChange={handleContactFormChange}
+                                required
+                            />
+                        </Form.Group>
+                        <Button variant="primary" type="submit">
+                            Enviar Mensaje
+                        </Button>
+                    </Form>
+                </Modal.Body>
+            </Modal>
+
+            <ModalGlobal
+                isOpen={showConfirmationModal}
+                onClose={() => setShowConfirmationModal(false)}
+                title="Mensaje Enviado"
+                body="Su mensaje ha sido enviado exitosamente al vendedor."
+                buttonBody="Cerrar"
+                className="welcome-modal"
+            />
         </div>
     );
 };

@@ -19,7 +19,6 @@ const FooterPreview = () => {
               <li>Sobre Nosotros</li>
               <li>Buscador</li>
               <li>Cerrar sesión</li>
-              <li>Inciar sesión</li>
             </ul>
           </div>
           <div className="col-lg-3 col-md-6">

@@ -29,10 +29,10 @@ function CardMBoxPreview({ data }) {
           <FontAwesomeIcon icon={faMapMarkerAlt} className="icon-shop" />
           {data.address || 'Dirección no disponible'}
         </p>
-        <button className="card-button-shop" onClick={handleButtonClick}>
+        <button className="card-button-shop" >
           Ver detalles
         </button>
-          <button className="card-button-shop" onClick={() => handleBuyNow(data.id)}>
+          <button className="card-button-shop">
             Comprar Ya
           </button>
       </div>

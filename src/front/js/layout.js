@@ -11,7 +11,7 @@ import Login from "./pages/Login";
 import Cart from "./pages/Cart"
 import AboutUs from "./pages/AboutUs"
 import PayingForm from "./pages/PayingForm"
-import Profile from "./pages/UserDashboard"
+import UserDashboard from "./pages/UserDashboard"
 import ShopDetail from "./pages/ShopDetail"
 import ShopsSearch from "./pages/ShopsSearch"
 import MysteryBoxDetail from "./pages/MysteryBoxDetail";
@@ -75,16 +75,17 @@ const Layout = () => {
 
                   <Route element={<Login />} path="/" />
                   <Route element={<ChooseRegistration />} path="/chooseregistration" />
+                  <Route element={<SignUp />} path="/signup" />
+
 
 
 
                   {/* Rutas con Navbar */}
                   <Route element={<NavbarWrapper><Home /></NavbarWrapper>} path="/home" />
-                  <Route element={<NavbarWrapper><SignUp /></NavbarWrapper>} path="/signup" />
                   <Route element={<NavbarWrapper><Cart /></NavbarWrapper>} path="/cart" />
                   <Route element={<NavbarWrapper><AboutUs /></NavbarWrapper>} path="/aboutus" />
                   <Route element={<NavbarWrapper><PayingForm /></NavbarWrapper>} path="/payingform" />
-                  <Route element={<NavbarWrapper><Profile /></NavbarWrapper>} path="/userdashboard" />
+                  <Route element={<NavbarWrapper><UserDashboard /></NavbarWrapper>} path="/userdashboard" />
                   <Route element={<NavbarWrapper><ShopDetail /></NavbarWrapper>} path="/shops/:id" />
                   <Route element={<NavbarWrapper><ShopsSearch /></NavbarWrapper>} path="/shopssearch" />
                   <Route element={<NavbarWrapper><MysteryBoxDetail /></NavbarWrapper>} path="/mysterybox/:id" />

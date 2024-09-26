@@ -264,10 +264,48 @@ def  user_contact_support():
             content = data.get('content'),
             sender_id = user.id,
             sale_id=sale_id,
-            shop_id=user.id,
             extra_data={
-                'shop_name': user.name,
-                'shop_email': user.email,
+                'user_id': user.id,
+                'user_name': user.name,
+                'user_email': user.email,
+                'subject_affair': data.get('subjectAffair')
+            }
+        )
+
+        db.session.add(new_message)
+        db.session.commit()
+        return jsonify(new_message.serialize()), 201
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logging.error(f"Database error: {str(e)}")
+        return jsonify({'error': 'Database error occurred'}), 500
+    
+@notifications.route('/user/contactshop', methods=['POST'])
+@jwt_required()
+def  user_contact_shop():
+    current_user=get_jwt_identity()
+    if current_user['type'] != 'user':
+        return jsonify({"error": "Unauthorished: You should logging as a user"}), 403
+    
+    user = User.query.get(current_user['id'])
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    data = request.get_json()
+
+    try:
+        new_message = Notification(
+            type = 'contact_shop',
+            recipient_type = 'shop',
+            recipient_id = data.get('shopId'),
+            sender_type = 'user',
+            content = data.get('content'),
+            sender_id = user.id,
+            shop_id = data.get('shopId'),
+            sale_id=data.get('saleId'),
+            extra_data={
+                'user_id': user.id,
+                'user_name': user.name,
                 'subject_affair': data.get('subjectAffair')
             }
         )
@@ -319,15 +357,20 @@ def  admin_repply_message():
         logging.error(f"Database error: {str(e)}")
         return jsonify({'error': 'Database error occurred'}), 500
     
-@notifications.route('/contactsupport/reply', methods=['POST'])
+@notifications.route('/reply', methods=['POST'])
 @jwt_required()
 def reply_to_notification():
     data = request.get_json()
     current_user = get_jwt_identity()
 
     # Determinar si el usuario actual es una tienda o un usuario normal
-    user = Shop.query.get(current_user['id']) or User.query.get(current_user['id'])
-
+    if current_user['type'] == 'shop':
+        user = Shop.query.get(current_user['id'])
+    elif current_user['type'] == 'user':
+        user = User.query.get(current_user['id'])
+    else:
+        return jsonify({"error": "Unauthorized: You should log in as a user or shop"}), 403
+    
     if not user:
         return jsonify({"error": "User not found"}), 404
     
@@ -340,14 +383,14 @@ def reply_to_notification():
     
     try:
         new_reply = Notification(
-            type='contact_support',
+            type=data.get('type'),
             recipient_type=recipient_type,
             sender_type=current_user['type'],
             content=data.get('message'),
             sender_id=user.id,
             recipient_id=data.get('recipientId'),
             sale_id=sale_id,
-            shop_id=user.id if isinstance(user, Shop) else None,
+            shop_id=user.id if isinstance(user, Shop) else data.get('shopId'),
             extra_data={
                 'sender_email': user.email,
                 'subject_affair': data.get('subjectAffair'),
