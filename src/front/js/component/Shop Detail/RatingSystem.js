@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import RatingStar from './RatingStar';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const RatingSystem = () => {
   const [ratings, setRatings] = useState([]); //guarda todas las calificaciones enviadas por el usuario
@@ -32,25 +34,19 @@ const RatingSystem = () => {
   };
 
   const renderStars = (rating) => {
-    const totalStars = 5;
-    const fullStars = Math.floor(rating);
-    const emptyStars = totalStars - fullStars;
-
-    return (
-      <span>
-        {/* Estrellas llenas */}
-        {[...Array(fullStars)].map((_, idx) => (
-          <i key={idx} className="bi bi-star-fill text-warning"></i>
-        ))}
-        {/* Estrellas vacías */}
-        {[...Array(emptyStars)].map((_, idx) => (
-          <i key={idx} className="bi bi-star text-warning" style={{ opacity: 0.5 }}></i>
-        ))}
-      </span>
-    );
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <FontAwesomeIcon
+          key={i}
+          icon={faStar}
+          style={{ color: i <= rating ? 'gold' : 'lightgray' }} // Estrellas doradas para la calificación y grises para el resto
+        />
+      );
+    }
+    return stars;
   };
-
-
+ 
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">Valora este comercio</h2>
@@ -97,10 +93,13 @@ const RatingSystem = () => {
             Promedio de calificaciones: {getAverageRating()} estrellas
           </h3>
           {ratings.map((rating, index) => (
-            <div key={index} className="card mb-3 p-3">
-              <p><strong>Calificación:</strong> {rating.rating} estrellas</p>
+            <div key={index} className="card mb-3 p-3 d-flex">
+              <p><strong>Calificación:</strong></p>
+              <div className="d-flex">
+                {renderStars(rating.rating)} {/* Renderizar estrellas */}
+              </div>
               <p><strong>Comentario:</strong> {rating.comment}</p>
-              
+
               {rating.photos.length > 0 && (
                 <div className="mb-3">
                   <strong>Fotos:</strong>
