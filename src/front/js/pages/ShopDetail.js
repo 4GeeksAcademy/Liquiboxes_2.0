@@ -4,17 +4,20 @@ import { Context } from '../store/appContext';
 import { useParams } from 'react-router-dom';
 import CardMBox from '../component/Shop Detail/CardMBox';
 import SwitchButtons from '../component/Shop Detail/SwitchButtons';
+import Spinner from '../component/Spinner';
 
 export default function ShopDetail() {
   const [mysteryBoxes, setMysteryBoxes] = useState([]);
   const [boxVisible, setBoxVisible] = useState(true);  // Maneja el estado entre cajas y valoraciones
   const { store, actions } = useContext(Context);
   const { id } = useParams();  // ID de la tienda
+  const [loading, setLoading] = useState(true)
 
   // Trae los datos de la tienda y del ID
   useEffect(() => {
     const fetchData = async () => {
       await actions.getShopDetail(id);
+      setTimeout(() => setLoading(false), 500);
     };
     fetchData();
   }, [id]);
@@ -28,6 +31,8 @@ export default function ShopDetail() {
   if (store.isLoading) {
     return <div className="text-center mt-5">Cargando...</div>;
   }
+
+  if (loading) return <Spinner />
 
   return (
     <main>

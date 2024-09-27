@@ -19,11 +19,13 @@ import ProfileField from '../../component/Profile/ProfileField';
 import { Context } from '../../store/appContext';
 import ModalLogout from '../../component/Modals/ModalLogout'
 
+
 import BoxesOnSale from '../../component/ShopHome/BoxesOnSale';
 import ContactSupport from '../../component/ShopHome/ContactSupport';
 import ShopNotifications from '../../component/ShopHome/ShopNotifications';
 import ShopSales from '../../component/ShopHome/ShopSales';
 import { faSignalMessenger } from '@fortawesome/free-brands-svg-icons';
+import Spinner from '../../component/Spinner';
 
 function ShopHome() {
   const navigate = useNavigate();
@@ -31,18 +33,19 @@ function ShopHome() {
   const [shopData, setShopData] = useState(null);
   const [editMode, setEditMode] = useState({});
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const { store, actions } = useContext(Context);
   const [previewImage, setPreviewImage] = useState(null);
+  const [loading, setLoading] = useState(true)
 
   const categoryOptions = store.categories;
 
   useEffect(() => {
+    setLoading(true)
+
     const fetchShopData = async () => {
       const token = sessionStorage.getItem('token');
       if (!token) {
         setError("No se encontró el token de autenticación");
-        setIsLoading(false);
         return;
       }
       try {
@@ -57,11 +60,12 @@ function ShopHome() {
         });
 
         setShopData({ ...response.data, categories: processedCategories });
-        setIsLoading(false);
+
+        setTimeout(() => setLoading(false), 500);
+
       } catch (error) {
         console.error("Error fetching shop data:", error.response || error);
         setError(error.response?.data?.msg || error.message);
-        setIsLoading(false);
       }
     };
 
@@ -73,6 +77,7 @@ function ShopHome() {
   };
 
   const handleSave = async (field) => {
+    setLoading(true)
     const token = sessionStorage.getItem('token');
     try {
       let value = shopData[field];
@@ -100,6 +105,7 @@ function ShopHome() {
       setEditMode(prev => ({ ...prev, [field]: false }));
       setError(null);
 
+
       // Actualizar la imagen en shopData si se subió una nueva
       if (field === 'image_shop_url' && previewImage) {
         const reader = new FileReader();
@@ -108,7 +114,7 @@ function ShopHome() {
         };
         reader.readAsDataURL(previewImage);
       }
-
+      setTimeout(() => setLoading(false), 200);
     } catch (error) {
       console.error("Error updating shop data:", error);
       setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
@@ -132,7 +138,10 @@ function ShopHome() {
   };
 
   const renderField = (field, icon, label) => {
+
     if (!shopData || !shopData[field]) return null;
+
+    if (loading) return <Spinner />
 
     const value = shopData[field];
     const isListField = field === 'categories';
@@ -205,7 +214,7 @@ function ShopHome() {
           value={isImageField ? renderInput() : (isListField && Array.isArray(value) ? value.join(', ') : value)}
           onEdit={() => handleEdit(field)}
           onSave={() => handleSave(field)}
-          isEditing={editMode[field]} 
+          isEditing={editMode[field]}
         >
           {isImageField ? renderInput() : (editMode[field] ? renderInput() : null)}
         </ProfileField>
@@ -232,8 +241,9 @@ function ShopHome() {
   };
 
   const renderContent = () => {
-    if (isLoading) return <div>Cargando...</div>;
     if (error) return <div className="error-message">Error: {error}</div>;
+
+    if (loading) return <Spinner />
 
     switch (activeSection) {
       case 'notifications':
@@ -280,6 +290,8 @@ function ShopHome() {
     }
   };
 
+  if (loading) return <Spinner />
+
   return (
     <div className="d-flex">
       <div className="bg-light border-right" id="sidebar-wrapper">
@@ -305,13 +317,12 @@ function ShopHome() {
           <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => { navigate(`/shoppreview/${shopData.id}`) }}>
             <FontAwesomeIcon icon={faShop} className="mr-2" /> Ver Perfil de tu tienda
           </button>
-          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => {actions.setModalLogout(true)}}>
+          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => { actions.setModalLogout(true) }}>
             <FontAwesomeIcon icon={faPowerOff} className="mr-2" /> Cerrar sesión
           </button>
         </div>
       </div>
       <div id="page-content-wrapper" className="flex-grow-1 p-4">
-        <h2 className="mb-4">Panel de Control de la Tienda</h2>
         {renderContent()}
       </div>
 

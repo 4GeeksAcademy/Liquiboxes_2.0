@@ -6,6 +6,7 @@ import SwitchButtons from '../../../component/Shop Detail/SwitchButtons';
 import CardMBoxPreview from '../../../component/Previews/CardMBoxPreview';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import Spinner from '../../../component/Spinner';
 
 export default function ShopPreview() {
   const [mysteryBoxes, setMysteryBoxes] = useState([]);
@@ -13,11 +14,14 @@ export default function ShopPreview() {
   const { store, actions } = useContext(Context);
   const { id } = useParams();  // ID de la tienda
   const navigate = useNavigate()
+  const [isLoading, setIsLoading] = useState(true);
+
 
   // Trae los datos de la tienda y del ID
   useEffect(() => {
     const fetchData = async () => {
       await actions.getShopDetail(id);
+      setTimeout(() => setIsLoading(false), 500);
     };
     fetchData();
   }, [id]);
@@ -25,12 +29,15 @@ export default function ShopPreview() {
   useEffect(() => {
     if (!store.isLoading && !store.showError) {
       setMysteryBoxes(store.shopDetail.mystery_boxes);
+      setTimeout(() => setIsLoading(false), 500);
     }
   }, [store.isLoading, store.showError, store.mysteryBoxDetail]);
 
-  if (store.isLoading) {
-    return <div className="text-center mt-5">Cargando...</div>;
-  }
+  if (isLoading) {
+    return (
+        <Spinner />
+    );
+}
 
   return (
     <main>

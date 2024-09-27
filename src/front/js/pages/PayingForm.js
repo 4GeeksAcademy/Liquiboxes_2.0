@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCreditCard, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { faPaypal } from '@fortawesome/free-brands-svg-icons';
 import { useNavigate } from 'react-router-dom';
+import Spinner from '../component/Spinner';
 
 const stripePromise = loadStripe(process.env.STRIPE_PK);
 
@@ -146,11 +147,7 @@ const PayingForm = () => {
     }
   };
 
-  if (isLoading) return <div className="text-center">
-    <div className="spinner-border text-primary" role="status">
-      <span className="sr-only">Loading...</span>
-    </div>
-  </div>;
+  if (isLoading) return <Spinner />
 
   if (error) return <div className="alert alert-danger">{error}</div>;
 

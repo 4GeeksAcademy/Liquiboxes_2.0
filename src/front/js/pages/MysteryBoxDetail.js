@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faHome } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/mysteryboxdetail.css';
+import Spinner from '../component/Spinner';
 
 function MysteryBoxDetail() {
   const { store, actions } = useContext(Context);
@@ -11,10 +12,12 @@ function MysteryBoxDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const token = sessionStorage.getItem('token')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       await actions.getMysteryBoxDetail(id);
+      setTimeout(() => setLoading(false), 500);
     };
 
     fetchData();
@@ -51,8 +54,8 @@ function MysteryBoxDetail() {
     }
   };
 
-  if (store.isLoading) {
-    return <div className="text-center mt-5">Cargando...</div>;
+  if (loading) {
+    return <Spinner />
   }
 
   if (store.showError) {

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faTimes, faExchange, faTruck } from '@fortawesome/free-solid-svg-icons';
+import Spinner from '../Spinner';
+
 
 const OrderConfirmation = ({ notificationId }) => {
   const [orderDetails, setOrderDetails] = useState(null);
@@ -43,7 +45,7 @@ const OrderConfirmation = ({ notificationId }) => {
           Authorization: `Bearer ${sessionStorage.getItem('token')}`
         }
       });
-      setItems(items.map(item => 
+      setItems(items.map(item =>
         item.id === itemId ? { ...item, isConfirmed } : item
       ));
     } catch (error) {
@@ -95,7 +97,11 @@ const OrderConfirmation = ({ notificationId }) => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <Spinner />
+    )
+  };
   if (error) return <div className="error">{error}</div>;
   if (!orderDetails) return <div>No order details found.</div>;
 
@@ -134,8 +140,8 @@ const OrderConfirmation = ({ notificationId }) => {
           </div>
         ))}
       </div>
-      <button 
-        className="confirm-order" 
+      <button
+        className="confirm-order"
         onClick={handleOrderConfirmation}
         disabled={items.some(item => item.isConfirmed === undefined)}
       >

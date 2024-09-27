@@ -1,17 +1,18 @@
-import '../../../styles/userpurchases.css'
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import axios from "axios";
 import { Modal, Button, Table, Badge, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEnvelope, faShoppingCart, faClock, faSort, faEuroSign } from '@fortawesome/free-solid-svg-icons';
+import { ClimbingBoxLoader } from "react-spinners";
 import ModalGlobal from '../ModalGlobal';
+import '../../../styles/userpurchases.css';
+import Spinner from "../Spinner";
 
 const UserPurchases = ({ id }) => {
     const [purchases, setPurchases] = useState([]);
     const [selectedPurchase, setSelectedPurchase] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
-    const token = sessionStorage.getItem('token');
     const [showContactModal, setShowContactModal] = useState(false);
     const [contactForm, setContactForm] = useState({
         content: '',
@@ -20,12 +21,12 @@ const UserPurchases = ({ id }) => {
         saleId: null
     });
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        fetchUserPurchases(id);
-    }, [id]);
+    const token = sessionStorage.getItem('token');
 
-    const fetchUserPurchases = async (userId) => {
+    const fetchUserPurchases = useCallback(async (userId) => {
+        setIsLoading(true);
         try {
             const response = await axios.get(`${process.env.BACKEND_URL}/sales/user/${userId}`, {
                 headers: { 
@@ -38,34 +39,39 @@ const UserPurchases = ({ id }) => {
             }
         } catch (error) {
             console.error("Error fetching user purchases:", error);
+        } finally {
+            setTimeout(() => setIsLoading(false), 500); // 500 ms delay
         }
-    };
+    }, [token]);
 
-    const handleShowDetails = (purchase) => {
-        console.log(purchase)
+    useEffect(() => {
+        fetchUserPurchases(id);
+    }, [id, fetchUserPurchases]);
+
+    const handleShowDetails = useCallback((purchase) => {
         setSelectedPurchase(purchase);
         setShowModal(true);
-    };
+    }, []);
 
-    const handleCloseModal = () => {
+    const handleCloseModal = useCallback(() => {
         setShowModal(false);
         setSelectedPurchase(null);
-    };
+    }, []);
 
-    const handleContactSeller = (shopId, saleId) => {
+    const handleContactSeller = useCallback((shopId, saleId) => {
         setContactForm(prev => ({ ...prev, shopId, saleId }));
         setShowContactModal(true);
-    };
+    }, []);
 
-    const handleContactFormChange = (e) => {
+    const handleContactFormChange = useCallback((e) => {
         const { name, value } = e.target;
         setContactForm(prev => ({ ...prev, [name]: value }));
-    };
+    }, []);
 
-    const handleContactFormSubmit = async (e) => {
+    const handleContactFormSubmit = useCallback(async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${process.env.BACKEND_URL}/notifications/user/contactshop`, contactForm, {
+            await axios.post(`${process.env.BACKEND_URL}/notifications/user/contactshop`, contactForm, {
                 headers: {
                     Authorization: `Bearer ${sessionStorage.getItem('token')}`
                 }
@@ -77,9 +83,9 @@ const UserPurchases = ({ id }) => {
             console.error('Error sending message:', error);
             // Handle error (e.g., show error message to user)
         }
-    };
+    }, [contactForm]);
 
-    const translateStatus = (status) => {
+    const translateStatus = useCallback((status) => {
         const statusTranslations = {
             'pending': 'Pendiente',
             'confirmed': 'Confirmado',
@@ -88,9 +94,9 @@ const UserPurchases = ({ id }) => {
             'canceled': 'Cancelado'
         };
         return statusTranslations[status] || status;
-    };
+    }, []);
 
-    const getStatusBadge = (status) => {
+    const getStatusBadge = useCallback((status) => {
         const statusColors = {
             'pending': 'warning',
             'confirmed': 'info',
@@ -99,15 +105,14 @@ const UserPurchases = ({ id }) => {
             'canceled': 'danger'
         };
         return <Badge bg={statusColors[status] || 'secondary'}>{translateStatus(status)}</Badge>;
-    };
+    }, [translateStatus]);
 
-    const requestSort = (key) => {
-        let direction = 'ascending';
-        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
-        }
-        setSortConfig({ key, direction });
-    };
+    const requestSort = useCallback((key) => {
+        setSortConfig(prevConfig => ({
+            key,
+            direction: prevConfig.key === key && prevConfig.direction === 'ascending' ? 'descending' : 'ascending'
+        }));
+    }, []);
 
     const sortedPurchases = useMemo(() => {
         let sortablePurchases = [...purchases];
@@ -137,11 +142,12 @@ const UserPurchases = ({ id }) => {
         return sortablePurchases;
     }, [purchases, sortConfig]);
 
-    const formatDate = (dateString) => {
+    const formatDate = useCallback((dateString) => {
         const date = new Date(dateString);
         return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-    };
+    }, []);
 
+    if (isLoading) return <Spinner />
     return (
         <div className="user-purchases-container text-center">
             <h2 className="mb-4">
@@ -212,7 +218,6 @@ const UserPurchases = ({ id }) => {
                             </div>
                             <h5>Cajas Compradas</h5>
                             {selectedPurchase.sale_details.map((detail) => (
-                                
                                 <div key={detail.id} className="mystery-box-detail mb-3 p-3 border rounded">
                                     <div className="row">
                                         <div className="col-md-4">

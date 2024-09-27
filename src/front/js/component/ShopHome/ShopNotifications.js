@@ -6,6 +6,7 @@ import { Modal, Button, Form, Table, Tabs, Tab } from 'react-bootstrap';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import '../../../styles/shops/shopnotifications.css';
+import Spinner  from '../../component/Spinner'
 
 const ShopNotifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -16,6 +17,7 @@ const ShopNotifications = () => {
   const [orderDetails, setOrderDetails] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingModal, setLoadingModal] = useState(true);
   const [error, setError] = useState(null);
   const [shippingDetails, setShippingDetails] = useState(null);
   const [changeRequests, setChangeRequests] = useState([]);
@@ -44,6 +46,8 @@ const ShopNotifications = () => {
   }, [notifications, filter, activeTab]);
 
   const fetchNotifications = async () => {
+    setLoading(true)
+
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/notifications/shop`, {
         headers: {
@@ -51,6 +55,9 @@ const ShopNotifications = () => {
         }
       });
       setNotifications(response.data);
+      
+      setTimeout(() => setLoading(false), 500);
+
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
@@ -66,6 +73,9 @@ const ShopNotifications = () => {
       setChangeRequests(response.data);
     } catch (error) {
       console.error('Error fetching change requests:', error);
+    }
+    finally {
+      setTimeout(() => setLoading(false), 500);
     }
   };
 
@@ -177,7 +187,7 @@ const ShopNotifications = () => {
   };
 
   const fetchOrderDetails = async (saleId) => {
-    setLoading(true);
+    setLoadingModal(true);
     setError(null);
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/sales/${saleId}`, {
@@ -190,16 +200,17 @@ const ShopNotifications = () => {
       setItems(allItems.map(item => ({ ...item, isConfirmed: undefined })));
       fetchUserPreferences(response.data.user_id);
       await delay(1000);
-      setLoading(false);
+      setLoadingModal(false)
+
     } catch (error) {
       console.error('Error fetching order details:', error);
       setError('Failed to fetch order details. Please try again.');
-      setLoading(false);
+      setLoadingModal(false)
     }
   };
 
   const fetchUserPreferences = async (userId) => {
-    setLoading(true)
+    setLoadingModal(true)
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/users/${userId}`, {
         headers: {
@@ -208,10 +219,11 @@ const ShopNotifications = () => {
       });
       setUserPreferences(response.data);
       console.log(response.data)
-      setLoading(false)
+      setTimeout(() => setLoadingModal(false), 500);
     } catch (error) {
       console.error('Error fetching user preferences:', error);
       setError('Failed to fetch user preferences. Please try again.');
+      setLoadingModal(false)
     }
   };
 
@@ -223,9 +235,9 @@ const ShopNotifications = () => {
 
   const handleItemChange = async (item) => {
     setSelectedItemForChange(item);
-    setLoading(true);
-    await delay(2000);
-    setLoading(false);
+    setLoadingModal(true);
+    await delay(1000);
+    setLoadingModal(false);
     setShowChangeRequestForm(true);
   };
 
@@ -455,12 +467,17 @@ const ShopNotifications = () => {
   const renderNotificationDetails = () => {
     if (!selectedNotification) return null;
 
+    if (loadingModal) {
+      return (
+        <Spinner />
+      );
+    }
+
     switch (selectedNotification.type) {
       case 'new_sale':
       case 'item_change_approved':
       case 'item_change_rejected':
       case 'confirmed':
-        if (loading) return <div className="loading-spinner">Cargando...</div>;
         if (error) return <div className="error-message">{error}</div>;
         if (!orderDetails) return <div className="no-data-message">No se encontraron detalles del pedido.</div>;
 
@@ -615,7 +632,6 @@ const ShopNotifications = () => {
     );
   };
 
-
   const handleDeleteNotificaction = async (notificationId) => { //BOTON ELIMINAR NOTIFICACIONES ////////////
     try {
       const response = await axios.delete(`${process.env.BACKEND_URL}/notifications/${notificationId}/delete`, {
@@ -633,6 +649,12 @@ const ShopNotifications = () => {
       console.error('Error al eliminar la notificación:', error);
     }
   };
+
+ if (loading) {
+    return (
+      <Spinner />
+    );
+  }
 
   return (
     <div className="shop-notifications container mt-4">

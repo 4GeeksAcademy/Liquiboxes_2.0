@@ -18,8 +18,6 @@ import {
   faBell,
   faShoppingBag,
   faHeadset,
-  faBars,
-  faTimes,
   faPowerOff
 } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/userdashboard.css";
@@ -30,6 +28,7 @@ import UserMessages from '../component/Profile/UserMessages';
 import ContactSupport from '../component/ShopHome/ContactSupport';
 import ModalLogout from '../component/Modals/ModalLogout'
 import UserPurchases from '../component/Profile/UserPurchases';
+import Spinner from '../component/Spinner';
 
 function UserDashboard() {
   const [userData, setUserData] = useState(null);
@@ -49,11 +48,12 @@ function UserDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
+    setIsLoading(true)
+
     const fetchUserData = async () => {
       const token = sessionStorage.getItem('token');
       if (!token) {
         setError("No se encontró el token de autenticación");
-        setIsLoading(false);
         return;
       }
       try {
@@ -309,10 +309,10 @@ function UserDashboard() {
   };
 
   if (error) return <div className="error-message">Error: {error}</div>;
-  if (!userData) return <div className="loading-message">Cargando...</div>;
+  if (!userData) return <Spinner />
 
   const renderContent = () => {
-    if (isLoading) return <div>Cargando...</div>;
+    if (isLoading) return <Spinner />
     if (error) return <div className="error-message">Error: {error}</div>;
 
     switch (activeSection) {
@@ -386,7 +386,7 @@ function UserDashboard() {
           >
             <FontAwesomeIcon icon={faHeadset} className="mr-2" /> Contacto con Soporte
           </button>
-          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => {actions.setModalLogout(true)}}>
+          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => { actions.setModalLogout(true) }}>
             <FontAwesomeIcon icon={faPowerOff} className="mr-2" /> Cerrar sesión
           </button>
         </div>
@@ -402,7 +402,7 @@ function UserDashboard() {
         </div>
       </div>
       <div className="overlay" onClick={closeSidebar}></div>
-    
+
       {store.modalLogout && (
         <div>
           <ModalLogout />

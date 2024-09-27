@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faEnvelope, faEnvelopeOpen, faList, faShoppingCart, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Table } from 'react-bootstrap';
 import '../../../styles/usernotifications.css';
+import { ClimbingBoxLoader } from "react-spinners";
+import Spinner from '../Spinner';
 
 const UserNotifications = () => {
     const [notifications, setNotifications] = useState([]);
@@ -13,18 +15,23 @@ const UserNotifications = () => {
     const [filter, setFilter] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [notificationsPerPage] = useState(10);
+    const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
+
+   useEffect(() => {
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
         return () => clearInterval(interval);
     }, []);
 
     useEffect(() => {
-        filterNotifications();
-    }, [notifications, filter]);
+        if (!isLoading) {
+            filterNotifications();
+        }
+    }, [notifications, filter, isLoading]);
 
     const fetchNotifications = async () => {
+        setIsLoading(true);
         try {
             const response = await axios.get(`${process.env.BACKEND_URL}/notifications/user`, {
                 headers: {
@@ -32,8 +39,14 @@ const UserNotifications = () => {
                 }
             });
             setNotifications(response.data.filter(n => !['contact_support', 'contact_user', 'contact_shop'].includes(n.type)));
+            
+            // Introduce a minimum delay of 1 second
+            setTimeout(() => {
+                setIsLoading(false);
+            }, 500);
         } catch (error) {
             console.error('Error fetching notifications:', error);
+            setIsLoading(false);
         }
     };
 
@@ -192,24 +205,26 @@ const UserNotifications = () => {
         }
     };
 
+    if (isLoading) return <Spinner/>
 
     return (
-        <div className="user-notifications container">
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2>Notificaciones</h2>
-                <div className="d-flex align-items-center">
-                    <FontAwesomeIcon icon={faBell} className="mr-2 me-2" />
-                    <span className="badge">
-                        {notifications.filter(n => !n.is_read).length} No leídas
-                    </span>
+        <>
+            <div className="user-notifications container">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Notificaciones</h2>
+                    <div className="d-flex align-items-center">
+                        <FontAwesomeIcon icon={faBell} className="mr-2 me-2" />
+                        <span className="badge">
+                            {notifications.filter(n => !n.is_read).length} No leídas
+                        </span>
+                    </div>
                 </div>
-            </div>
 
-            <FilterButtons currentFilter={filter} />
+                <FilterButtons currentFilter={filter} />
 
-            <Button onClick={handleMarkAllRead} variant="secondary" className="mb-4 custom-dropdown-toggle">
-                Marcar todas como leídas
-            </Button>
+                <Button onClick={handleMarkAllRead} variant="secondary" className="mb-4 custom-dropdown-toggle">
+                    Marcar todas como leídas
+                </Button>
 
             <Table className="notifications-table">
                 <thead>
@@ -272,37 +287,41 @@ const UserNotifications = () => {
                 </tbody>
             </Table>
 
-            <div className="pagination">
-                {[...Array(Math.ceil(filteredNotifications.length / notificationsPerPage)).keys()].map(number => (
-                    <Button
-                        key={number + 1}
-                        onClick={() => paginate(number + 1)}
-                        className={currentPage === number + 1 ? 'active' : ''}
-                    >
-                        {number + 1}
-                    </Button>
-                ))}
-            </div>
+                <div className="pagination">
+                    {[...Array(Math.ceil(filteredNotifications.length / notificationsPerPage)).keys()].map(number => (
+                        <Button
+                            key={number + 1}
+                            onClick={() => paginate(number + 1)}
+                            className={currentPage === number + 1 ? 'active' : ''}
+                        >
+                            {number + 1}
+                        </Button>
+                    ))}
+                </div>
 
-            <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} className="custom-modal">
-                <Modal.Header closeButton>
-                    <Modal.Title>Detalles de la Notificación</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <div className="notification-details">
-                        <h3>
-                            <FontAwesomeIcon icon={getNotificationConfig(selectedNotification?.type).icon} className="me-2" />
-                            {getNotificationConfig(selectedNotification?.type).label}
-                        </h3>
-                        <p>{selectedNotification?.content}</p>
-                        <p>{selectedNotification ? formatDate(selectedNotification.created_at) : ''}</p>
-                    </div>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
-                </Modal.Footer>
-            </Modal>
-        </div>
+                <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} className="custom-modal">
+                    <Modal.Header closeButton>
+                        <Modal.Title>Detalles de la Notificación</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <div className="notification-details">
+                            <h3>
+                                <FontAwesomeIcon icon={getNotificationConfig(selectedNotification?.type).icon} className="me-2" />
+                                {getNotificationConfig(selectedNotification?.type).label}
+                            </h3>
+                            <p>{selectedNotification?.content}</p>
+                            <p>{selectedNotification ? formatDate(selectedNotification.created_at) : ''}</p>
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
+                    </Modal.Footer>
+                </Modal>
+            </div >
+
+
+        </>
+
     );
 };
 
