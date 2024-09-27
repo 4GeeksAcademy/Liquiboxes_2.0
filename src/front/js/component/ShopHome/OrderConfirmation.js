@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faTimes, faExchange, faTruck } from '@fortawesome/free-solid-svg-icons';
-import { ClimbingBoxLoader } from "react-spinners";
+import Spinner from '../Spinner';
+
 
 const OrderConfirmation = ({ notificationId }) => {
   const [orderDetails, setOrderDetails] = useState(null);
@@ -98,9 +99,7 @@ const OrderConfirmation = ({ notificationId }) => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <ClimbingBoxLoader color="#6a8e7f" loading={true} size={40} speedMultiplier={1} />
-      </div>
+      <Spinner />
     )
   };
   if (error) return <div className="error">{error}</div>;

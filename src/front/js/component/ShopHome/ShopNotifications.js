@@ -6,8 +6,7 @@ import { Modal, Button, Form, Table, Tabs, Tab } from 'react-bootstrap';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import '../../../styles/shops/shopnotifications.css';
-import { ClimbingBoxLoader } from "react-spinners";
-
+import Spinner  from '../../component/Spinner'
 
 const ShopNotifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -47,6 +46,8 @@ const ShopNotifications = () => {
   }, [notifications, filter, activeTab]);
 
   const fetchNotifications = async () => {
+    setLoading(true)
+
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/notifications/shop`, {
         headers: {
@@ -54,6 +55,9 @@ const ShopNotifications = () => {
         }
       });
       setNotifications(response.data);
+      
+      setTimeout(() => setLoading(false), 500);
+
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
@@ -195,7 +199,7 @@ const ShopNotifications = () => {
       const allItems = response.data.sale_details.flatMap(detail => detail.box_items);
       setItems(allItems.map(item => ({ ...item, isConfirmed: undefined })));
       fetchUserPreferences(response.data.user_id);
-      await delay(500);
+      await delay(1000);
       setLoadingModal(false)
 
     } catch (error) {
@@ -232,7 +236,7 @@ const ShopNotifications = () => {
   const handleItemChange = async (item) => {
     setSelectedItemForChange(item);
     setLoadingModal(true);
-    await delay(2000);
+    await delay(1000);
     setLoadingModal(false);
     setShowChangeRequestForm(true);
   };
@@ -465,9 +469,7 @@ const ShopNotifications = () => {
 
     if (loadingModal) {
       return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <ClimbingBoxLoader color="#6a8e7f" loading={true} size={40} speedMultiplier={1} />
-        </div>
+        <Spinner />
       );
     }
 
@@ -632,9 +634,7 @@ const ShopNotifications = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <ClimbingBoxLoader color="#6a8e7f" loading={true} size={40} speedMultiplier={1} />
-      </div>
+      <Spinner />
     );
   }
 

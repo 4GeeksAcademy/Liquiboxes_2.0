@@ -5,6 +5,7 @@ import axios from 'axios'
 import { useLocation } from 'react-router-dom'
 import '../../styles/shopssearch.css';
 import { Context } from '../store/appContext'
+import Spinner from '../component/Spinner'
 
 
 function ShopsSearch() {
@@ -91,9 +92,7 @@ function ShopsSearch() {
     }
   };
 
-  if (isLoading) {
-    return <div className="loading">Cargando tiendas...</div>;
-  }
+  if (isLoading) return <Spinner />
 
   if (error) {
     return <div className="error">{error}</div>;

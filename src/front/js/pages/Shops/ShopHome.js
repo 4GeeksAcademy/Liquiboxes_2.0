@@ -25,6 +25,7 @@ import ContactSupport from '../../component/ShopHome/ContactSupport';
 import ShopNotifications from '../../component/ShopHome/ShopNotifications';
 import ShopSales from '../../component/ShopHome/ShopSales';
 import { faSignalMessenger } from '@fortawesome/free-brands-svg-icons';
+import Spinner from '../../component/Spinner';
 
 function ShopHome() {
   const navigate = useNavigate();
@@ -34,10 +35,13 @@ function ShopHome() {
   const [error, setError] = useState(null);
   const { store, actions } = useContext(Context);
   const [previewImage, setPreviewImage] = useState(null);
+  const [loading, setLoading] = useState(true)
 
   const categoryOptions = store.categories;
 
   useEffect(() => {
+    setLoading(true)
+
     const fetchShopData = async () => {
       const token = sessionStorage.getItem('token');
       if (!token) {
@@ -56,6 +60,9 @@ function ShopHome() {
         });
 
         setShopData({ ...response.data, categories: processedCategories });
+
+        setTimeout(() => setLoading(false), 500);
+
       } catch (error) {
         console.error("Error fetching shop data:", error.response || error);
         setError(error.response?.data?.msg || error.message);
@@ -70,6 +77,7 @@ function ShopHome() {
   };
 
   const handleSave = async (field) => {
+    setLoading(true)
     const token = sessionStorage.getItem('token');
     try {
       let value = shopData[field];
@@ -97,6 +105,7 @@ function ShopHome() {
       setEditMode(prev => ({ ...prev, [field]: false }));
       setError(null);
 
+
       // Actualizar la imagen en shopData si se subió una nueva
       if (field === 'image_shop_url' && previewImage) {
         const reader = new FileReader();
@@ -105,7 +114,7 @@ function ShopHome() {
         };
         reader.readAsDataURL(previewImage);
       }
-
+      setTimeout(() => setLoading(false), 200);
     } catch (error) {
       console.error("Error updating shop data:", error);
       setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
@@ -129,7 +138,10 @@ function ShopHome() {
   };
 
   const renderField = (field, icon, label) => {
+
     if (!shopData || !shopData[field]) return null;
+
+    if (loading) return <Spinner />
 
     const value = shopData[field];
     const isListField = field === 'categories';
@@ -231,6 +243,8 @@ function ShopHome() {
   const renderContent = () => {
     if (error) return <div className="error-message">Error: {error}</div>;
 
+    if (loading) return <Spinner />
+
     switch (activeSection) {
       case 'notifications':
         return <div>
@@ -275,6 +289,8 @@ function ShopHome() {
         return <div>Selecciona una opción del menú</div>;
     }
   };
+
+  if (loading) return <Spinner />
 
   return (
     <div className="d-flex">

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faEnvelope, faEnvelopeOpen, faList, faExchangeAlt, faUser, faStore, faChartBar } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Form, Table, Tabs, Tab } from 'react-bootstrap';
+import Spinner from '../Spinner'
 import '../../../styles/admins/adminnotifications.css'
 
 const AdminNotifications = () => {
@@ -267,7 +268,7 @@ const AdminNotifications = () => {
     );
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Spinner />
   if (error) return <div className="error-message">{error}</div>;
 
   const FilterButtons = ({ currentFilter, setFilter, filters }) => {

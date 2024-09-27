@@ -28,7 +28,7 @@ import UserMessages from '../component/Profile/UserMessages';
 import ContactSupport from '../component/ShopHome/ContactSupport';
 import ModalLogout from '../component/Modals/ModalLogout'
 import UserPurchases from '../component/Profile/UserPurchases';
-import ClimbingBoxLoader from "react-spinners/ClipLoader"
+import Spinner from '../component/Spinner';
 
 function UserDashboard() {
   const [userData, setUserData] = useState(null);
@@ -309,20 +309,10 @@ function UserDashboard() {
   };
 
   if (error) return <div className="error-message">Error: {error}</div>;
-  if (!userData) return <div className="loading-message">Cargando...</div>;
+  if (!userData) return <Spinner />
 
   const renderContent = () => {
-    if (isLoading) return <div>
-      <ClimbingBoxLoader
-        color="#6a8e7f"
-        cssOverride={{
-          'margin-bottom': '2rem',
-          'margin-top': '2rem'
-        }}
-        loading
-        size={25}
-        speedMultiplier={1}
-      /></div>;
+    if (isLoading) return <Spinner />
     if (error) return <div className="error-message">Error: {error}</div>;
 
     switch (activeSection) {

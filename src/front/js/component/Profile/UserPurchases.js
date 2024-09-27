@@ -6,6 +6,7 @@ import { faEye, faEnvelope, faShoppingCart, faClock, faSort, faEuroSign } from '
 import { ClimbingBoxLoader } from "react-spinners";
 import ModalGlobal from '../ModalGlobal';
 import '../../../styles/userpurchases.css';
+import Spinner from "../Spinner";
 
 const UserPurchases = ({ id }) => {
     const [purchases, setPurchases] = useState([]);
@@ -146,14 +147,7 @@ const UserPurchases = ({ id }) => {
         return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
     }, []);
 
-    if (isLoading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <ClimbingBoxLoader color="#6a8e7f" loading={true} size={40} speedMultiplier={1} />
-            </div>
-        );
-    }
-
+    if (isLoading) return <Spinner />
     return (
         <div className="user-purchases-container text-center">
             <h2 className="mb-4">

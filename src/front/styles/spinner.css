@@ -1,0 +1,11 @@
+#spinner {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 60vh !important;
+    color: var(--secondary-color) !important;
+}
+
+.spinner-border, .spinner-grow {
+
+}

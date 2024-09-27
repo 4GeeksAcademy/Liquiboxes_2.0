@@ -3,8 +3,8 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faEnvelope, faEnvelopeOpen, faList, faUser, faStore, faHeadset, faComments } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Form, Table } from 'react-bootstrap';
-import { ClimbingBoxLoader } from "react-spinners";
 import '../../../styles/usermessages.css';
+import Spinner from '../Spinner';
 
 const UserMessages = () => {
     const [messages, setMessages] = useState([]);
@@ -183,9 +183,7 @@ const UserMessages = () => {
 
     if (isLoading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <ClimbingBoxLoader color="#6a8e7f" loading={true} size={40} speedMultiplier={1} />
-            </div>
+            <Spinner />
         );
     }
 

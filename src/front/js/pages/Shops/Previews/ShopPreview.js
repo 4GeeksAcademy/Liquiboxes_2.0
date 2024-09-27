@@ -6,8 +6,7 @@ import SwitchButtons from '../../../component/Shop Detail/SwitchButtons';
 import CardMBoxPreview from '../../../component/Previews/CardMBoxPreview';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import { ClimbingBoxLoader } from "react-spinners";
-
+import Spinner from '../../../component/Spinner';
 
 export default function ShopPreview() {
   const [mysteryBoxes, setMysteryBoxes] = useState([]);
@@ -36,9 +35,7 @@ export default function ShopPreview() {
 
   if (isLoading) {
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            <ClimbingBoxLoader color="#6a8e7f" loading={true} size={40} speedMultiplier={1} />
-        </div>
+        <Spinner />
     );
 }
 

@@ -14,7 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartBar, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../../styles/shops/shopsales.css'; // Asumimos que crearás este archivo CSS
-import { ClimbingBoxLoader } from "react-spinners";
+import Spinner from "../Spinner";
 
 // Registrar los componentes necesarios de Chart.js
 ChartJS.register(
@@ -152,9 +152,7 @@ const ShopSales = ({ shopData }) => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <ClimbingBoxLoader color="#6a8e7f" loading={true} size={40} speedMultiplier={1} />
-      </div>
+      <Spinner />
     );
   }
   if (error) return <div className="error">Error: {error}</div>;

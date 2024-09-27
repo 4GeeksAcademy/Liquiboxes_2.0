@@ -5,6 +5,7 @@ import { faBell, faEnvelope, faEnvelopeOpen, faList, faShoppingCart, faCheck } f
 import { Modal, Button, Table } from 'react-bootstrap';
 import '../../../styles/usernotifications.css';
 import { ClimbingBoxLoader } from "react-spinners";
+import Spinner from '../Spinner';
 
 const UserNotifications = () => {
     const [notifications, setNotifications] = useState([]);
@@ -186,18 +187,7 @@ const UserNotifications = () => {
         );
     };
 
-    if (isLoading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <ClimbingBoxLoader
-                    color="#6a8e7f"
-                    loading={isLoading}
-                    size={40}
-                    speedMultiplier={1}
-                />
-            </div>
-        );
-    }
+    if (isLoading) return <Spinner/>
 
     return (
         <>
