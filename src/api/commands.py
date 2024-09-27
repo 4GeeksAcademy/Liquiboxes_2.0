@@ -47,7 +47,7 @@ def setup_commands(app):
             print(f"Usuario: {user.email} creado.")
         print("Todos los usuarios de prueba han sido creados")
 
-    @app.cli.command("create-superuser")
+    @app.cli.command("create_superuser")
     @click.option('--name', prompt=True)
     @click.option('--surname', prompt=True)
     @click.option('--email', prompt=True)
@@ -71,7 +71,7 @@ def setup_commands(app):
 
         click.echo(f'Superusuario {email} creado exitosamente.')
 
-    @app.cli.command("init-db")
+    @app.cli.command("init_db")
     def init_db():
         """Inicializar la base de datos con tiendas y cajas misteriosas de muestra."""
         click.echo("Inicializando la base de datos...")

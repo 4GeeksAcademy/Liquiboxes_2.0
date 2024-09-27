@@ -20,13 +20,13 @@ export const Home = () => {
     const navigate = useNavigate()
 
     useEffect(() => {
-        setLoading(true)
 
         const loadData = async () => {
             if (store.allShops.length === 0) {
                 await actions.fetchShops();
             }
             await actions.fetchUserProfile();
+            setLoading(false);
         };
         loadData();
     }, []);
@@ -42,7 +42,11 @@ export const Home = () => {
             setRecommendedShops(filtered);
             fetchRecommendedMysteryBoxes(filtered);
             calculateTopSellingShops(store.allShops); // Calcular las tiendas más vendidas
+            setLoading(false);
+
         }
+        setLoading(false);
+
     }, [store.userData, store.allShops]);
 
     const fetchRecommendedMysteryBoxes = async (shops) => {
@@ -62,11 +66,14 @@ export const Home = () => {
                         } else {
                             console.error(`Received non-JSON response for shop ${shop.id}`);
                             return [];
+                            setLoading(false);
+
                         }
                     })
                     .catch(error => {
                         console.error(`Error fetching mystery boxes for shop ${shop.id}:`, error.response || error);
                         return [];
+                        setLoading(false);
                     })
             );
             const responses = await Promise.all(mysteryBoxesPromises);
@@ -76,17 +83,21 @@ export const Home = () => {
             if (allMysteryBoxes.length === 0) {
                 console.error("No valid mystery boxes data received");
                 setRecommendedMysteryBoxes([]);
+                setLoading(false);
             } else {
                 const sortedMysteryBoxes = allMysteryBoxes
                     .sort((a, b) => b.total_sales - a.total_sales)
                     .slice(0, 10);
                 setRecommendedMysteryBoxes(sortedMysteryBoxes);
+                setLoading(false);
             }
 
 
         } catch (error) {
             console.error("Error fetching recommended mystery boxes:", error);
             setRecommendedMysteryBoxes([]);
+            setLoading(false);
+
         } finally {
             setLoading(false);
         }
