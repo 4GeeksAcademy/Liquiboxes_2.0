@@ -37,14 +37,14 @@ export default function ShopDetail() {
       {/* Pasa el estado y la función a SwitchButtons */}
       <SwitchButtons boxVisible={boxVisible} setBoxVisible={setBoxVisible} />
 
-      <div className="mb-5">
+      <div className="container">
         {/* Renderiza las mystery boxes solo si boxVisible es true */}
         {boxVisible && mysteryBoxes && (
-          <div className='row mx-5'>
+          <div className="row">
             {mysteryBoxes.map((mysterybox) => {
               console.log("Renderizando mystery box:", mysterybox);
               return (
-                <div key={mysterybox.id} className='col-12 col-md-6 col-lg-4 col-xl-3 col-xxl-2'>
+                <div key={mysterybox.id} className="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
                   <CardMBox data={mysterybox} />
                 </div>
               );
@@ -52,14 +52,14 @@ export default function ShopDetail() {
           </div>
         )}
 
-        {/* Si boxVisible es false, se muestran las Valoraciones" */}
-        {!boxVisible && (
-          <div className="text-center mt-5">
-            <RatingSystem />
-          </div>
-        )}
-      </div>
+      {/* Renderiza las VALORACIONES */}
+      {!boxVisible && (
+        <div>
+          <RatingSystem />
+        </div>
+      )}
+    </div>
 
-    </main>
+    </main >
   );
 }

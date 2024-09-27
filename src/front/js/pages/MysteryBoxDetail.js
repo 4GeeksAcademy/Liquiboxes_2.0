@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faHome } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/mysteryboxdetail.css';
+import RatingSystem from '../component/Shop Detail/RatingSystem';
 
 function MysteryBoxDetail() {
   const { store, actions } = useContext(Context);
@@ -150,17 +151,10 @@ function MysteryBoxDetail() {
 
       {/* Sección de Valoraciones */}
       <div className="row reviews-section mt-4">
-        <div className="col-12">
-          <p><strong>4,9 (995 valoraciones)</strong> - Bermington (nombre tienda)</p>
-          <hr />
-          <div className="horizontal-scroll">
-            {/* Aquí puedes implementar el scroll horizontal para las valoraciones */}
-            <p>Valoraciones... (Scroll horizontal)</p>
-          </div>
-          <button type="button" className="btn btn-link">Ver todas las valoraciones</button>
+          <RatingSystem />
         </div>
       </div>
-    </div>
+    
   );
 }
 
