@@ -2,11 +2,12 @@ import React, { useContext, useEffect, useState } from 'react';
 import HeaderShop from '../../../component/Shop Detail/HeaderShop';
 import { Context } from '../../../store/appContext';
 import { useNavigate, useParams } from 'react-router-dom';
-import SwitchButtons from '../../../component/Shop Detail/SwitchButtons';
 import CardMBoxPreview from '../../../component/Previews/CardMBoxPreview';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../../component/Spinner';
+import { faBoxOpen, faStar } from '@fortawesome/free-solid-svg-icons'; // Importa los íconos
+
 
 export default function ShopPreview() {
   const [mysteryBoxes, setMysteryBoxes] = useState([]);
@@ -35,19 +36,39 @@ export default function ShopPreview() {
 
   if (isLoading) {
     return (
-        <Spinner />
+      <Spinner />
     );
-}
+  }
 
   return (
     <main>
       <div>
-        <button className='btn-primary p-2' onClick={() => {navigate('/shophome')}}><FontAwesomeIcon icon={faArrowLeft} className='me-2' />Volver</button>
+        <button className='btn-primary p-2' onClick={() => { navigate('/shophome') }}><FontAwesomeIcon icon={faArrowLeft} className='me-2' />Volver</button>
       </div>
       <HeaderShop data={store.shopDetail} />
 
       {/* Pasa el estado y la función a SwitchButtons */}
-      <SwitchButtons boxVisible={boxVisible} setBoxVisible={setBoxVisible} />
+      <div>
+        <div className="row">
+          <div className="col text-center">
+            {/* Botón para mostrar las Cajas */}
+            <button
+              type="button"
+              className="btn btn-primary mx-2"
+            >
+              <FontAwesomeIcon icon={faBoxOpen} /> Cajas
+            </button>
+
+            {/* Botón para mostrar las Valoraciones */}
+            <button
+              type="button"
+              className="btn btn-primary mx-2"
+            >
+              <FontAwesomeIcon icon={faStar} /> Valoraciones
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="mb-5">
         {/* Renderiza las mystery boxes solo si boxVisible es true */}
@@ -63,12 +84,6 @@ export default function ShopPreview() {
           </div>
         )}
 
-        {/* Si boxVisible es false, se muestran las Valoraciones" */}
-        {!boxVisible && (
-          <div className="text-center mt-5">
-            <p>Aquí van las Valoraciones</p>
-          </div>
-        )}
       </div>
 
     </main>

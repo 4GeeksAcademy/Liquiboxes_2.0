@@ -19,7 +19,7 @@
   flex-direction: column !important;
   justify-content: center !important;
   align-items: center !important;
-  min-height: 100vh !important;
+  min-height: 100% !important;
   padding: 2rem !important;
   color: var(--text-color) !important;
 }

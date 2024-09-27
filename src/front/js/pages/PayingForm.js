@@ -21,32 +21,28 @@ const PayingForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('stripe');
-  const navigate = useNavigate ()
+  const [forceUpdate, setForceUpdate] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCartData = async () => {
       try {
         setIsLoading(true);
-        let cartData = store.cartWithDetails || JSON.parse(localStorage.getItem("cartWithDetails") || "[]");
+        let cartData = store.cartWithDetails || {};
 
-        // Asegúrate de que cartData sea siempre un array
-        if (!Array.isArray(cartData)) {
-          cartData = [cartData];
-        }
-
-        if (cartData.length === 0) {
-          throw new Error("El carrito está vacío");
+        if (Object.keys(cartData).length === 0) {
+          setCheckoutCart([]);
+          setTotal(0);
+          setError(null);
+          setIsLoading(false);
+          return;
         }
 
         // Procesar los datos del carrito
-        const processedCart = cartData.map(item => {
-          // Asumimos que la cantidad está en store.cart
-          const cartItem = store.cart.find(ci => ci.mysterybox_id === item.id.toString());
-          return {
-            ...item,
-            quantity: cartItem ? cartItem.quantity : 1
-          };
-        });
+        const processedCart = Object.values(cartData).map(item => ({
+          ...item,
+          quantity: item.quantity || 1
+        }));
 
         setCheckoutCart(processedCart);
 
@@ -79,7 +75,21 @@ const PayingForm = () => {
     };
 
     fetchCartData();
-  }, [store.cartWithDetails, store.cart]);
+  }, [store.cartWithDetails]);
+
+  useEffect(() => {
+    const handleCartCleared = () => {
+      setCheckoutCart([]);
+      setTotal(0);
+    };
+
+    window.addEventListener('cartCleared', handleCartCleared);
+
+    return () => {
+      window.removeEventListener('cartCleared', handleCartCleared);
+    };
+  }, []);
+
 
   const handleStripePaymentSuccess = async (paymentIntentId) => {
     try {
@@ -108,11 +118,43 @@ const PayingForm = () => {
       );
 
       console.log('Respuesta del backend:', response.data);
-      alert('Compra realizada con éxito. ID de la venta: ' + response.data.sale_id);
-      // TODO: MOSTRAR MODAL EN VEZ DLE ALERT
 
-      actions.clearCart();
-      navigate("/home")
+      // Usar un modal en lugar de alert
+      // TODO: Implementar lógica del modal
+      console.log('Compra realizada con éxito. ID de la venta: ' + response.data.sale_id);
+
+      console.log("Carrito antes de limpiar:", store.cart);
+
+      // Limpiar el carrito
+      await actions.clearCart();
+
+      // Forzar limpieza de localStorage
+      localStorage.removeItem("cart");
+      localStorage.removeItem("cartWithDetails");
+
+      // Actualizar estado local
+      setCheckoutCart([]);
+      setTotal(0);
+
+      console.log("Carrito después de limpiar:", store.cart);
+      console.log("localStorage después de limpiar:", localStorage.getItem("cart"));
+
+      // Forzar actualización del contexto
+      await actions.initializeCart();
+
+      // Forzar actualización del componente
+      setForceUpdate(prev => !prev);
+
+      // Esperar antes de navegar
+      setTimeout(() => {
+        // Verificar una última vez antes de navegar
+        if (Object.keys(store.cart).length === 0) {
+          navigate("/home");
+        } else {
+          navigate("/home");
+          window.location.reload();
+        }
+      }, 1000);
     } catch (err) {
       console.error("Error completo:", err);
       const errorMessage = err.response?.data?.error || err.message;
@@ -141,13 +183,24 @@ const PayingForm = () => {
       });
 
       alert('Transacción completada por ' + details.payer.name.given_name + '. ID de la venta: ' + response.data.sale_id);
-      actions.clearCart();
+
+      console.log("Carrito antes de limpiar:", store.cart);
+      await actions.clearCart();
+
+      // Forzar una actualización del estado local
+      setCheckoutCart([]);
+      setTotal(0);
+
+      console.log("Carrito después de limpiar:", store.cart);
+      console.log("localStorage después de limpiar:", localStorage.getItem("cart"));
+
+      navigate("/home");
     } catch (err) {
       setError("Error al procesar el pago: " + err.message);
     }
   };
 
-  if (isLoading) return <Spinner />
+  if (isLoading) return <Spinner />;
 
   if (error) return <div className="alert alert-danger">{error}</div>;
 
@@ -160,8 +213,8 @@ const PayingForm = () => {
       {checkoutCart.length > 0 ? (
         <>
           {/* Resumen del carrito */}
-          {checkoutCart.map((item, index) => (
-            <div key={index} className="card mb-3">
+          {checkoutCart.map((item) => (
+            <div key={item.id} className="card mb-3">
               <div className="card-body">
                 <h5 className="card-title">{item.name}</h5>
                 <p className="card-text">Cantidad: {item.quantity}</p>
@@ -201,7 +254,7 @@ const PayingForm = () => {
                 Tarjeta de crédito
               </button>
               <button
-                className={`mx-2`}
+                className={`btn btn-lg mx-2 ${paymentMethod === 'paypal' ? 'btn-primary' : 'btn-outline-primary'}`}
                 onClick={() => setPaymentMethod('paypal')}
               >
                 <FontAwesomeIcon icon={faPaypal} className="mr-2" />
@@ -225,7 +278,11 @@ const PayingForm = () => {
 
           {/* Botón de PayPal */}
           {paymentMethod === 'paypal' && (
-            <PayPalCheckoutButton />
+            <PayPalCheckoutButton
+              total={total}
+              onApprove={handlePayPalApprove}
+              onError={(err) => setError("Error en PayPal: " + err)}
+            />
           )}
         </>
       ) : (

@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBox, faCoins, faList, faImage } from '@fortawesome/free-solid-svg-icons';
 import Confetti from 'react-confetti';
 import ModalGlobal from '../../component/ModalGlobal';
-import {Context} from '../../store/appContext'
+import { Context } from '../../store/appContext'
 import "../../../styles/shops/createMysteryBox.css";
 import ModalToken from '../../component/Modals/ModalToken';
 import ModalType from '../../component/Modals/ModalType';
@@ -32,8 +32,8 @@ const CreateMysteryBox = () => {
     const [errors, setErrors] = useState({});
     const [previewImage, setPreviewImage] = useState(null);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [ mysteryBoxId, setMysteryBoxId] = useState(null)
-    const {store, actions} = useContext(Context)
+    const [mysteryBoxId, setMysteryBoxId] = useState(null)
+    const { store, actions } = useContext(Context)
     const navigate = useNavigate();
 
     useEffect(() => {                                                   // FUNCIÓN PARA COMPROBAR QUE HA INICIADO SESIÓN Y QUE ES EL TIPO DE USUARIO QUE QUEREMOS.
@@ -44,15 +44,15 @@ const CreateMysteryBox = () => {
             actions.setModalToken(true)
             return
         }
-        if (userType !== 'shop'){  // Tipo de usuario, si queremos que sea una tienda utilizamos 'shop'. Si queremos que sea un usuario normal utilziamos 'user'.
+        if (userType !== 'shop') {  // Tipo de usuario, si queremos que sea una tienda utilizamos 'shop'. Si queremos que sea un usuario normal utilziamos 'user'.
             actions.setModalType(true)
         }
-        
+
     }, [navigate]);                                                     // COPIAR Y PEGAR ESTA FUNCIÓN ¡¡¡¡¡CUIDADO CON QUE EL COTNEXTO ESTÉ BIEN IMPORTADO!!!!!
 
     const validateStep = () => {
         let stepErrors = {};
-        switch(step) {
+        switch (step) {
             case 1:
                 if (!newBox.name) stepErrors.name = "El nombre es requerido";
                 if (!newBox.description) stepErrors.description = "La descripción es requerida";
@@ -157,11 +157,11 @@ const CreateMysteryBox = () => {
 
     const handleCloseModal = (id) => {
         setIsSuccess(false);
-        navigate(`/mysterybox/${id}`);
+        navigate(`/mysteryboxpreview/${id}`);
     };
 
     const renderStepContent = () => {
-        switch(step) {
+        switch (step) {
             case 1:
                 return (
                     <div className="signup-step-content">
@@ -290,9 +290,11 @@ const CreateMysteryBox = () => {
                             />
                             {errors.image && <p className="signup-error-message">{errors.image}</p>}
                         </div>
-                        {previewImage && (
-                            <img src={previewImage} alt="Vista previa" className="signup-preview-image" />
-                        )}
+                            {previewImage && (
+
+                                <img src={previewImage} alt="Vista previa" className="signup-preview-image mx-auto" />
+                            )}
+
                         <div className="signup-summary">
                             <h3>Resumen de la Caja Misteriosa</h3>
                             <p><strong>Nombre:</strong> {newBox.name}</p>
@@ -334,8 +336,8 @@ const CreateMysteryBox = () => {
                         {renderStepContent()}
                         {errors.submit && <p className="signup-error-message">{errors.submit}</p>}
                         <div className="signup-navigation-buttons">
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 className="signup-next-button"
                             >
                                 {step < STEPS.length ? "Continuar" : "Crear Caja Misteriosa"}
@@ -349,7 +351,7 @@ const CreateMysteryBox = () => {
                     <Confetti width={window.innerWidth} height={window.innerHeight} />
                     <ModalGlobal
                         isOpen={true}
-                        onClose={() => {handleCloseModal(mysteryBoxId)}}
+                        onClose={() => { handleCloseModal(mysteryBoxId) }}
                         title="¡Caja Misteriosa Creada!"
                         body="Tu caja misteriosa ha sido creada con éxito. ¡Esperamos que los usuarios disfruten descubriendo su contenido!"
                         buttonBody="Continuar"

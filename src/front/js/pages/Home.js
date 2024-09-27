@@ -59,7 +59,6 @@ export const Home = () => {
                     }
                 })
                     .then(response => {
-                        console.log(`Response for shop ${shop.id}:`, response);
                         if (response.headers['content-type'].includes('application/json')) {
                             return response.data;
                         } else {
@@ -73,9 +72,7 @@ export const Home = () => {
                     })
             );
             const responses = await Promise.all(mysteryBoxesPromises);
-            console.log("All responses:", responses);
             const allMysteryBoxes = responses.flatMap(response => response);
-            console.log("All mystery boxes:", allMysteryBoxes);
             if (allMysteryBoxes.length === 0) {
                 console.error("No valid mystery boxes data received");
                 setRecommendedMysteryBoxes([]);

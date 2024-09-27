@@ -1,100 +1,120 @@
-import React, { useContext, useEffect, useState, useCallback } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Context } from '../store/appContext';
 import CartItem from '../component/Cart/CartItem';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faCreditCard } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/cart.css"
-import { Spinner } from 'react-bootstrap';
+import Spinner from '../component/Spinner';
+
+
 
 const Cart = () => {
   const { store, actions } = useContext(Context);
-  const [cartItems, setCartItems] = useState([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const fetchCartDetails = useCallback(async () => {
-    const cartIds = store.cart || [];
+  useEffect(() => {
+    setLoading(true);
 
-    const itemsWithDetails = await Promise.all(
-      cartIds.map(async (cartItem) => {
-        const details = await actions.fetchSingleItemDetail(cartItem.mysterybox_id);
-        return details ? { ...details, quantity: cartItem.quantity } : null;
-      })
-    );
-
-    const validItems = itemsWithDetails.filter(item => item !== null);
-    setCartItems(validItems);
-    actions.updateCartWithDetails(validItems)
-
-    const cartTotal = validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    setTotal(cartTotal);
-
-    setTimeout(() => setLoading(false), 500);
-  }, [actions, store.cart]);
+    fetchCartDetails();
+  }, []);
 
   useEffect(() => {
-    // Traemos la informacion del carrito
+    const syncCartWithLocalStorage = () => {
+      const cartFromStorage = JSON.parse(localStorage.getItem("cart")) || {};
+      const cartWithDetailsFromStorage = JSON.parse(localStorage.getItem("cartWithDetails")) || {};
+      actions.updateCartWithDetails(cartWithDetailsFromStorage);
+    };
+
+    window.addEventListener('storage', syncCartWithLocalStorage);
+    syncCartWithLocalStorage(); // Sincroniza al montar el componente
+
+    return () => {
+      window.removeEventListener('storage', syncCartWithLocalStorage);
+    };
+  }, []);
+
+  const fetchCartDetails = async () => {
+    try {
+      setError(null);
+      const cartIds = Object.keys(store.cart || JSON.parse(localStorage.getItem("cart")) || {});
+
+      if (cartIds.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const itemsWithDetails = await Promise.all(
+        cartIds.map(async (id) => {
+          try {
+            const details = await actions.fetchSingleItemDetail(id);
+            return details ? { ...details, quantity: store.cart[id]?.quantity || 1 } : null;
+          } catch (err) {
+            console.error(`Error fetching details for item ${id}:`, err);
+            return null;
+          }
+        })
+      );
+
+      const validItems = itemsWithDetails.filter(item => item !== null);
+      actions.updateCartWithDetails(validItems.reduce((acc, item) => {
+        if (item && item.id) {
+          acc[item.id] = item;
+        }
+        setLoading(false);
+
+        return acc;
+      }, {}));
+    } catch (err) {
+      console.error("Error fetching cart details:", err);
+      setError("No se pudieron cargar los detalles del carrito. Por favor, intente de nuevo.");
+      setLoading(false);
+    }
+  };
+
+  const handleIncreaseQuantity = (item) => {
+    if (item && item.id) {
+      actions.addToCart(item.id);
+    }
     fetchCartDetails();
-    // Comenzamos la revisión periódica del carrito
-    // actions.startCartExpirationCheck();   //Esta funcion hace que los articulos se borren del carrito, pero hay que moverla a global
-  }, []);
+  };
 
-  const updateLocalCart = useCallback((itemId, updateFn) => {
-    setCartItems(prevItems => {
-      const updatedItems = prevItems.map(item =>
-        item.id === itemId ? updateFn(item) : item
-      ).filter(item => item.quantity > 0);
-
-      const newTotal = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      setTotal(newTotal);
-
-      return updatedItems;
-    });
-  }, []);
-
-  const handleIncreaseQuantity = useCallback((item) => {
-    if (!item.id) {
-      console.error("El ID del producto es inválido");
-      return;
+  const handleDecreaseQuantity = (item) => {
+    if (item && item.id) {
+      actions.decreaseQuantity(item.id);
     }
-    actions.addToCart(item.id);
-    updateLocalCart(item.id, (item) => ({ ...item, quantity: item.quantity + 1 }));
-  }, [actions, updateLocalCart]);
+    fetchCartDetails();
+  };
 
-  const handleDecreaseQuantity = useCallback((item) => {
-    if (!item.id) {
-      console.error("El ID del producto es inválido");
-      return;
+  const handleRemoveItem = (item) => {
+    if (item && item.id) {
+      actions.removeFromCart(item.id);
     }
-    actions.decreaseQuantity(item.id);
-    updateLocalCart(item.id, (item) => ({ ...item, quantity: item.quantity - 1 }));
-  }, [actions, updateLocalCart]);
-
-  const handleRemoveItem = useCallback((item) => {
-    if (!item.id) {
-      console.error("El ID del producto es inválido");
-      return;
-    }
-    actions.removeFromCart(item.id);
-    setCartItems(prevItems => prevItems.filter(cartItem => cartItem.id !== item.id));
-    setTotal(prevTotal => prevTotal - (item.price * item.quantity));
-  }, [actions]);
+    fetchCartDetails();
+  };
 
   if (loading) {
-    return (
-      <Spinner />
-    );
+    return <Spinner />;
   }
 
+  if (error) {
+    return <div className="alert alert-danger">{error}</div>;
+  }
+
+  const cartItems = store.cartWithDetails || {};
+  const cartItemsArray = Object.values(cartItems).filter(item => item != null);
+  const isCartEmpty = cartItemsArray.length === 0;
+  const total = cartItemsArray.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0);
+
   return (
-    <div className="container mt-5">
+    <div className="container my-5">
       <h2 className="mb-4 text-center">
         <FontAwesomeIcon icon={faShoppingCart} className="mr-2 me-3" />
         Tu Carrito
       </h2>
-      {cartItems.length === 0 ? (
+      {isCartEmpty ? (
         <div className="text-center empty-cart">
           <p>Tu carrito está vacío.</p>
           <button className="btn btn-primary" onClick={() => navigate('/home')}>
@@ -104,7 +124,7 @@ const Cart = () => {
       ) : (
         <>
           <div className="cart-items">
-            {cartItems.map((item) => (
+            {cartItemsArray.map((item) => (
               <CartItem
                 key={item.id}
                 item={item}

@@ -2,11 +2,12 @@ import axios from "axios";
 
 const getState = ({ getStore, getActions, setStore }) => {
 
+
     return {
         store: {
             message: null,
-            cart: JSON.parse(localStorage.getItem("cart")) || [],
-            cartWithDetails: JSON.parse(localStorage.getItem("cartWithDetails")) || [],
+            cart: JSON.parse(localStorage.getItem("cart")) || {},
+            cartWithDetails: JSON.parse(localStorage.getItem("cartWithDetails")) || {},
             categories: ['Moda', 'Ropa de Trabajo', 'Tecnología', 'Carpintería', 'Outdoor', 'Deporte', 'Arte', 'Cocina', 'Jardinería', 'Música', 'Viajes', 'Lectura', 'Cine', 'Fotografía', 'Yoga'],
             mysteryBoxDetail: {},
             isLoading: true,
@@ -25,22 +26,22 @@ const getState = ({ getStore, getActions, setStore }) => {
         actions: {
             setModalToken: (boolean) => {
                 let trueOrFalse = boolean
-                setStore( {modalToken: trueOrFalse})
+                setStore({ modalToken: trueOrFalse })
             },
 
             setModalType: (boolean) => {
                 let trueOrFalse = boolean
-                setStore( {modalType: trueOrFalse})
+                setStore({ modalType: trueOrFalse })
             },
 
             setModalLogout: (boolean) => {
                 let trueOrFalse = boolean
-                setStore( {modalLogout: trueOrFalse})
+                setStore({ modalLogout: trueOrFalse })
             },
 
             setLogin: (boolean) => {
                 let trueOrFalse = boolean
-                setStore( {login: trueOrFalse})
+                setStore({ login: trueOrFalse })
             },
 
             getMessage: async () => {
@@ -129,66 +130,74 @@ const getState = ({ getStore, getActions, setStore }) => {
             },
 
             addToCart: (id) => {
-                let cart = [];
-                // Si el store no tiene el carrito, lo obtenemos del localStorage
-                if (!getStore().cart) {
-                    cart = JSON.parse(localStorage.getItem("cart") || "[]");
-                } else {
-                    cart = getStore().cart;
-                }
-                // Verificamos si el item con este mysterybox_id ya está en el carrito
-                const existingItemIndex = cart.findIndex(item => item.mysterybox_id == id);
+                const store = getStore();
+                let cart = store.cart;
 
-                if (existingItemIndex !== -1) {
-                    // Si ya existe, incrementamos la cantidad
-                    cart[existingItemIndex] = {
-                        ...cart[existingItemIndex],
-                        quantity: cart[existingItemIndex].quantity + 1,
+                if (cart[id]) {
+                    cart[id] = {
+                        ...cart[id],
+                        quantity: cart[id].quantity + 1,
                         added_at: new Date().getTime()
-                    }
+                    };
                 } else {
-                    // Aseguramos que el id no sea null o undefined antes de agregar
-                    if (id) {
-                        let added_at = new Date().getTime()
-                        let mysterybox_id = id;
-                        cart.push({ mysterybox_id, quantity: 1, added_at});
-                    } else {
-                        console.error("El ID es inválido, no se puede añadir al carrito");
-                    }
+                    cart[id] = {
+                        mysterybox_id: id,
+                        quantity: 1,
+                        added_at: new Date().getTime()
+                    };
                 }
-                // Actualizamos el carrito en el store y en localStorage
+
                 setStore({ cart });
                 localStorage.setItem("cart", JSON.stringify(cart));
                 return cart;
             },
 
-            removeExpiredCartItems: () => {
+            removeFromCart: (id) => {
                 const store = getStore();
-                const currentTime = new Date().getTime();
-                const TIME_LIMIT = 10000; //10 segundos
+                let newCart = store.cart;
+                let newCartWithDetails = store.cartWithDetails;
 
-                let updatedCart = store.cart.filter(cartItem => {
-                    const timeElapsed = currentTime - cartItem.added_at;
-                    
-                    if (timeElapsed > TIME_LIMIT) {
-                        // Si ha caducado, no lo incluimos en el nuevo carrito
-                        return false;
+                delete newCart[id];
+                delete newCartWithDetails[id];
+
+                setStore({
+                    cart: newCart,
+                    cartWithDetails: newCartWithDetails
+                });
+                localStorage.setItem("cart", JSON.stringify(newCart));
+                localStorage.setItem("cartWithDetails", JSON.stringify(newCartWithDetails));
+                return newCart;
+            },
+
+            decreaseQuantity: (id) => {
+                const store = getStore();
+                let newCart = store.cart;
+                let newCartWithDetails = store.cartWithDetails;
+
+                if (newCart[id]) {
+                    if (newCart[id].quantity > 1) {
+                        newCart[id] = Object.assign({}, newCart[id], {
+                            quantity: newCart[id].quantity - 1,
+                        });
+                        if (newCartWithDetails[id]) {
+                            newCartWithDetails[id] = Object.assign({}, newCartWithDetails[id], {
+                                quantity: newCart[id].quantity
+                            });
+                        }
+                    } else {
+                        delete newCart[id];
+                        delete newCartWithDetails[id];
                     }
-                    return true;
-                });
 
-                // Actualiza el store y el localStorage
-                setStore({ cart: updatedCart });
-                localStorage.setItem("cart", JSON.stringify(updatedCart));
+                    setStore({
+                        cart: newCart,
+                        cartWithDetails: newCartWithDetails
+                    });
+                    localStorage.setItem("cart", JSON.stringify(newCart));
+                    localStorage.setItem("cartWithDetails", JSON.stringify(newCartWithDetails));
+                }
 
-                // cartWithDetails
-                let updatedCartWithDetails = store.cartWithDetails.filter(cartItem => {
-                    const timeElapsed = currentTime - cartItem.addedAt;
-                    return timeElapsed <= TIME_LIMIT;
-                });
-
-                setStore({ cartWithDetails: updatedCartWithDetails });
-                localStorage.setItem("cartWithDetails", JSON.stringify(updatedCartWithDetails));
+                return newCart;
             },
 
             startCartExpirationCheck: () => {
@@ -199,55 +208,9 @@ const getState = ({ getStore, getActions, setStore }) => {
                 }, 5000);
             },
 
-            removeFromCart: (id) => {
-                const store = getStore();
-                let cart = store.cart || JSON.parse(localStorage.getItem("cart") || "[]");
-                let cartWithDetails = store.cartWithDetails || JSON.parse(localStorage.getItem("cartWithDetails") || "[]");
-
-                // Filtramos el carrito para eliminar el item con el id especificado
-                cart = cart.filter(item => item.mysterybox_id != id);
-                cartWithDetails = cartWithDetails.filter(item => item.id != id);
-
-                // Actualizamos el carrito en el store y en localStorage
-                setStore({ cart });
-                setStore({ cartWithDetails });
-                localStorage.setItem("cart", JSON.stringify(cart));
-                localStorage.setItem("cartWithDetails", JSON.stringify(cartWithDetails));
-
-
-                return cart;
-            },
-
-            decreaseQuantity: (id) => {
-                const store = getStore();
-                let cart = store.cart || JSON.parse(localStorage.getItem("cart") || "[]");
-
-                const existingItemIndex = cart.findIndex(item => item.mysterybox_id == id);
-
-                if (existingItemIndex !== -1) {
-                    if (cart[existingItemIndex].quantity > 1) {
-                        // Si la cantidad es mayor que 1, la reducimos
-                        cart[existingItemIndex] = {
-                            ...cart[existingItemIndex],
-                            quantity: cart[existingItemIndex].quantity - 1,
-                            added_at: new Date().getTime()
-                        };
-                    } else {
-                        // Si la cantidad es 1, eliminamos el item del carrito
-                        cart = cart.filter(item => item.mysterybox_id != id);
-                    }
-
-                    // Actualizamos el carrito en el store y en localStorage
-                    setStore({ cart });
-                    localStorage.setItem("cart", JSON.stringify(cart));
-                }
-
-                return cart;
-            },
-
             getCartItemDetails: async (id) => {
                 try {
-                    const response = await axios.get(process.env.BACKEND_URL + `/shops/mystery-box/${id}`);
+                    const response = await axios.get(`${process.env.BACKEND_URL}/shops/mystery-box/${id}`);
                     if (response.data) {
                         return [];
                     }
@@ -275,23 +238,71 @@ const getState = ({ getStore, getActions, setStore }) => {
                 return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
             },
 
+            removeExpiredCartItems: () => {
+                const store = getStore();
+                const currentTime = new Date().getTime();
+                const TIME_LIMIT = 10000; //10 segundos
+
+                let updatedCart = {};
+                let updatedCartWithDetails = {};
+
+                Object.entries(store.cart).forEach(([id, item]) => {
+                    const timeElapsed = currentTime - item.added_at;
+                    if (timeElapsed <= TIME_LIMIT) {
+                        updatedCart[id] = item;
+                        if (store.cartWithDetails[id]) {
+                            updatedCartWithDetails[id] = store.cartWithDetails[id];
+                        }
+                    }
+                });
+
+                setStore({ cart: updatedCart, cartWithDetails: updatedCartWithDetails });
+                localStorage.setItem("cart", JSON.stringify(updatedCart));
+                localStorage.setItem("cartWithDetails", JSON.stringify(updatedCartWithDetails));
+            },
+
             updateCartWithDetails: (data) => {
-                setStore({ cartWithDetails: data })
+                setStore({
+                    cartWithDetails: data
+                });
                 localStorage.setItem("cartWithDetails", JSON.stringify(data));
             },
 
             clearCart: () => {
-                // Limpia el carrito en el store
-                setStore({
-                    cart: [],
-                    cartWithDetails: []
-                });
-
-                // Limpia el carrito en localStorage
+                console.log("Iniciando limpieza del carrito");
+            
+                // Limpia el localStorage
                 localStorage.removeItem("cart");
                 localStorage.removeItem("cartWithDetails");
+            
+                // Actualiza el estado
+                setStore({
+                    cart: {},
+                    cartWithDetails: {}
+                });                
+            
+                // Forzar actualización
+                setStore(prevStore => ({...prevStore}));
 
-                console.log("Carrito limpiado con éxito");
+                // Verifica el estado inmediatamente después de la actualización
+                const updatedStore = getStore();
+                console.log("Estado del carrito después de limpiar:", updatedStore.cart);
+                console.log("Estado de cartWithDetails después de limpiar:", updatedStore.cartWithDetails);
+            },
+
+            initializeCart: () => {
+                const cartFromStorage = JSON.parse(localStorage.getItem("cart")) || {};
+                const cartWithDetailsFromStorage = JSON.parse(localStorage.getItem("cartWithDetails")) || {};
+                setStore({ 
+                    cart: cartFromStorage, 
+                    cartWithDetails: cartWithDetailsFromStorage 
+                });
+            },
+
+            syncCartWithLocalStorage: () => {
+                const store = getStore();
+                localStorage.setItem("cart", JSON.stringify(store.cart));
+                localStorage.setItem("cartWithDetails", JSON.stringify(store.cartWithDetails));
             },
 
             getMysteryBoxDetail: async (id) => {
@@ -316,7 +327,6 @@ const getState = ({ getStore, getActions, setStore }) => {
                     const response = await axios.get(process.env.BACKEND_URL + `/shops/${id}`)
                     if (response.data) {
                         setStore({ shopDetail: response.data, showError: false, isLoading: false })
-                        console.log(first)
                     }
                 } catch (error) {
                     console.log("Error al obtener la Tienda:", error);

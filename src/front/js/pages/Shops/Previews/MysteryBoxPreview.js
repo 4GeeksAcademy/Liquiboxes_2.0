@@ -138,18 +138,6 @@ function MysteryBoxPreview() {
           </div>
         </div>
 
-        {/* Sección de Valoraciones */}
-        <div className="row reviews-section mt-4">
-          <div className="col-12">
-            <p><strong>4,9 (995 valoraciones)</strong> - Bermington (nombre tienda)</p>
-            <hr />
-            <div className="horizontal-scroll">
-              {/* Aquí puedes implementar el scroll horizontal para las valoraciones */}
-              <p>Valoraciones... (Scroll horizontal)</p>
-            </div>
-            <button type="button" className="btn btn-link">Ver todas las valoraciones</button>
-          </div>
-        </div>
       </div>
     </>
 

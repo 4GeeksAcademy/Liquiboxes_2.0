@@ -7,24 +7,25 @@ export const Context = React.createContext(null);
 
 const injectContext = (PassedComponent) => {
     const StoreWrapper = (props) => {
-        // Inicializa el estado sin depender de `state` mismo
-        const initialState = getState({
-            getStore: () => state.store,
-            getActions: () => state.actions,
-            setStore: (updatedStore) =>
-                setState((prevState) => ({
-                    store: { ...prevState.store, ...updatedStore },
-                    actions: { ...prevState.actions },
-                })),
+        const [state, setState] = useState(() => {
+            const initialState = getState({
+                getStore: () => state.store,
+                getActions: () => state.actions,
+                setStore: (updatedStore) =>
+                    setState((prevState) => ({
+                        store: { ...prevState.store, ...updatedStore },
+                        actions: { ...prevState.actions },
+                    })),
+            });
+            return initialState;
         });
-
-        const [state, setState] = useState(initialState);
 
         useEffect(() => {
             if (state.actions && state.actions.getMessage) {
                 state.actions.getMessage();
             }
-        }, []);
+        }, [state.actions]);
+
 
         // Asegurarse de que `store` esté siempre disponible
         if (!state || !state.store) {
@@ -32,9 +33,9 @@ const injectContext = (PassedComponent) => {
         }
 
         return (
-                <Context.Provider value={state}>
-                    <PassedComponent {...props} />
-                </Context.Provider>
+            <Context.Provider value={state}>
+                <PassedComponent {...props} />
+            </Context.Provider>
         );
     };
 
