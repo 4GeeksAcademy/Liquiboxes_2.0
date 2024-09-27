@@ -632,7 +632,25 @@ const ShopNotifications = () => {
     );
   };
 
-  if (loading) {
+  const handleDeleteNotificaction = async (notificationId) => { //BOTON ELIMINAR NOTIFICACIONES ////////////
+    try {
+      const response = await axios.delete(`${process.env.BACKEND_URL}/notifications/${notificationId}/delete`, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('token')}`
+        }
+      });
+
+      if (response.status === 200) {
+        setNotifications(notifications.filter(n => n.id !== notificationId));
+      } else {
+        console.error('Error al eliminar la notificación:', response.data);
+      }
+    } catch (error) {
+      console.error('Error al eliminar la notificación:', error);
+    }
+  };
+
+ if (loading) {
     return (
       <Spinner />
     );
@@ -679,7 +697,8 @@ const ShopNotifications = () => {
                 <th>Fecha</th>
                 <th>Estado</th>
                 <th>Acciones</th>
-              </tr>
+                <th></th> {/****NO BORRAR**, espacio que rellena el boton 'eliminar' en th*/}
+                </tr>
             </thead>
             <tbody>
               {currentNotifications.map((notification) => (
@@ -711,6 +730,17 @@ const ShopNotifications = () => {
                       </Button>
                     )}
                   </td>
+                  <td>
+                    <Button //BOTON ELIMINAR NOTIFICACIONES
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteNotificaction(notification.id);
+                      }}                  
+                    >
+                      Borrar Notificación {/*<i className="fa-regular fa-trash-can"></i> este es el icono de la papelera por si prefieres*/}
+                    </Button>
+                  </td>
+
                 </tr>
               ))}
             </tbody>

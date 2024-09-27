@@ -32,5 +32,4 @@ function CarruselTopSellers({ shopData }) {
         </div>
     );
 }
-
-export default CarruselTopSellers;
+export default CarruselTopSellers

@@ -187,6 +187,24 @@ const UserNotifications = () => {
         );
     };
 
+    const handleDeleteNotificaction = async (notificationId) => { //BOTON ELIMINAR NOTIFICACIONES ////////
+        try {
+            const response = await axios.delete(`${process.env.BACKEND_URL}/notifications/${notificationId}/delete`, {
+                headers: {
+                    Authorization: `Bearer ${sessionStorage.getItem('token')}`
+                }
+            });
+
+            if (response.status === 200) {
+                setNotifications(notifications.filter(n => n.id !== notificationId));
+            } else {
+                console.error('Error al eliminar la notificación:', response.data);
+            }
+        } catch (error) {
+            console.error('Error al eliminar la notificación:', error);
+        }
+    };
+
     if (isLoading) return <Spinner/>
 
     return (
@@ -208,54 +226,66 @@ const UserNotifications = () => {
                     Marcar todas como leídas
                 </Button>
 
-                <Table className="notifications-table">
-                    <thead>
-                        <tr>
-                            <th>Tipo</th>
-                            <th>Contenido</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentNotifications.map((notification) => {
-                            const config = getNotificationConfig(notification.type);
-                            return (
-                                <tr
-                                    key={notification.id}
-                                    onClick={() => handleNotificationClick(notification)}
-                                    className='py-3 py-lg-0'
-                                >
-                                    <td data-label="Tipo">
-                                        <FontAwesomeIcon icon={config.icon} className="me-2" />
-                                        {config.label}
-                                    </td>
-                                    <td data-label="Contenido">{notification.content}</td>
-                                    <td data-label="Fecha">{formatDate(notification.created_at)}</td>
-                                    <td data-label="Estado">
-                                        {notification.is_read ? (
-                                            <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" />
-                                        ) : (
-                                            <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
-                                        )}
-                                    </td>
-                                    <td data-label="Acciones">
-                                        {notification.is_read && (
-                                            <Button
-                                                variant="outline-secondary"
-                                                size="sm"
-                                                onClick={(e) => handleMarkAsUnread(e, notification.id)}
-                                            >
-                                                Marcar como no leída
-                                            </Button>
-                                        )}
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </Table>
+            <Table className="notifications-table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Contenido</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                        <th></th> {/****NO BORRAR**, espacio que rellena el boton 'eliminar' en th*/}
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {currentNotifications.map((notification) => {
+                        const config = getNotificationConfig(notification.type);
+                        return (
+                            <tr
+                                key={notification.id}
+                                onClick={() => handleNotificationClick(notification)}
+                                className='py-3 py-lg-0'
+                            >
+                                <td data-label="Tipo">
+                                    <FontAwesomeIcon icon={config.icon} className="me-2" />
+                                    {config.label}
+                                </td>
+                                <td data-label="Contenido">{notification.content}</td>
+                                <td data-label="Fecha">{formatDate(notification.created_at)}</td>
+                                <td data-label="Estado">
+                                    {notification.is_read ? (
+                                        <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" />
+                                    ) : (
+                                        <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
+                                    )}
+                                </td>
+                                <td data-label="Acciones">
+                                    {notification.is_read && (
+                                        <Button
+                                            variant="outline-secondary"
+                                            size="sm"
+                                            onClick={(e) => handleMarkAsUnread(e, notification.id)}
+                                        >
+                                            Marcar como no leída
+                                        </Button>
+                                    )}
+                                </td>
+                                <td>
+                                    <Button //BOTON ELIMINAR NOTIFICACIONES
+                                        onClick={(e) => {
+                                            e.stopPropagation();  // Evita que se dispare el evento de click en la fila
+                                            handleDeleteNotificaction(notification.id);
+                                        }}
+                                    >
+                                        Borrar Notificación {/*<i className="fa-regular fa-trash-can"></i> este es el icono de la papelera por si prefieres*/}
+                                    </Button>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </Table>
 
                 <div className="pagination">
                     {[...Array(Math.ceil(filteredNotifications.length / notificationsPerPage)).keys()].map(number => (
