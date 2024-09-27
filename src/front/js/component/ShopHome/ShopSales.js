@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartBar, faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../../styles/shops/shopsales.css'; // Asumimos que crearás este archivo CSS
+import Spinner from "../Spinner";
 
 // Registrar los componentes necesarios de Chart.js
 ChartJS.register(
@@ -47,7 +48,8 @@ const ShopSales = ({ shopData }) => {
     if (!backendUrl) {
       console.error("BACKEND_URL no está definido");
       setError("Error en la configuración de la URL del backend");
-      setLoading(false);
+
+      setTimeout(() => setLoading(false), 500);
       return;
     }
 
@@ -63,7 +65,7 @@ const ShopSales = ({ shopData }) => {
       console.error("Error al obtener las ventas de la tienda:", error);
       setError(error.response ? error.response.data : error.message);
     } finally {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 500);
     }
   };
 
@@ -86,7 +88,7 @@ const ShopSales = ({ shopData }) => {
           const saleDate = new Date(sale.created_at);
           return currentDate.getMonth() === saleDate.getMonth() && currentDate.getFullYear() === saleDate.getFullYear();
         });
-        labels = Array.from({length: 31}, (_, i) => i + 1);
+        labels = Array.from({ length: 31 }, (_, i) => i + 1);
         break;
       case "year":
         filteredSales = shopSales.filter(sale => {
@@ -101,18 +103,18 @@ const ShopSales = ({ shopData }) => {
       salesData = labels.map(() => 0);
       filteredSales.forEach(sale => {
         const date = new Date(sale.created_at);
-        const index = timeRange === "week" ? date.getDay() : 
-                      timeRange === "month" ? date.getDate() - 1 : 
-                      date.getMonth();
+        const index = timeRange === "week" ? date.getDay() :
+          timeRange === "month" ? date.getDate() - 1 :
+            date.getMonth();
         salesData[index] += sale.subtotal;
       });
     } else {
       salesData = labels.map(() => 0);
       filteredSales.forEach(sale => {
         const date = new Date(sale.created_at);
-        const index = timeRange === "week" ? date.getDay() : 
-                      timeRange === "month" ? date.getDate() - 1 : 
-                      date.getMonth();
+        const index = timeRange === "week" ? date.getDay() :
+          timeRange === "month" ? date.getDate() - 1 :
+            date.getMonth();
         salesData[index]++;
       });
     }
@@ -148,7 +150,11 @@ const ShopSales = ({ shopData }) => {
     },
   };
 
-  if (loading) return <div className="loading">Cargando...</div>;
+  if (loading) {
+    return (
+      <Spinner />
+    );
+  }
   if (error) return <div className="error">Error: {error}</div>;
 
   const salesData = prepareSalesData();
@@ -162,9 +168,9 @@ const ShopSales = ({ shopData }) => {
             <span className="input-group-text">
               <FontAwesomeIcon icon={faChartBar} />
             </span>
-            <select 
-              className="form-select" 
-              value={chartType} 
+            <select
+              className="form-select"
+              value={chartType}
               onChange={(e) => setChartType(e.target.value)}
             >
               <option value="amount">Ventas en EUR</option>
@@ -177,9 +183,9 @@ const ShopSales = ({ shopData }) => {
             <span className="input-group-text">
               <FontAwesomeIcon icon={faCalendarAlt} />
             </span>
-            <select 
-              className="form-select" 
-              value={timeRange} 
+            <select
+              className="form-select"
+              value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
             >
               <option value="week">Última Semana</option>

@@ -5,12 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faCreditCard } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/cart.css"
+import { Spinner } from 'react-bootstrap';
 
 const Cart = () => {
   const { store, actions } = useContext(Context);
   const [cartItems, setCartItems] = useState([]);
   const [total, setTotal] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const fetchCartDetails = useCallback(async () => {
@@ -30,7 +31,7 @@ const Cart = () => {
     const cartTotal = validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     setTotal(cartTotal);
 
-    setIsLoading(false);
+    setTimeout(() => setLoading(false), 500);
   }, [actions, store.cart]);
 
   useEffect(() => {
@@ -81,16 +82,9 @@ const Cart = () => {
     setTotal(prevTotal => prevTotal - (item.price * item.quantity));
   }, [actions]);
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="container mt-5">
-        <div className="text-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="sr-only">Cargando...</span>
-          </div>
-          <p className="mt-2">Cargando tu carrito...</p>
-        </div>
-      </div>
+      <Spinner />
     );
   }
 

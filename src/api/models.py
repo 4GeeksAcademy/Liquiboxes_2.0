@@ -161,8 +161,6 @@ class Sale(BaseModel):
     shop_sales = db.relationship('ShopSale', backref='sale', lazy='dynamic')
     notifications = db.relationship('Notification', backref='sale', lazy='dynamic')
 
-
-
     def serialize(self):
         return {
             'id': self.id,
@@ -173,6 +171,23 @@ class Sale(BaseModel):
             'sale_details': [detail.serialize() for detail in self.sale_details],
             'shop_sales': [shop_sale.serialize() for shop_sale in self.shop_sales]
         }
+    
+    def serialize_for_user(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'date': self.created_at,
+            'updated': self.updated_at,
+            'total_amount': self.total_amount,
+            'sale_details': [detail.serialize_for_user() for detail in self.sale_details],
+            'shop_sales': [self._serialize_shop_sale_for_user(shop_sale) for shop_sale in self.shop_sales]
+        }
+
+    def _serialize_shop_sale_for_user(self, shop_sale):
+        serialized = shop_sale.serialize()
+        if serialized['status'] in ['changes_requested', 'item_change_approved', 'changes_needed']:
+            serialized['status'] = 'pending'
+        return serialized
 
 class ShopSale(BaseModel):
     __tablename__ = "shop_sales"
@@ -216,6 +231,19 @@ class SaleDetail(BaseModel):
             'price': self.price,
             'subtotal': self.subtotal,
             'box_items':[item.serialize() for item in self.box_items],
+        }
+
+    def serialize_for_user(self):
+        return {
+            'id': self.id,
+            'sale_id': self.sale_id,
+            'shop_id': self.shop_id,
+            'mystery_box_id': self.mystery_box_id,
+            'quantity': self.quantity,
+            'price': self.price,
+            'subtotal': self.subtotal,
+            'mystery_box': self.mystery_box.serialize(),
+            'shop': {'id': self.shop.id, 'name': self.shop.name}
         }
 
 class Shop(BaseModel):

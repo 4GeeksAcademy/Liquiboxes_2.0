@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from api.models import db, Sale, SaleDetail, ItemChangeRequest, ShopSale, MysteryBox, Shop, Notification, BoxItem
+from api.models import db, Sale, SaleDetail, User, ShopSale, MysteryBox, Shop, Notification, BoxItem
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import stripe
@@ -279,6 +279,26 @@ def get_shop_sales(shop_id):
     shop_sales = ShopSale.query.filter_by(shop_id=shop_id).all()
     return jsonify([sale.serialize() for sale in shop_sales]), 200
 
+@sales.route('/user/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_user_sales(user_id):
+    current_user = get_jwt_identity()
+
+    # Verificar si el usuario existe
+    user = User.query.get(current_user['id'])
+    if not user:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    # Verificar si el usuario actual tiene permiso para ver estas ventas
+    if current_user['type'] != 'admin' and current_user['id'] != user_id:
+        return jsonify({'error': 'No autorizado'}), 403
+
+    # Obtener las ventas del usuario
+    user_sales = Sale.query.filter_by(user_id=user_id).order_by(Sale.created_at.desc()).all()
+    
+    # Serializar y devolver las ventas
+    return jsonify([sale.serialize_for_user() for sale in user_sales]), 200
+
 @sales.route('/update_status/<int:shop_sale_id>', methods=['PUT'])
 @jwt_required()
 def update_shop_sale_status(shop_sale_id):
@@ -359,7 +379,10 @@ def confirm_shop_sale(sale_id):
                 sender_type="platform",
                 sale_id=sale_id,
                 shop_id=current_shop.id,
-                content=f"Has confirmado la venta con ID: {shop_sale.id}, del pedido con ID: {sale_id}. Por favor, prepara el pedido para su envío."
+                content=f"Has confirmado la orden con ID: {shop_sale.id}, del pedido (venta) con ID: {sale_id}. Por favor, prepara el pedido para su envío.",
+                extra_data={
+                "shop_sale_id": shop_sale.id
+            }
             )
             db.session.add(new_notification)
 

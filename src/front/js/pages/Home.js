@@ -8,27 +8,32 @@ import CarruselTopSellers from "../component/Home/CarruselTopSellers";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Slide, Fade } from "react-awesome-reveal";
+import Spinner from "../component/Spinner";
 
 export const Home = () => {
     const { store, actions } = useContext(Context);
     const [recommendedShops, setRecommendedShops] = useState([]);
     const [recommendedMysteryBoxes, setRecommendedMysteryBoxes] = useState([]);
-    const [isLoadingMysteryBoxes, setIsLoadingMysteryBoxes] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [topSellingShops, setTopSellingShops] = useState([]); // Nueva variable para las tiendas más vendidas
     const token = sessionStorage.getItem('token')
     const navigate = useNavigate()
 
     useEffect(() => {
+
         const loadData = async () => {
             if (store.allShops.length === 0) {
                 await actions.fetchShops();
             }
             await actions.fetchUserProfile();
+            setLoading(false);
         };
         loadData();
     }, []);
 
     useEffect(() => {
+        setLoading(true)
+
         if (store.userData && store.allShops.length > 0) {
             const userCategories = store.userData.categories.map(cat => cat.toLowerCase());
             const filtered = store.allShops.filter(shop =>
@@ -37,11 +42,15 @@ export const Home = () => {
             setRecommendedShops(filtered);
             fetchRecommendedMysteryBoxes(filtered);
             calculateTopSellingShops(store.allShops); // Calcular las tiendas más vendidas
+            setLoading(false);
+
         }
+        setLoading(false);
+
     }, [store.userData, store.allShops]);
 
     const fetchRecommendedMysteryBoxes = async (shops) => {
-        setIsLoadingMysteryBoxes(true);
+        setLoading(true);
         try {
             const mysteryBoxesPromises = shops.map(shop =>
                 axios.get(`${process.env.BACKEND_URL}/shops/${shop.id}/mysteryboxes`, {
@@ -57,11 +66,14 @@ export const Home = () => {
                         } else {
                             console.error(`Received non-JSON response for shop ${shop.id}`);
                             return [];
+                            setLoading(false);
+
                         }
                     })
                     .catch(error => {
                         console.error(`Error fetching mystery boxes for shop ${shop.id}:`, error.response || error);
                         return [];
+                        setLoading(false);
                     })
             );
             const responses = await Promise.all(mysteryBoxesPromises);
@@ -71,17 +83,23 @@ export const Home = () => {
             if (allMysteryBoxes.length === 0) {
                 console.error("No valid mystery boxes data received");
                 setRecommendedMysteryBoxes([]);
+                setLoading(false);
             } else {
                 const sortedMysteryBoxes = allMysteryBoxes
                     .sort((a, b) => b.total_sales - a.total_sales)
                     .slice(0, 10);
                 setRecommendedMysteryBoxes(sortedMysteryBoxes);
+                setLoading(false);
             }
+
+
         } catch (error) {
             console.error("Error fetching recommended mystery boxes:", error);
             setRecommendedMysteryBoxes([]);
+            setLoading(false);
+
         } finally {
-            setIsLoadingMysteryBoxes(false);
+            setLoading(false);
         }
     };
 
@@ -92,6 +110,12 @@ export const Home = () => {
             .slice(0, 5); // Limitar a las 5 más vendidas 
         setTopSellingShops(sortedShops); // Guardamos en el estado
     };
+
+    if (loading){
+        return (
+                <Spinner />            
+        )
+    } 
 
     return (
         <div className="text-center mt-2 mb-5 mx-5">
@@ -132,9 +156,9 @@ export const Home = () => {
 
             {token ? (
                 <>
-                    {isLoadingMysteryBoxes ? (
+                    {loading ? (
                         <div>
-                            <p>Cargando mystery boxes recomendadas...</p>
+                            <Spinner />
                         </div>
                     ) : recommendedMysteryBoxes.length > 0 ? (
                         <div className="my-5">
@@ -143,9 +167,9 @@ export const Home = () => {
                     ) : (
                         <p>No hay mystery boxes recomendadas en este momento.</p>
                     )}
-                    {store.isLoading ? (
+                    {loading ? (
                         <div>
-                            <p>Cargando tiendas recomendadas...</p>
+                            <Spinner />
                         </div>
                     ) : recommendedShops.length > 0 ? (
                         <div>

@@ -47,6 +47,7 @@
   max-width: var(--sidebar-width) !important;
   background-color: var(--background-secondary-color) !important;
   transition: transform 0.25s ease-out !important;
+  min-height: 100vh !important;
 }
 
 #sidebar-wrapper .sidebar-heading {

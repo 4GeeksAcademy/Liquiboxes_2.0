@@ -180,9 +180,9 @@ export default function Login() {
                     <div className="create-account-section my-auto">
                         <h2>Crea tu cuenta</h2>
                         <ul className="benefits-list">
-                            <li>Accede a mystery boxes exclusivas</li>
+                            <li>Accede a Mystery Boxes exclusivas</li>
                             <li>Realiza tus compras con total seguridad</li>
-                            <li>Elige tus preferencias para las mistery boxes</li>
+                            <li>Elige tus preferencias para las Mystery Boxes</li>
                             <li>Encuentra las tiendas que más se parecen a tí</li>
                             <li>Descubre productos de calidad a un precio inmejorable</li>
                         </ul>
