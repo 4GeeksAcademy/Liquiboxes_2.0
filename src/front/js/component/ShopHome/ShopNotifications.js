@@ -616,7 +616,7 @@ const ShopNotifications = () => {
   };
 
 
-  const handleDelete = async (notificationId) => { //BOTON ELIMINAR NOTIFICACIONES
+  const handleDeleteNotificaction = async (notificationId) => { //BOTON ELIMINAR NOTIFICACIONES ////////////
     try {
       const response = await axios.delete(`${process.env.BACKEND_URL}/notifications/${notificationId}/delete`, {
         headers: {
@@ -712,7 +712,7 @@ const ShopNotifications = () => {
                     <Button //BOTON ELIMINAR NOTIFICACIONES
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(notification.id);
+                        handleDeleteNotificaction(notification.id);
                       }}                  
                     >
                       Borrar Notificación {/*<i className="fa-regular fa-trash-can"></i> este es el icono de la papelera por si prefieres*/}
