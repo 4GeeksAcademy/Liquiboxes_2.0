@@ -408,7 +408,7 @@ def reply_to_notification():
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
     
-@notifications.route('/<int:notification_id>/delete', methods=['DELETE'])
+@notifications.route('/<int:notification_id>/delete', methods=['DELETE']) ## RUTA PARA ELIMINAR NOTIFACIÓN ##
 @jwt_required()
 def delete_notification(notification_id):
     current_user = get_jwt_identity()
@@ -418,7 +418,7 @@ def delete_notification(notification_id):
     if not notification:
         return jsonify({"error": "Notification not found"}), 404
 
-    # Verificar si el usuario actual es el destinatario o el remitente
+    # Verificar si el usuario actual es el destinatario o el recibidor#####
     if (notification.recipient_type == current_user['type'] and 
         notification.recipient_id == current_user['id']) or \
        (notification.sender_type == current_user['type'] and 
