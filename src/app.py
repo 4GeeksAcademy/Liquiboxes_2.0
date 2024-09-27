@@ -2,9 +2,8 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
-from flask import Flask, request, jsonify, url_for, send_from_directory
+from flask import Flask, jsonify, send_from_directory
 from flask_migrate import Migrate
-from flask_swagger import swagger
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 
@@ -12,7 +11,6 @@ from flask_cors import CORS
 from api.utils import APIException, generate_sitemap
 from api.models import db, Admin_User, User, Shop
 from api.routes import api
-from api.admin import setup_admin
 from api.commands import setup_commands
 
 from api.users.routes import users
@@ -70,8 +68,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db, compare_type=True)
 db.init_app(app)
 
-# add the admin
-setup_admin(app)
 
 # add the admin
 setup_commands(app)
