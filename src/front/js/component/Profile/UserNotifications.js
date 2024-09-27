@@ -31,7 +31,6 @@ const UserNotifications = () => {
     }, [notifications, filter, isLoading]);
 
     const fetchNotifications = async () => {
-        setIsLoading(true);
         try {
             const response = await axios.get(`${process.env.BACKEND_URL}/notifications/user`, {
                 headers: {

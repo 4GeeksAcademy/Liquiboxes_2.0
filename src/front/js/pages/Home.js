@@ -42,10 +42,9 @@ export const Home = () => {
             setRecommendedShops(filtered);
             fetchRecommendedMysteryBoxes(filtered);
             calculateTopSellingShops(store.allShops); // Calcular las tiendas más vendidas
-            setLoading(false);
+            setTimeout(() => setLoading(false), 1000);
 
         }
-        setLoading(false);
 
     }, [store.userData, store.allShops]);
 
@@ -66,14 +65,11 @@ export const Home = () => {
                         } else {
                             console.error(`Received non-JSON response for shop ${shop.id}`);
                             return [];
-                            setLoading(false);
-
                         }
                     })
                     .catch(error => {
                         console.error(`Error fetching mystery boxes for shop ${shop.id}:`, error.response || error);
                         return [];
-                        setLoading(false);
                     })
             );
             const responses = await Promise.all(mysteryBoxesPromises);
@@ -83,13 +79,11 @@ export const Home = () => {
             if (allMysteryBoxes.length === 0) {
                 console.error("No valid mystery boxes data received");
                 setRecommendedMysteryBoxes([]);
-                setLoading(false);
             } else {
                 const sortedMysteryBoxes = allMysteryBoxes
                     .sort((a, b) => b.total_sales - a.total_sales)
                     .slice(0, 10);
                 setRecommendedMysteryBoxes(sortedMysteryBoxes);
-                setLoading(false);
             }
 
 
@@ -99,7 +93,7 @@ export const Home = () => {
             setLoading(false);
 
         } finally {
-            setLoading(false);
+            setTimeout(() => setLoading(false), 500);
         }
     };
 
