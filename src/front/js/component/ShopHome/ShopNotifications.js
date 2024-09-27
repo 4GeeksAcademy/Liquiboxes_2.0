@@ -675,7 +675,8 @@ const ShopNotifications = () => {
                 <th>Fecha</th>
                 <th>Estado</th>
                 <th>Acciones</th>
-              </tr>
+                <th></th> {/****NO BORRAR**, espacio que rellena el boton 'eliminar' en th*/}
+                </tr>
             </thead>
             <tbody>
               {currentNotifications.map((notification) => (
@@ -710,12 +711,11 @@ const ShopNotifications = () => {
                   <td>
                     <Button //BOTON ELIMINAR NOTIFICACIONES
                       onClick={(e) => {
-                        e.stopPropagation();  // Evita que se dispare el evento de click en la fila
+                        e.stopPropagation();
                         handleDelete(notification.id);
-                      }}
-                      variant="danger"
+                      }}                  
                     >
-                      Borrar Notificación
+                      Borrar Notificación {/*<i className="fa-regular fa-trash-can"></i> este es el icono de la papelera por si prefieres*/}
                     </Button>
                   </td>
 

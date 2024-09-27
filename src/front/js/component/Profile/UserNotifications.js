@@ -219,6 +219,8 @@ const UserNotifications = () => {
                         <th>Fecha</th>
                         <th>Estado</th>
                         <th>Acciones</th>
+                        <th></th> {/****NO BORRAR**, espacio que rellena el boton 'eliminar' en th*/}
+
                     </tr>
                 </thead>
                 <tbody>
@@ -260,9 +262,8 @@ const UserNotifications = () => {
                                             e.stopPropagation();  // Evita que se dispare el evento de click en la fila
                                             handleDelete(notification.id);
                                         }}
-                                        variant="danger"
                                     >
-                                        Borrar Notificación
+                                        Borrar Notificación {/*<i className="fa-regular fa-trash-can"></i> este es el icono de la papelera por si prefieres*/}
                                     </Button>
                                 </td>
                             </tr>

@@ -413,7 +413,6 @@ def reply_to_notification():
 def delete_notification(notification_id):
     current_user = get_jwt_identity()
 
-    # Buscar la notificación por su ID
     notification = Notification.query.get(notification_id)
     
     if not notification:
