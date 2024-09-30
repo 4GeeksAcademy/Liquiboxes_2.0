@@ -19,7 +19,7 @@ export default function ModalToken() {
                 isOpen={true}
                 onClose={() => { handleCloseModal() }}
                 title="Inicio de Sesión no detectado"
-                body="Vaya parece que todavía no has iniciado sesión, necesitamos que inicies sesión para poder acceder a este contenido."
+                body="¡ENHORABUENA! Tu mystery box ha sido comprada con éxito."
                 buttonBody="Iniciar sesión"
                 className="welcome-modal"
             />

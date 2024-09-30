@@ -14,6 +14,7 @@ const ScrollHorizontalShops = ({ cardsData }) => (
         shopAddress={card.address}
       />
     )}
+    
     title="Descubre Nuestras Tiendas"
     subtitle="Explora una variedad de tiendas únicas y emocionantes recomendadas para tí"
   />
