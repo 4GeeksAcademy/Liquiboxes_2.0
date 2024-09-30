@@ -23,8 +23,10 @@ function CarruselTopSellers({ shopData }) {
                             />
                         </div>
                         <Carousel.Caption>
-                            <h3>{shop.name}</h3>
-                            <p>{shop.shop_summary}</p>
+                            <div className='carouselbg'>
+                                <h3>{shop.name}</h3>
+                                <p>{shop.shop_summary}</p>
+                            </div>
                         </Carousel.Caption>
                     </Carousel.Item>
                 ))}

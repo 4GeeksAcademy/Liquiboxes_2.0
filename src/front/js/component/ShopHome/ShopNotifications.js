@@ -46,7 +46,6 @@ const ShopNotifications = () => {
   }, [notifications, filter, activeTab]);
 
   const fetchNotifications = async () => {
-    setLoading(true)
 
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/notifications/shop`, {
