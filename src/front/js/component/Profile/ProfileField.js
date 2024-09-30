@@ -26,11 +26,7 @@ export default function ProfileField({ icon, label, value, onEdit, onSave, isEdi
           ) : (
             <div className="d-flex justify-content-between align-items-center">
               <div className="flex-grow-1">
-                {typeof value === 'string' ? (
-                  <span>{value}</span>
-                ) : (
-                  value
-                )}
+                {value === '' ? 'No especificado' : value}
               </div>
               <button
                 onClick={onEdit}

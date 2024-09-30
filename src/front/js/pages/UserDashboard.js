@@ -29,6 +29,7 @@ import ContactSupport from '../component/ShopHome/ContactSupport';
 import ModalLogout from '../component/Modals/ModalLogout'
 import UserPurchases from '../component/Profile/UserPurchases';
 import Spinner from '../component/Spinner';
+import ModalGlobal from '../component/ModalGlobal';
 
 function UserDashboard() {
   const [userData, setUserData] = useState(null);
@@ -37,6 +38,9 @@ function UserDashboard() {
   const [activeSection, setActiveSection] = useState('notifications');
   const [isLoading, setIsLoading] = useState(true);
   const { store, actions } = useContext(Context)
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({});
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Definiciones para opciones de selección
   const sizeOptions = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
@@ -45,7 +49,6 @@ function UserDashboard() {
   const colorOptions = ['Rojo', 'Azul', 'Verde', 'Amarillo', 'Naranja', 'Morado', 'Rosa', 'Marrón', 'Negro', 'Blanco'];
   const clothesOptions = ['Camisetas', 'Pantalones', 'Faldas', 'Vestidos', 'Chaquetas', 'Abrigos', 'Zapatos', 'Accesorios', 'Ropa Interior', 'Trajes'];
   const categoryOptions = store.categories;
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     setIsLoading(true)
@@ -96,6 +99,11 @@ function UserDashboard() {
     setEditMode(prev => ({ ...prev, [field]: true }));
   };
 
+  const showModal = (title, body) => {
+    setModalContent({ title, body });
+    setModalOpen(true);
+  };
+
   const handleSave = async (field) => {
     const token = sessionStorage.getItem('token');
     try {
@@ -103,12 +111,13 @@ function UserDashboard() {
 
       if (!validateField(field, value)) {
         setError(`Entrada inválida para ${field}`);
+        showModal('Error', `Entrada inválida para ${field}`);
         return;
       }
 
+      // Si el campo está vacío, establecer un valor por defecto
       if (value === '' || (Array.isArray(value) && value.length === 0)) {
-        setError(`El campo ${field} no puede estar vacío`);
-        return;
+        value = getDefaultValue(field);
       }
 
       await axios.patch(`${process.env.BACKEND_URL}/users/profile`,
@@ -117,13 +126,18 @@ function UserDashboard() {
       );
       setEditMode(prev => ({ ...prev, [field]: false }));
       setError(null);
+      showModal('Éxito', 'Los cambios se han guardado correctamente.');
     } catch (error) {
       console.error("Error al actualizar datos del usuario:", error);
       setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
+      showModal('Error', "Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
     }
   };
 
   const handleChange = (field, value) => {
+    if (['not_colors', 'not_clothes', 'categories'].includes(field)) {
+      value = Array.isArray(value) ? value : [];
+    }
     setUserData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -163,8 +177,21 @@ function UserDashboard() {
     }
   };
 
+  const getDefaultValue = (field) => {
+    switch (field) {
+      case 'not_colors':
+      case 'not_clothes':
+      case 'categories':
+        return [];
+      case 'gender':
+        return 'no_especificado';
+      default:
+        return 'No especificado';
+    }
+  };
+
   const renderField = (field, icon, label) => {
-    if (!userData || !userData[field]) return null;
+    if (!userData) return null;
 
     const value = userData[field];
     const isListField = ['not_colors', 'not_clothes', 'categories'].includes(field);
@@ -264,7 +291,7 @@ function UserDashboard() {
               type="text"
               value={value}
               onChange={(e) => handleChange(field, e.target.value)}
-              placeholder="No especificado"
+              placeholder={`Ingrese su ${label}`}
             />
           );
       }
@@ -275,15 +302,9 @@ function UserDashboard() {
         <ProfileField
           icon={icon}
           label={label}
-          value={isListField && Array.isArray(value) ? (value.length > 0 ? value.join(', ') : 'No especificado') : (value || 'No especificado')}
+          value={isListField && Array.isArray(value) ? (value.length > 0 ? value.join(', ') : 'No especificado') : (value || '')}
           onEdit={() => handleEdit(field)}
-          onSave={() => {
-            if (value === '' || (Array.isArray(value) && value.length === 0)) {
-              setError(`El campo ${label} no puede estar vacío`);
-            } else {
-              handleSave(field);
-            }
-          }}
+          onSave={() => handleSave(field)}
           isEditing={editMode[field]}
         >
           {renderInput()}
@@ -308,12 +329,8 @@ function UserDashboard() {
     }));
   };
 
-  if (error) return <div className="error-message">Error: {error}</div>;
-  if (!userData) return <Spinner />
-
   const renderContent = () => {
     if (isLoading) return <Spinner />
-    if (error) return <div className="error-message">Error: {error}</div>;
 
     switch (activeSection) {
       case 'notifications':
@@ -349,6 +366,7 @@ function UserDashboard() {
         return <div>Selecciona una opción del menú</div>;
     }
   };
+
   return (
     <div className={`wrapper ${isSidebarOpen ? 'sidebar-open' : ''}`}>
       <div className="bg-light border-right" id="sidebar-wrapper">
@@ -408,6 +426,14 @@ function UserDashboard() {
           <ModalLogout />
         </div>
       )}
+
+      <ModalGlobal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
+        body={modalContent.body}
+        buttonBody="Cerrar"
+      />
     </div>
   );
 }
