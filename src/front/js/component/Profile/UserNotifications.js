@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faList, faShoppingCart, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faEnvelope, faEnvelopeOpen, faList, faShoppingCart, faCheck, faTrash, faTrashCan } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Table } from 'react-bootstrap';
 import '../../../styles/usernotifications.css';
-import { ClimbingBoxLoader } from "react-spinners";
 import Spinner from '../Spinner';
 
 const UserNotifications = () => {
@@ -18,7 +17,7 @@ const UserNotifications = () => {
     const [isLoading, setIsLoading] = useState(true);
 
 
-   useEffect(() => {
+    useEffect(() => {
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
         return () => clearInterval(interval);
@@ -38,7 +37,7 @@ const UserNotifications = () => {
                 }
             });
             setNotifications(response.data.filter(n => !['contact_support', 'contact_user', 'contact_shop'].includes(n.type)));
-            
+
             // Introduce a minimum delay of 1 second
             setTimeout(() => {
                 setIsLoading(false);
@@ -204,7 +203,7 @@ const UserNotifications = () => {
         }
     };
 
-    if (isLoading) return <Spinner/>
+    if (isLoading) return <Spinner />
 
     return (
         <>
@@ -225,66 +224,62 @@ const UserNotifications = () => {
                     Marcar todas como leídas
                 </Button>
 
-            <Table className="notifications-table">
-                <thead>
-                    <tr>
-                        <th>Tipo</th>
-                        <th>Contenido</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                        <th></th> {/****NO BORRAR**, espacio que rellena el boton 'eliminar' en th*/}
-
-                    </tr>
-                </thead>
-                <tbody>
-                    {currentNotifications.map((notification) => {
-                        const config = getNotificationConfig(notification.type);
-                        return (
-                            <tr
-                                key={notification.id}
-                                onClick={() => handleNotificationClick(notification)}
-                                className='py-3 py-lg-0'
-                            >
-                                <td data-label="Tipo">
-                                    <FontAwesomeIcon icon={config.icon} className="me-2" />
-                                    {config.label}
-                                </td>
-                                <td data-label="Contenido">{notification.content}</td>
-                                <td data-label="Fecha">{formatDate(notification.created_at)}</td>
-                                <td data-label="Estado">
-                                    {notification.is_read ? (
-                                        <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" />
-                                    ) : (
-                                        <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
-                                    )}
-                                </td>
-                                <td data-label="Acciones">
-                                    {notification.is_read && (
-                                        <Button
-                                            variant="outline-secondary"
-                                            size="sm"
-                                            onClick={(e) => handleMarkAsUnread(e, notification.id)}
+                <Table className="notifications-table">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {currentNotifications.map((notification) => {
+                            const config = getNotificationConfig(notification.type);
+                            return (
+                                <tr
+                                    key={notification.id}
+                                    onClick={() => handleNotificationClick(notification)}
+                                    className='py-3 py-lg-0'
+                                >
+                                    <td data-label="Tipo">
+                                        <FontAwesomeIcon icon={config.icon} className="me-2" />
+                                        {config.label}
+                                    </td>
+                                    <td data-label="Fecha">{formatDate(notification.created_at)}</td>
+                                    <td data-label="Estado">
+                                        {notification.is_read ? (
+                                            <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" />
+                                        ) : (
+                                            <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
+                                        )}
+                                    </td>
+                                    <td data-label="Acciones">
+                                        <Button  className='me-4 '//BOTON ELIMINAR NOTIFICACIONES
+                                            onClick={(e) => {
+                                                e.stopPropagation();  // Evita que se dispare el evento de click en la fila
+                                                handleDeleteNotificaction(notification.id);
+                                            }}
                                         >
-                                            Marcar como no leída
+                                            <FontAwesomeIcon icon={faTrashCan}/> Borrar
                                         </Button>
-                                    )}
-                                </td>
-                                <td>
-                                    <Button //BOTON ELIMINAR NOTIFICACIONES
-                                        onClick={(e) => {
-                                            e.stopPropagation();  // Evita que se dispare el evento de click en la fila
-                                            handleDeleteNotificaction(notification.id);
-                                        }}
-                                    >
-                                        Borrar Notificación {/*<i className="fa-regular fa-trash-can"></i> este es el icono de la papelera por si prefieres*/}
-                                    </Button>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </Table>
+                                        {notification.is_read && (
+                                            <Button
+                                                variant="outline-secondary"
+                                                size="sm"
+                                                onClick={(e) => handleMarkAsUnread(e, notification.id)}
+                                                id="mark-as-unread"
+                                            >
+                                                <FontAwesomeIcon icon={faEnvelope}/> Marcar como no léida
+                                            </Button>
+                                        )}
+
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </Table>
 
                 <div className="pagination">
                     {[...Array(Math.ceil(filteredNotifications.length / notificationsPerPage)).keys()].map(number => (

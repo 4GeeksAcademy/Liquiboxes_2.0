@@ -41,35 +41,37 @@ function ShopHome() {
 
   const categoryOptions = store.categories;
 
+  const fetchShopData = async () => {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      setError("No se encontró el token de autenticación");
+      return;
+    }
+    try {
+      const response = await axios.get(`${process.env.BACKEND_URL}/shops/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const processedCategories = response.data.categories.map(cat => {
+        return cat.replace(/^"/, '').replace(/"$/, '').replace(/\\"/g, '"');
+      });
+
+      setShopData({ ...response.data, categories: processedCategories });
+
+      setTimeout(() => setLoading(false), 500);
+
+    } catch (error) {
+      console.error("Error fetching shop data:", error.response || error);
+      setError(error.response?.data?.msg || error.message);
+    }
+  };
+
   useEffect(() => {
     setLoading(true)
 
-    const fetchShopData = async () => {
-      const token = sessionStorage.getItem('token');
-      if (!token) {
-        setError("No se encontró el token de autenticación");
-        return;
-      }
-      try {
-        const response = await axios.get(`${process.env.BACKEND_URL}/shops/profile`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
 
-        const processedCategories = response.data.categories.map(cat => {
-          return cat.replace(/^"/, '').replace(/"$/, '').replace(/\\"/g, '"');
-        });
-
-        setShopData({ ...response.data, categories: processedCategories });
-
-        setTimeout(() => setLoading(false), 500);
-
-      } catch (error) {
-        console.error("Error fetching shop data:", error.response || error);
-        setError(error.response?.data?.msg || error.message);
-      }
-    };
 
     fetchShopData();
   }, []);
@@ -341,7 +343,7 @@ function ShopHome() {
         </div>;
       case 'boxesOnSale':
         return <div>
-          <BoxesOnSale shopData={shopData} />
+          <BoxesOnSale shopData={shopData} fetchData={fetchShopData()} />
         </div>;
       default:
         return <div>Selecciona una opción del menú</div>;

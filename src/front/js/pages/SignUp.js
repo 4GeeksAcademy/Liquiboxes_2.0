@@ -255,6 +255,7 @@ export default function SignUp() {
               />
               {errors.password && <p className="signup-error-message">{errors.password}</p>}
             </div>
+            {/* TODO: METER DOBLE CAMPO DE CONTRASEÑA */}
           </div>
         );
       case 3:
@@ -332,7 +333,7 @@ export default function SignUp() {
           <div className="signup-step-content">
             <h2 className="signup-step-question">Define tus preferencias de estilo</h2>
             <div className="signup-checkbox-group">
-              <p>Colores que menos te gustan (máximo 3):</p>
+              <p>Opcional: ¿Hay algún color que no te identifique? (Máximo 3):</p>
               <div className="signup-checkbox-options">
                 {COLORS.map(color => (
                   <label key={color} className="signup-checkbox-label">
@@ -387,7 +388,7 @@ export default function SignUp() {
           <div className="signup-step-content">
             <h2 className="signup-step-question">Dinos qué prendas prefieres</h2>
             <div className="signup-checkbox-group">
-              <p>Prendas que menos te gustan (máximo 3):</p>
+              <p>Opcional: ¿Hay alguna prenda que no vaya con tu estilo? (máximo 3):</p>
               <div className="signup-checkbox-options">
                 {CLOTHES.map(cloth => (
                   <label key={cloth} className="signup-checkbox-label">

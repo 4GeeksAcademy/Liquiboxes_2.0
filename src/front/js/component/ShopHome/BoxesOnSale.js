@@ -1,18 +1,29 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import axios from "axios";
 import "../../../styles/shops/boxesonsale.css";
 import { useNavigate } from "react-router-dom";
+import ModalGlobal from "../ModalGlobal";
 
-function BoxesOnSale({ shopData }) {
+function BoxesOnSale({ shopData, fetchData }) {
   const [showModal, setShowModal] = useState(false);
   const [selectedBox, setSelectedBox] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [newItem, setNewItem] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);  // Estado para el modal que elimina la caja misteriosa
   const [boxToDelete, setBoxToDelete] = useState(null);  // Almacena la mystery box seleccionada para eliminar
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalContent, setModalContent] = useState ({
+    title: '',
+    body: ''
+  })
 
   const navigate = useNavigate();
+
+  const showModalGlobal = (title, body) => {
+    setModalContent({ title, body });
+    setModalOpen(true);
+  };
 
   const handleEditClick = async (box) => {
     try {
@@ -97,11 +108,11 @@ function BoxesOnSale({ shopData }) {
         }
       );
       console.log('Caja misteriosa actualizada:', response.data);
-      alert('Caja misteriosa actualizada con éxito!');
+      showModalGlobal('Caja misteriosa actualizada', 'Los datos de tu caja misteriosa se han actualizado correctamente')
       setShowModal(false);
     } catch (error) {
       console.error('Error al actualizar la caja misteriosa:', error);
-      alert('Hubo un error al actualizar la caja misteriosa. Por favor, inténtalo de nuevo.');
+      showModalGlobal('Vaya ha habido algún error', 'Hubo un error al actualizar la caja misteriosa. Por favor, inténtalo de nuevo.')
     }
   };
 
@@ -112,12 +123,14 @@ function BoxesOnSale({ shopData }) {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
-      });      
+      });
+      showModalGlobal('Eliminación exitosa', 'Tu caja misteriosa ha sido eliminada. ¡No dudes en crear otra!')
       setShowDeleteModal(false);  // Cierra el modal después de eliminar
       window.location.reload(); //actualiza la lista de mystery boxes después de la eliminación
+      fetchData();
     } catch (error) {
       console.error('Error al eliminar la Mystery Box:', error);
-      alert('Hubo un error al eliminar la Mystery Box. Inténtalo de nuevo.');
+      showModalGlobal('Vaya ha habido algún error', 'Hubo un error al eliminar la Mystery Box. Inténtalo de nuevo.')
     }
   };
 
@@ -230,7 +243,7 @@ function BoxesOnSale({ shopData }) {
                     placeholder="Añadir nuevo item"
                   />
                   <button type="button " onClick={handleAddItem}>
-                    Añadir  
+                    Añadir
                   </button>
                 </div>
                 <ul className="list-group">
@@ -330,6 +343,14 @@ function BoxesOnSale({ shopData }) {
           </Modal.Footer>
         </Modal>
       )}
+
+      <ModalGlobal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
+        body={modalContent.body}
+        buttonBody="Cerrar"
+      />
     </>
   );
 }

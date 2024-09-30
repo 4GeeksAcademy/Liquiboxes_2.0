@@ -75,21 +75,7 @@ const PayingForm = () => {
     };
 
     fetchCartData();
-  }, [store.cartWithDetails]);
-
-  useEffect(() => {
-    const handleCartCleared = () => {
-      setCheckoutCart([]);
-      setTotal(0);
-    };
-
-    window.addEventListener('cartCleared', handleCartCleared);
-
-    return () => {
-      window.removeEventListener('cartCleared', handleCartCleared);
-    };
   }, []);
-
 
   const handleStripePaymentSuccess = async (paymentIntentId) => {
     try {
@@ -125,8 +111,9 @@ const PayingForm = () => {
 
       console.log("Carrito antes de limpiar:", store.cart);
 
-      // Limpiar el carrito
-      await actions.clearCart();
+      // Limpiar el carrito en el store y en el LocalStoragge
+      actions.clearCart();
+     
 
       // Forzar limpieza de localStorage
       localStorage.removeItem("cart");
@@ -139,22 +126,15 @@ const PayingForm = () => {
       console.log("Carrito después de limpiar:", store.cart);
       console.log("localStorage después de limpiar:", localStorage.getItem("cart"));
 
-      // Forzar actualización del contexto
-      await actions.initializeCart();
-
-      // Forzar actualización del componente
-      setForceUpdate(prev => !prev);
-
-      // Esperar antes de navegar
-      setTimeout(() => {
         // Verificar una última vez antes de navegar
         if (Object.keys(store.cart).length === 0) {
           navigate("/home");
-        } else {
-          navigate("/home");
-          window.location.reload();
-        }
-      }, 1000);
+        } 
+        // else {
+        //   navigate("/home");
+        //   window.location.reload();
+        // }
+      
     } catch (err) {
       console.error("Error completo:", err);
       const errorMessage = err.response?.data?.error || err.message;

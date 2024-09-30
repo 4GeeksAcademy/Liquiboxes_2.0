@@ -298,7 +298,7 @@ function UserDashboard() {
     };
 
     return (
-      <div className='col-12 col-md-6 col-lg-4 mb-3'>
+      <div className='col-12 col-xxl-6 mb-3'>
         <ProfileField
           icon={icon}
           label={label}
@@ -341,24 +341,28 @@ function UserDashboard() {
         return <div><UserPurchases id={userData.id} /></div>;
       case 'profile':
         return (
-          <div className="row my-3">
-            {renderField('name', faUser, 'Nombre')}
-            {renderField('surname', faUser, 'Apellido')}
-            {renderField('email', faEnvelope, 'Correo electrónico')}
-            {renderField('gender', faVenusMars, 'Género')}
-            {renderField('address', faMapMarkerAlt, 'Dirección')}
-            {renderField('postal_code', faMapPin, 'Código Postal')}
-            {renderField('upper_size', faTshirt, 'Talla Superior')}
-            {renderField('lower_size', faTshirt, 'Talla Inferior')}
-            {renderField('cap_size', faHatCowboy, 'Talla de Gorra o Sombrero')}
-            {renderField('shoe_size', faShoePrints, 'Talla de Zapato')}
-            {renderField('stamps', faPalette, 'Preferencia de Estampado')}
-            {renderField('fit', faTape, 'Preferencia de Ajuste')}
-            {renderField('profession', faBriefcase, 'Profesión')}
-            {renderField('not_colors', faBan, 'Colores que menos te gustan')}
-            {renderField('not_clothes', faBan, 'Prendas que menos te gustan')}
-            {renderField('categories', faList, 'Categorías')}
+          <div className='mt-3'>
+            <h2>Edita aquí los datos de tu perfil:</h2>
+            <div className="row my-3">
+              {renderField('name', faUser, 'Nombre')}
+              {renderField('surname', faUser, 'Apellido')}
+              {renderField('email', faEnvelope, 'Correo electrónico')}
+              {renderField('gender', faVenusMars, 'Género')}
+              {renderField('address', faMapMarkerAlt, 'Dirección')}
+              {renderField('postal_code', faMapPin, 'Código Postal')}
+              {renderField('upper_size', faTshirt, 'Talla Superior')}
+              {renderField('lower_size', faTshirt, 'Talla Inferior')}
+              {renderField('cap_size', faHatCowboy, 'Talla de Gorra o Sombrero')}
+              {renderField('shoe_size', faShoePrints, 'Talla de Zapato')}
+              {renderField('stamps', faPalette, 'Preferencia de Estampado')}
+              {renderField('fit', faTape, 'Preferencia de Ajuste')}
+              {renderField('profession', faBriefcase, 'Profesión')}
+              {renderField('not_colors', faBan, 'Colores que menos te gustan')}
+              {renderField('not_clothes', faBan, 'Prendas que menos te gustan')}
+              {renderField('categories', faList, 'Categorías')}
+            </div>
           </div>
+
         );
       case 'support':
         return <div><ContactSupport /></div>;

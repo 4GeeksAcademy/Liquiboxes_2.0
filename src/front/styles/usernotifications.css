@@ -216,3 +216,9 @@
     margin-bottom: 0.5rem;
   }
 }
+
+@media (max-width: 1040px) {
+  #mark-as-unread{
+    margin-top: 1rem !important;
+  }
+}

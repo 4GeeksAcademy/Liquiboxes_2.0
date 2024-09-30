@@ -271,32 +271,33 @@ const getState = ({ getStore, getActions, setStore }) => {
             clearCart: () => {
                 console.log("Iniciando limpieza del carrito");
             
-                // Limpia el localStorage
+                // Obtener el estado actual del store
+                const store = getStore();
+                console.log("Esto es store", store);
+                console.log("Esto es cart", store.cart);
+                console.log("Esto es cartWithDetails", store.cartWithDetails);
+            
+                // Limpiar el localStorage
                 localStorage.removeItem("cart");
                 localStorage.removeItem("cartWithDetails");
             
-                // Actualiza el estado
+                // Actualizar el estado del carrito, vaciando cart y cartWithDetails
                 setStore({
-                    cart: {},
-                    cartWithDetails: {}
-                });                
-            
-                // Forzar actualización
-                setStore(prevStore => ({...prevStore}));
-
-                // Verifica el estado inmediatamente después de la actualización
-                const updatedStore = getStore();
-                console.log("Estado del carrito después de limpiar:", updatedStore.cart);
-                console.log("Estado de cartWithDetails después de limpiar:", updatedStore.cartWithDetails);
-            },
-
-            initializeCart: () => {
-                const cartFromStorage = JSON.parse(localStorage.getItem("cart")) || {};
-                const cartWithDetailsFromStorage = JSON.parse(localStorage.getItem("cartWithDetails")) || {};
-                setStore({ 
-                    cart: cartFromStorage, 
-                    cartWithDetails: cartWithDetailsFromStorage 
+                    cart: {},           // Si tu carrito es un objeto, lo vacías con {}
+                    cartWithDetails: {} // Lo mismo para cartWithDetails
                 });
+            
+                // Forzar actualización del store (si es necesario)
+                setStore(prevStore => ({
+                    ...prevStore,   // Mantén el resto del estado del store
+                    cart: {},       // Vuelve a asegurar que el cart esté vacío
+                    cartWithDetails: {}
+                }));
+            
+                // Verificar el estado inmediatamente después de la actualización
+                const updatedStore = getStore();
+                console.log("Estado del cart después de limpiar:", updatedStore.cart);
+                console.log("Estado de cartWithDetails después de limpiar:", updatedStore.cartWithDetails);
             },
 
             syncCartWithLocalStorage: () => {
