@@ -18,6 +18,8 @@ import {
 import ProfileField from '../../component/Profile/ProfileField';
 import { Context } from '../../store/appContext';
 import ModalLogout from '../../component/Modals/ModalLogout'
+import ModalGlobal from '../../component/ModalGlobal';
+
 
 
 import BoxesOnSale from '../../component/ShopHome/BoxesOnSale';
@@ -36,6 +38,8 @@ function ShopHome() {
   const { store, actions } = useContext(Context);
   const [previewImage, setPreviewImage] = useState(null);
   const [loading, setLoading] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', body: '' });
 
   const categoryOptions = store.categories;
 
@@ -72,15 +76,56 @@ function ShopHome() {
     fetchShopData();
   }, []);
 
+  const showModal = (title, body) => {
+    setModalContent({ title, body });
+    setModalOpen(true);
+  };
+
   const handleEdit = (field) => {
     setEditMode(prev => ({ ...prev, [field]: true }));
   };
 
+  const validateField = (field, value) => {
+    switch (field) {
+      case 'owner_name':
+      case 'owner_surname':
+        return value.trim() !== "" ? null : `El ${field === 'owner_name' ? 'nombre' : 'apellido'} es necesario`;
+      case 'shop_name':
+        return value.trim() !== "" ? null : "El nombre de la tienda es necesario";
+      case 'shop_address':
+        return value.trim() !== "" ? null : "La dirección de la tienda es necesario";
+      case 'postal_code':
+        return /^\d{5}$/.test(value) ? null : "El código postal debe tener 5 dígitos";
+      case 'email':
+        return /\S+@\S+\.\S+/.test(value) ? null : "El email no es válido";
+      case 'categories':
+        return Array.isArray(value) && value.length > 0 && value.length <= 3 ? null : "Selecciona entre 1 y 3 categorías";
+      case 'business_core':
+        return value.length >= 10 ? null : "El core del negocio debe tener al menos 10 caracteres";
+      case 'shop_description':
+        return value.length >= 50 ? null : "La descripción debe tener al menos 50 caracteres";
+      case 'shop_summary':
+        return value.split(' ').length <= 10 ? null : "El resumen no debe exceder las 10 palabras";
+      case 'image_shop_url':
+        return value ? null : "La imagen de la tienda es necesaria";
+      default:
+        return null;
+    }
+  };
+
   const handleSave = async (field) => {
-    setLoading(true)
     const token = sessionStorage.getItem('token');
     try {
       let value = shopData[field];
+      
+      // Validación del campo
+      const errorMessage = validateField(field, value);
+      if (errorMessage) {
+        showModal('Error de validación', errorMessage);
+        setLoading(false);
+        return;
+      }
+
       const formData = new FormData();
 
       if (field === 'categories' && Array.isArray(value)) {
@@ -105,7 +150,6 @@ function ShopHome() {
       setEditMode(prev => ({ ...prev, [field]: false }));
       setError(null);
 
-
       // Actualizar la imagen en shopData si se subió una nueva
       if (field === 'image_shop_url' && previewImage) {
         const reader = new FileReader();
@@ -114,10 +158,13 @@ function ShopHome() {
         };
         reader.readAsDataURL(previewImage);
       }
-      setTimeout(() => setLoading(false), 200);
+      
+      showModal('Éxito', 'Los cambios se han guardado correctamente.');
     } catch (error) {
       console.error("Error updating shop data:", error);
-      setError("Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
+      showModal('Error', "Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,9 +186,7 @@ function ShopHome() {
 
   const renderField = (field, icon, label) => {
 
-    if (!shopData || !shopData[field]) return null;
-
-    if (loading) return <Spinner />
+    if (!shopData) return null;
 
     const value = shopData[field];
     const isListField = field === 'categories';
@@ -201,6 +246,7 @@ function ShopHome() {
             type="text"
             value={value}
             onChange={(e) => handleChange(field, e.target.value)}
+            placeholder={`Ingrese ${label}`}
           />
         );
       }
@@ -211,7 +257,7 @@ function ShopHome() {
         <ProfileField
           icon={icon}
           label={label}
-          value={isImageField ? renderInput() : (isListField && Array.isArray(value) ? value.join(', ') : value)}
+          value={isListField && Array.isArray(value) ? (value.length > 0 ? value.join(', ') : 'No especificado') : (value || '')}
           onEdit={() => handleEdit(field)}
           onSave={() => handleSave(field)}
           isEditing={editMode[field]}
@@ -332,6 +378,14 @@ function ShopHome() {
         </div>
       )}
 
+
+      <ModalGlobal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
+        body={modalContent.body}
+        buttonBody="Cerrar"
+      />
     </div>
   );
 }

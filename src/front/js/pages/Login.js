@@ -161,7 +161,7 @@ export default function Login() {
                                     placeholder="Tu contraseña"
                                 />
                             </div>
-                            {showError && <div className="error-message">{errorMessage}</div>}
+                            {showError && <div className="error-message"><strong>{errorMessage}</strong></div>}
                             <button type="submit">Iniciar Sesión</button>
                         </form>
                         <div className="google-login-wrapper">
