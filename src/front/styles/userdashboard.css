@@ -85,13 +85,13 @@
 
 #menu-toggle {
   cursor: pointer !important;
-  background-color: var(--primary-color) !important;
+  background-color: var(--background-secondary-color) !important;
+  font-size: 0.8rem;
   border-color: var(--border-color) !important;
-  color: var(--background-color) !important;
-  padding: 0.5rem 1rem !important;
+  color: var(--text-color) !important;
+  padding: 0.2rem 0.4rem !important;
   transition: all 0.3s ease !important;
-  margin: 1rem;
-  width: 80%;
+  margin: 0;
 }
 
 #menu-toggle:hover {

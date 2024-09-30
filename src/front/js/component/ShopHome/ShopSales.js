@@ -161,9 +161,9 @@ const ShopSales = ({ shopData }) => {
 
   return (
     <div className="shop-sales container mt-4">
-      <h1 className="mb-4">Ventas del Negocio</h1>
+      <h2 className="mb-4">Ventas del Negocio</h2>
       <div className="row mb-4">
-        <div className="col-md-6">
+        <div className="col-12 mb-3 mb-md-0 col-md-6 ">
           <div className="input-group">
             <span className="input-group-text">
               <FontAwesomeIcon icon={faChartBar} />
@@ -178,7 +178,7 @@ const ShopSales = ({ shopData }) => {
             </select>
           </div>
         </div>
-        <div className="col-md-6">
+        <div className="col-12 col-md-6">
           <div className="input-group">
             <span className="input-group-text">
               <FontAwesomeIcon icon={faCalendarAlt} />

@@ -1,9 +1,17 @@
 /* ContactSupport.css */
 
+#contact-support-full-container{
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .contact-support-container {
   max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem;
+  min-width: 350px;
+  margin: 0 auto !important;
+  padding: 1rem;
   background-color: var(--background-secondary-color);
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);

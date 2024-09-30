@@ -656,7 +656,7 @@ const ShopNotifications = () => {
   }
 
   return (
-    <div className="shop-notifications container mt-4">
+    <div className="shop-notifications container">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="mb-0">Notificaciones</h2>
         <div className="d-flex align-items-center">

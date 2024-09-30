@@ -20,8 +20,6 @@ import { Context } from '../../store/appContext';
 import ModalLogout from '../../component/Modals/ModalLogout'
 import ModalGlobal from '../../component/ModalGlobal';
 
-
-
 import BoxesOnSale from '../../component/ShopHome/BoxesOnSale';
 import ContactSupport from '../../component/ShopHome/ContactSupport';
 import ShopNotifications from '../../component/ShopHome/ShopNotifications';
@@ -76,6 +74,16 @@ function ShopHome() {
     fetchShopData();
   }, []);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
+  };
+
   const showModal = (title, body) => {
     setModalContent({ title, body });
     setModalOpen(true);
@@ -117,7 +125,7 @@ function ShopHome() {
     const token = sessionStorage.getItem('token');
     try {
       let value = shopData[field];
-      
+
       // Validación del campo
       const errorMessage = validateField(field, value);
       if (errorMessage) {
@@ -158,7 +166,7 @@ function ShopHome() {
         };
         reader.readAsDataURL(previewImage);
       }
-      
+
       showModal('Éxito', 'Los cambios se han guardado correctamente.');
     } catch (error) {
       console.error("Error updating shop data:", error);
@@ -225,11 +233,11 @@ function ShopHome() {
         );
       } else if (isImageField) {
         return (
-          <div className="d-flex align-items-center">
+          <div className="d-flex flex-column align-items-center">
             <img
               src={value}
-              alt="Profile"
-              style={{ width: '100px', height: '100px', objectFit: 'cover', marginRight: '10px' }}
+              alt="Shop"
+              style={{ width: '200px', height: '200px', objectFit: 'cover', marginBottom: '10px' }}
             />
             {editMode[field] && (
               <input
@@ -253,16 +261,16 @@ function ShopHome() {
     };
 
     return (
-      <div className='col-12 col-lg-6 mb-3'>
+      <div className='col-12 mb-3'>
         <ProfileField
           icon={icon}
           label={label}
-          value={isListField && Array.isArray(value) ? (value.length > 0 ? value.join(', ') : 'No especificado') : (value || '')}
+          value={isImageField ? 'Pulsa en editar para cambiar la imagen de tu tienda' : (isListField && Array.isArray(value) ? (value.length > 0 ? value.join(', ') : 'No especificado') : (value || ''))}
           onEdit={() => handleEdit(field)}
           onSave={() => handleSave(field)}
           isEditing={editMode[field]}
         >
-          {isImageField ? renderInput() : (editMode[field] ? renderInput() : null)}
+          {editMode[field] ? renderInput() : (isImageField ? renderInput() : null)}
         </ProfileField>
       </div>
     );
@@ -298,20 +306,24 @@ function ShopHome() {
         </div>;
       case 'profile':
         return (
-          <div className="row">
-            {renderField('owner_name', faUser, 'Nombre del Propietario')}
-            {renderField('owner_surname', faUser, 'Apellido del Propietario')}
-            {renderField('shop_name', faStore, 'Nombre de la Tienda')}
-            {renderField('shop_address', faStore, 'Dirección de la Tienda')}
-            {renderField('postal_code', faStore, 'Código Postal')}
-            {renderField('email', faEnvelope, 'Correo electrónico')}
-            {renderField('categories', faStore, 'Categorías')}
-            {renderField('business_core', faStore, 'Actividad Principal')}
-            {renderField('shop_description', faStore, 'Descripción de la Tienda')}
-            {renderField('shop_summary', faStore, 'Resumen de la Tienda')}
-            {renderField('image_shop_url', faImage, 'Imagen de la tienda')}
-            {renderField('name', faSignalMessenger, 'Nombre de la tienda')}
+          <div className='p-3'>
+            <h2>Edita aquí los datos de tu tienda:</h2>
+            <div className="row">
+              {renderField('owner_name', faUser, 'Nombre del Propietario')}
+              {renderField('owner_surname', faUser, 'Apellido del Propietario')}
+              {renderField('shop_name', faStore, 'Nombre de la Tienda')}
+              {renderField('shop_address', faStore, 'Dirección de la Tienda')}
+              {renderField('postal_code', faStore, 'Código Postal')}
+              {renderField('email', faEnvelope, 'Correo electrónico')}
+              {renderField('categories', faStore, 'Categorías')}
+              {renderField('business_core', faStore, 'Actividad Principal')}
+              {renderField('shop_description', faStore, 'Descripción de la Tienda')}
+              {renderField('shop_summary', faStore, 'Resumen de la Tienda')}
+              {renderField('image_shop_url', faImage, 'Imagen de la tienda')}
+              {renderField('name', faSignalMessenger, 'Nombre de la tienda')}
+            </div>
           </div>
+
         );
       case 'support':
         return <div>
@@ -339,38 +351,73 @@ function ShopHome() {
   if (loading) return <Spinner />
 
   return (
-    <div className="d-flex">
+    <div className={`wrapper ${isSidebarOpen ? 'sidebar-open' : ''}`}>
       <div className="bg-light border-right" id="sidebar-wrapper">
         <div className="list-group list-group-flush">
-          <button className={`list-group-item list-group-item-action ${activeSection === 'notifications' ? 'active' : ''}`} onClick={() => setActiveSection('notifications')}>
-            <FontAwesomeIcon icon={faBell} className="mr-2" /> Notificaciones
+          <button
+            className={`list-group-item list-group-item-action ${activeSection === 'notifications' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveSection('notifications');
+              closeSidebar();
+            }}
+          >            <FontAwesomeIcon icon={faBell} className="mr-2" /> Notificaciones
           </button>
-          <button className={`list-group-item list-group-item-action ${activeSection === 'profile' ? 'active' : ''}`} onClick={() => setActiveSection('profile')}>
-            <FontAwesomeIcon icon={faUser} className="mr-2" /> Editar Perfil
+          <button
+            className={`list-group-item list-group-item-action ${activeSection === 'profile' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveSection('profile');
+              closeSidebar();
+            }}
+          >            <FontAwesomeIcon icon={faUser} className="mr-2" /> Editar Perfil
           </button>
-          <button className={`list-group-item list-group-item-action ${activeSection === 'support' ? 'active' : ''}`} onClick={() => setActiveSection('support')}>
-            <FontAwesomeIcon icon={faHeadset} className="mr-2" /> Contacto con Soporte
+          <button
+            className={`list-group-item list-group-item-action ${activeSection === 'support' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveSection('support');
+              closeSidebar();
+            }}
+          >            <FontAwesomeIcon icon={faHeadset} className="mr-2" /> Contacto con Soporte
           </button>
-          <button className={`list-group-item list-group-item-action ${activeSection === 'sales' ? 'active' : ''}`} onClick={() => setActiveSection('sales')}>
-            <FontAwesomeIcon icon={faShoppingCart} className="mr-2" /> Ventas
+          <button
+            className={`list-group-item list-group-item-action ${activeSection === 'sales' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveSection('sales');
+              closeSidebar();
+            }}
+          >            <FontAwesomeIcon icon={faShoppingCart} className="mr-2" /> Ventas
           </button>
-          <button className={`list-group-item list-group-item-action ${activeSection === 'boxesOnSale' ? 'active' : ''}`} onClick={() => setActiveSection('boxesOnSale')}>
-            <FontAwesomeIcon icon={faBoxes} className="mr-2" /> Cajas a la Venta
+          <button
+            className={`list-group-item list-group-item-action ${activeSection === 'BoxesOnSale' ? 'active' : ''}`}
+            onClick={() => {
+              setActiveSection('boxesOnSale');
+              closeSidebar();
+            }}
+          >            <FontAwesomeIcon icon={faBoxes} className="mr-2" /> Cajas a la Venta
           </button>
-          <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => { navigate("/createbox") }}>
+          <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => {
+            navigate("/createbox"); closeSidebar();
+          }}>
             <FontAwesomeIcon icon={faPlus} className="mr-2" /> Crear Nueva Caja
           </button>
-          <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => { navigate(`/shoppreview/${shopData.id}`) }}>
+          <button className={`list-group-item list-group-item-action ${activeSection === 'createBox' ? 'active' : ''}`} onClick={() => {
+            navigate(`/shoppreview/${shopData.id}`); closeSidebar();
+          }}>
             <FontAwesomeIcon icon={faShop} className="mr-2" /> Ver Perfil de tu tienda
           </button>
-          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => { actions.setModalLogout(true) }}>
+          <button type='button' className={`btn btn-danger rounded-0`} onClick={() => {
+            actions.setModalLogout(true); closeSidebar();
+          }}>
             <FontAwesomeIcon icon={faPowerOff} className="mr-2" /> Cerrar sesión
           </button>
         </div>
       </div>
       <div id="page-content-wrapper" className="flex-grow-1 p-4">
+        <button className="btn btn-primary" id="menu-toggle" onClick={toggleSidebar}>
+          Mostrar Panel de Control
+        </button>
         {renderContent()}
       </div>
+      {isSidebarOpen && <div className="overlay" onClick={closeSidebar}></div>}
 
       {store.modalLogout && (
         <div>

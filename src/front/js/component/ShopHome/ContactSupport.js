@@ -79,64 +79,66 @@ const ContactSupport = () => {
   };
 
   return (
-    <div className="contact-support-container my-5">
-      <h2>Contacto con Soporte</h2>
-      <form onSubmit={handleSubmit} className="contact-support-form">
-        <div className="form-group">
-          <label htmlFor="ventaId">ID de Venta (Opcional)</label>
-          <input
-            type="number"
-            id="ventaId"
-            name='saleId'
-            value={newform.saleId}
-            onChange={handleChange}
-            placeholder="Ingrese el ID de la venta si aplica"
-          />
-        </div>
+    <div id="contact-support-full-container">
+      <div className="contact-support-container">
+        <h2>Contacto con Soporte</h2>
+        <form onSubmit={handleSubmit} className="contact-support-form">
+          <div className="form-group">
+            <label htmlFor="ventaId">ID de Venta (Opcional)</label>
+            <input
+              type="number"
+              id="ventaId"
+              name='saleId'
+              value={newform.saleId}
+              onChange={handleChange}
+              placeholder="Ingrese el ID de la venta si aplica"
+            />
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="asunto">Asunto *</label>
-          <input
-            type="text"
-            id="asunto"
-            name='subjectAffair'
-            value={newform.subjectAffair}
-            onChange={handleChange}
-            placeholder="Escriba el asunto"
-            required
-          />
-        </div>
+          <div className="form-group">
+            <label htmlFor="asunto">Asunto *</label>
+            <input
+              type="text"
+              id="asunto"
+              name='subjectAffair'
+              value={newform.subjectAffair}
+              onChange={handleChange}
+              placeholder="Escriba el asunto"
+              required
+            />
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="contenido">Contenido *</label>
-          <textarea
-            id="contenido"
-            name='content'
-            value={newform.content}
-            onChange={handleChange}
-            placeholder="Describa su consulta"
-            required
-          />
-        </div>
+          <div className="form-group">
+            <label htmlFor="contenido">Contenido *</label>
+            <textarea
+              id="contenido"
+              name='content'
+              value={newform.content}
+              onChange={handleChange}
+              placeholder="Describa su consulta"
+              required
+            />
+          </div>
 
-        <button type="submit">Enviar</button>
-      </form>
+          <button type="submit">Enviar</button>
+        </form>
 
-      <ModalGlobal
-        isOpen={isModalLoggingOpen}
-        onClose={closeLoginModal}
-        title="Iniciar sesión requerido"
-        body='Para ponerte en contacto con soporte, necesitas iniciar sesión.'
-        buttonBody='Iniciar sesión'
-      />
+        <ModalGlobal
+          isOpen={isModalLoggingOpen}
+          onClose={closeLoginModal}
+          title="Iniciar sesión requerido"
+          body='Para ponerte en contacto con soporte, necesitas iniciar sesión.'
+          buttonBody='Iniciar sesión'
+        />
 
-      <ModalGlobal
-        isOpen={isModalSuccessOpen}
-        onClose={closeSuccessModal}
-        title='Mensaje de contacto con soporte enviado'
-        body='Mensaje de contacto con soporte enviado, contactaremos lo antes posible.'
-        buttonBody='Volver al panel de control'
-      />
+        <ModalGlobal
+          isOpen={isModalSuccessOpen}
+          onClose={closeSuccessModal}
+          title='Mensaje de contacto con soporte enviado'
+          body='Mensaje de contacto con soporte enviado, contactaremos lo antes posible.'
+          buttonBody='Volver al panel de control'
+        />
+      </div>
     </div>
   );
 };
