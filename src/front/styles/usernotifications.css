@@ -118,6 +118,7 @@
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  text-align: center  !important;
 }
 
 .notifications-table th {

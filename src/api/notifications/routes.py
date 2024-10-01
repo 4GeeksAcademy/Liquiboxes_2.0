@@ -149,12 +149,23 @@ def create_change_request():
         if not sale_id:
             return jsonify({"error": "Sale not found"}), 400
 
+        # Verificar si ya existe una solicitud de cambio pendiente para este artículo
+        existing_request = ItemChangeRequest.query.filter_by(
+            box_item_id=data['box_item_id'],
+            shop_id=current_shop.id,
+            status='pending'
+        ).first()
+
+        if existing_request:
+            return jsonify({"error": "Ya existe una solicitud de cambio pendiente para este artículo"}), 400
+
         new_request = ItemChangeRequest(
             box_item_id=data['box_item_id'],
             shop_id=current_shop.id,
             original_item_name=box_item.item_name,
             proposed_item_name=data['proposed_item_name'],
-            reason=data['reason']
+            reason=data['reason'],
+            status='pending'
         )
         db.session.add(new_request)
         db.session.flush()  # Asigna un ID a new_request sin hacer commit
@@ -195,10 +206,31 @@ def create_change_request():
             original_notification.updated_at = datetime.utcnow()
             original_notification.content = f"Has solicitado cambiar el artículo {box_item.item_name} por {data['proposed_item_name']} en el pedido #{sale_id}. Esperando aprobación del administrador."
             db.session.add(original_notification)
+        else:
+            # Si no existe la notificación original, crear una nueva
+            new_notification = Notification(
+                type="item_change_requested",
+                recipient_type="shop",
+                recipient_id=current_shop.id,
+                sender_type="platform",
+                sale_id=sale_id,
+                shop_id=current_shop.id,
+                content=f"Has solicitado cambiar el artículo {box_item.item_name} por {data['proposed_item_name']} en el pedido #{sale_id}. Esperando aprobación del administrador.",
+                extra_data={
+                    'item_change_request_id': new_request.id,
+                    'original_item_name': box_item.item_name,
+                    'proposed_item_name': data['proposed_item_name']
+                }
+            )
+            db.session.add(new_notification)
 
         db.session.commit()
 
-        return jsonify(new_request.serialize()), 201
+        return jsonify({
+            "message": "Solicitud de cambio creada exitosamente",
+            "change_request": new_request.serialize(),
+            "shop_sale_status": shop_sale.status if shop_sale else None
+        }), 201
     except SQLAlchemyError as e:
         db.session.rollback()
         logging.error(f"Database error: {str(e)}")

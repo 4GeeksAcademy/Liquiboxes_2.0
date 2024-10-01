@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from api.models import db, Sale, SaleDetail, User, ShopSale, MysteryBox, Shop, Notification, BoxItem
+from api.models import db, Sale, ItemChangeRequest, SaleDetail, User, ShopSale, MysteryBox, Shop, Notification, BoxItem
 from sqlalchemy.exc import SQLAlchemyError
 import logging
 import stripe
@@ -346,6 +346,15 @@ def confirm_shop_sale(sale_id):
         return jsonify({"error": "Shop not found"}), 403
     
     try:
+        # Verificar si hay solicitudes de cambio pendientes
+        pending_changes = ItemChangeRequest.query.filter_by(
+            shop_id=current_shop.id,
+            status='pending'
+        ).first()
+
+        if pending_changes:
+            return jsonify({"error": "Cannot confirm order while there are pending change requests"}), 400
+
         # Buscar la ShopSale correspondiente
         shop_sale = ShopSale.query.filter_by(sale_id=sale_id, shop_id=current_shop.id).first()
 
