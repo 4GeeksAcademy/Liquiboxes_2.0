@@ -3,12 +3,14 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { Context } from "../store/appContext";
+import Spinner from '../component/Spinner'
 import "../../styles/login.css"
 
 export default function Login() {
     const { store, actions } = useContext(Context);
     const [showError, setShowError] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [loading, setLoading] = useState(true);
     const [loginData, setLoginData] = useState({
         email: "",
         password: ""
@@ -22,6 +24,8 @@ export default function Login() {
         if (prevPath !== "/") {
             localStorage.setItem("prevPath", prevPath);
         }
+
+        setLoading(false)
     }, [location]);
 
     const handleChange = (e) => {
@@ -56,6 +60,7 @@ export default function Login() {
         e.preventDefault();
         setShowError(false);
         setErrorMessage("");
+        setLoading(true)
 
         try {
             const loginResult = await attemptLogin(loginData);
@@ -64,13 +69,13 @@ export default function Login() {
                 sessionStorage.setItem("token", loginResult.access_token);
                 sessionStorage.setItem("userType", loginResult.user_type);
                 console.log(`Ha entrado como ${loginResult.user_type}`);
-                
+
                 // Obtén la ruta anterior del almacenamiento local
                 const prevPath = localStorage.getItem("prevPath");
-                
+
                 // Elimina la ruta anterior del almacenamiento local
                 localStorage.removeItem("prevPath");
-                
+
                 // Redirige al usuario a la ruta anterior o a la ruta por defecto
                 if (prevPath && prevPath !== "/") {
                     navigate(prevPath);
@@ -105,18 +110,18 @@ export default function Login() {
                 // Usuario existente, guardar token y redirigir
                 sessionStorage.setItem('token', access_token);
                 sessionStorage.setItem('userType', user_type);
-                
+
                 // Obtén la ruta anterior del almacenamiento local
                 const prevPath = localStorage.getItem("prevPath");
-                
+
                 // Elimina la ruta anterior del almacenamiento local
                 localStorage.removeItem("prevPath");
-                
+
                 // Redirige al usuario a la ruta anterior o a la ruta por defecto
                 if (prevPath && prevPath !== "/") {
                     navigate(prevPath);
                 } else {
-                    navigate(user_type === 'normal' ? "/home" : "/shophome");
+                    navigate(user_type === 'user' ? "/home" : "/shophome");
                 }
             }
         } catch (error) {
@@ -125,6 +130,9 @@ export default function Login() {
             setErrorMessage("Error en la autenticación con Google");
         }
     };
+
+    if (loading) return < Spinner />
+
 
     return (
         <div className="login-container">
@@ -173,8 +181,8 @@ export default function Login() {
                                 }}
                             />
                         </div>
-                        <div className="mt-3 text-center"> 
-                            <a onClick={() => {navigate('/adminlogin')}} className="text-success">Acceso a Administradores</a>
+                        <div className="mt-3 text-center">
+                            <a onClick={() => { navigate('/adminlogin') }} className="text-success">Acceso a Administradores</a>
                         </div>
                     </div>
                     <div className="create-account-section my-auto">
@@ -190,6 +198,7 @@ export default function Login() {
                     </div>
                 </div>
             </div>
+
         </div>
     );
 }

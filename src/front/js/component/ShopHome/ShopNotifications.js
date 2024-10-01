@@ -32,6 +32,8 @@ const ShopNotifications = () => {
   const unreadNotifications = notifications.filter(n => !n.is_read);
   const hasUnreadNotifications = unreadNotifications.length > 0;
   const [salesWithPendingChanges, setSalesWithPendingChanges] = useState({});
+  const [isPDFLoading, setIsPDFLoading] = useState(false);
+
 
 
   const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -156,7 +158,7 @@ const ShopNotifications = () => {
 
       }
     }
-    if (['new_sale', 'item_change_approved', 'item_change_rejected', 'confirmed'].includes(notification.type)) {
+    if (['new_sale', 'item_change_requested', 'item_change_approved', 'item_change_rejected', 'confirmed'].includes(notification.type)) {
       fetchOrderDetails(notification.sale_id);
     }
   };
@@ -228,7 +230,11 @@ const ShopNotifications = () => {
     }
   };
 
-  const handleItemConfirmation = async (itemId, isConfirmed) => {
+  const handleItemConfirmation = async (itemId, isConfirmed, saleId) => {
+    if (salesWithPendingChanges[saleId]) {
+      alert('No puedes confirmar artículos mientras haya solicitudes de cambio pendientes para esta venta.');
+      return;
+    }
     setItems(items.map(item =>
       item.id === itemId ? { ...item, isConfirmed } : item
     ));
@@ -240,6 +246,7 @@ const ShopNotifications = () => {
     await delay(1000);
     setLoadingModal(false);
     setShowChangeRequestForm(true);
+    setIsModalOpen(false)
   };
 
   const updateSalesWithPendingChanges = (notificationsData) => {
@@ -277,9 +284,9 @@ const ShopNotifications = () => {
     }
   };
 
-  const handleOrderConfirmation = async () => {
+  const handleOrderConfirmation = async (saleId, shopSaleId) => {
     if (salesWithPendingChanges[saleId]) {
-      alert('No puedes confirmar artículos mientras haya solicitudes de cambio pendientes para esta venta.');
+      alert('No puedes confirmar el pedido mientras haya solicitudes de cambio pendientes para esta venta.');
       return;
     }
 
@@ -312,11 +319,11 @@ const ShopNotifications = () => {
         }));
 
         // Generar y descargar el PDF
-        generatePDF(shipmentResponse.data);
+        generatePDF(shipmentResponse.data, shopSaleId);
 
         // Mostrar mensaje de éxito
         alert('¡Pedido confirmado con éxito!');
-
+        setIsModalOpen(false)
         // Opcionalmente, actualizar la lista de notificaciones
         fetchNotifications();
       } else {
@@ -339,7 +346,7 @@ const ShopNotifications = () => {
   };
 
 
-  const generatePDF = (shippingDetails) => {
+  const generatePDF = (shippingDetails, shopSaleId) => {
     const doc = new jsPDF();
 
     // Establecer colores basados en variables CSS
@@ -362,6 +369,7 @@ const ShopNotifications = () => {
     // Detalles del pedido
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
+    doc.text(`ID de Venta: ${shopSaleId || 'N/A'}`, 20, 50);
     doc.text(`ID de Pedido: ${orderDetails?.id || 'N/A'}`, 20, 50);
     doc.text(`Fecha: ${orderDetails?.date ? new Date(orderDetails.date).toLocaleString() : 'N/A'}`, 20, 60);
     doc.text(`Importe Total: ${orderDetails?.total_amount ? `${orderDetails.total_amount} €` : 'N/A'}`, 20, 70);
@@ -445,14 +453,42 @@ const ShopNotifications = () => {
     }
 
     // Guardar el PDF
-    doc.save(`Detalle de envio pedido ${orderDetails?.id || 'N/A'}.pdf`);
+    doc.save(`Detalle de envio venta: ${shopSaleId || 'N/A'}#.pdf`);
   };
 
-  const handlePDFDownload = () => {
-    if (orderDetails && shippingDetails) {
-      generatePDF(shippingDetails);
-    } else {
-      alert('No se pueden obtener los detalles necesarios para generar el PDF.');
+  const handlePDFDownload = async (shopSaleId) => {
+    setIsPDFLoading(true);
+    try {
+      let currentOrderDetails = orderDetails;
+      let currentShippingDetails = shippingDetails;
+
+      if (!currentOrderDetails || !currentShippingDetails) {
+        // Cargar los datos si no están disponibles
+        const orderResponse = await axios.get(`${process.env.BACKEND_URL}/sales/${selectedNotification.sale_id}`, {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`
+          }
+        });
+        currentOrderDetails = orderResponse.data;
+
+        const shipmentResponse = await axios.get(`${process.env.BACKEND_URL}/users/${currentOrderDetails.user_id}/shipment`, {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.getItem('token')}`
+          }
+        });
+        currentShippingDetails = shipmentResponse.data;
+      }
+
+      if (currentOrderDetails && currentShippingDetails) {
+        generatePDF(currentShippingDetails, shopSaleId);
+      } else {
+        throw new Error('No se pueden obtener los detalles necesarios para generar el PDF.');
+      }
+    } catch (error) {
+      console.error('Error al generar el PDF:', error);
+      alert(error.message || 'No se pueden obtener los detalles necesarios para generar el PDF.');
+    } finally {
+      setIsPDFLoading(false);
     }
   };
 
@@ -495,7 +531,6 @@ const ShopNotifications = () => {
 
     switch (selectedNotification.type) {
       case 'new_sale':
-      case 'item_change_requested':
       case 'item_change_approved':
       case 'item_change_rejected':
       case 'confirmed':
@@ -558,7 +593,7 @@ const ShopNotifications = () => {
             {selectedNotification.type !== 'confirmed' && !salesWithPendingChanges[saleId] && (
               <Button
                 className="confirm-order-button"
-                onClick={() => handleOrderConfirmation(saleId)}
+                onClick={() => handleOrderConfirmation(saleId, selectedNotification.extra_data.shop_sale_id)}
                 disabled={items.some(item => item.isConfirmed !== true)}
               >
                 <FontAwesomeIcon icon={faTruck} /> Confirmar Pedido y Obtener Datos de Envío
@@ -566,6 +601,17 @@ const ShopNotifications = () => {
             )}
             {salesWithPendingChanges[saleId] && (
               <p className="text-warning">Hay solicitudes de cambio pendientes para esta venta. No puedes confirmar el pedido hasta que se resuelvan.</p>
+            )}
+            {selectedNotification.type === 'confirmed' && (
+              <Button
+                className="confirm-order-button"
+                onClick={() => handlePDFDownload(selectedNotification.extra_data.shop_sale_id)}
+                disabled={isPDFLoading}
+              >
+                <>
+                  <FontAwesomeIcon icon={faDownload} /> Descargar PDF de la orden
+                </>
+              </Button>
             )}
           </div>
         );
@@ -594,6 +640,16 @@ const ShopNotifications = () => {
                 <FontAwesomeIcon icon={faEnvelope} /> Enviar Respuesta
               </Button>
             </Form>
+          </div>
+        );
+      case 'item_change_requested':
+        return (
+          <div className="message-details">
+            <h3 className="notification-title">
+              {translateNotificationType(selectedNotification.type)}
+            </h3>
+            <h5> Venta con ID: {selectedNotification.extra_data.shop_sale_id}</h5>
+            <p className="message-content">{selectedNotification.content}</p>
           </div>
         );
       default:
@@ -722,6 +778,8 @@ const ShopNotifications = () => {
                 <th>Tipo</th>
                 <th>Fecha</th>
                 <th>Estado</th>
+                <th>ID Venta</th>
+                <th>ID Pedido</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -740,6 +798,8 @@ const ShopNotifications = () => {
                       <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
                     }
                   </td>
+                  <td>{notification.extra_data.shop_sale_id}</td>
+                  <td>{notification.sale_id}</td>
                   <td>
                     <Button //BOTON ELIMINAR NOTIFICACIONES
                       onClick={(e) => {

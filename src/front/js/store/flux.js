@@ -44,17 +44,6 @@ const getState = ({ getStore, getActions, setStore }) => {
                 setStore({ login: trueOrFalse })
             },
 
-            getMessage: async () => {
-                try {
-                    const resp = await fetch(process.env.BACKEND_URL + "/hello");
-                    const data = await resp.json();
-                    setStore({ message: data.message });
-                    return data;
-                } catch (error) {
-                    console.error("Error loading message from backend", error);
-                }
-            },
-
 
             fetchShops: async () => {
                 try {
