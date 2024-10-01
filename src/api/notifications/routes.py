@@ -204,7 +204,7 @@ def create_change_request():
             original_notification.type = "item_change_requested"
             original_notification.is_read = False
             original_notification.updated_at = datetime.utcnow()
-            original_notification.content = f"Has solicitado cambiar el artículo {box_item.item_name} por {data['proposed_item_name']} en el pedido #{sale_id}. Esperando aprobación del administrador."
+            original_notification.content = f"Has solicitado cambiar el artículo {box_item.item_name} por {data['proposed_item_name']} en la venta #{shop_sale.id}, del pedido #{sale_id}. Esperando aprobación del administrador."
             db.session.add(original_notification)
         else:
             # Si no existe la notificación original, crear una nueva
@@ -215,7 +215,7 @@ def create_change_request():
                 sender_type="platform",
                 sale_id=sale_id,
                 shop_id=current_shop.id,
-                content=f"Has solicitado cambiar el artículo {box_item.item_name} por {data['proposed_item_name']} en el pedido #{sale_id}. Esperando aprobación del administrador.",
+                content=f"Has solicitado cambiar el artículo {box_item.item_name} por {data['proposed_item_name']} en la venta #{shop_sale.id}, del pedido #{sale_id}. Esperando aprobación del administrador.",
                 extra_data={
                     'item_change_request_id': new_request.id,
                     'original_item_name': box_item.item_name,

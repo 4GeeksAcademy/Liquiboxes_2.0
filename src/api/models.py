@@ -72,7 +72,7 @@ class User(BaseModel):
     postal_code = db.Column(db.String(20), nullable=False)
     upper_size = db.Column(db.String(10), nullable=False)
     lower_size = db.Column(db.String(10), nullable=False)
-    cap_size = db.Column(db.String(10))
+    cap_size = db.Column(db.String(10), nullable=False)
     shoe_size = db.Column(db.String(10), nullable=False)
     not_colors = db.Column(ARRAY(db.String))
     stamps = db.Column(db.String(20), nullable=False)
