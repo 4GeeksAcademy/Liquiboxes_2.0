@@ -90,6 +90,8 @@
   padding: 1rem !important;
   text-align: left !important;
   border-bottom: 1px solid var(--border-color) !important;
+  text-align: center  !important;
+
 }
 
 .notifications-table th {
@@ -343,6 +345,9 @@
   border-color: var(--primary-color) !important;
 }
 
+#mark-as-unread-shops {
+  margin-left: 1rem;
+}
 
 @media (max-width: 768px) {
   .filter-buttons {
@@ -352,9 +357,13 @@
   .filter-button {
     width: 100% !important;
   }
-  
+
   .shop-notifications {
     padding: 1rem !important;
+  }
+
+  #mark-as-unread-shops {
+    margin-top: 1rem;
   }
 
   .notifications-table,

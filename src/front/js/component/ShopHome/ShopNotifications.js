@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faEnvelope, faEnvelopeOpen, faCheck, faTimes, faExchange, faTruck, faDownload, faList, faShoppingCart, faComment } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faTrashCan, faEnvelope, faEnvelopeOpen, faCheck, faTimes, faExchange, faTruck, faDownload, faList, faShoppingCart, faComment, faUser } from '@fortawesome/free-solid-svg-icons';
 import { Modal, Button, Form, Table, Tabs, Tab } from 'react-bootstrap';
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import '../../../styles/shops/shopnotifications.css';
-import Spinner  from '../../component/Spinner'
+import Spinner from '../../component/Spinner'
 
 const ShopNotifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -54,7 +54,7 @@ const ShopNotifications = () => {
         }
       });
       setNotifications(response.data);
-      
+
       setTimeout(() => setLoading(false), 500);
 
     } catch (error) {
@@ -483,10 +483,7 @@ const ShopNotifications = () => {
         return (
           <div className="order-confirmation">
             <h3 className="notification-title">
-              {selectedNotification.type === 'new_sale' ? 'Nueva Venta' :
-                selectedNotification.type === 'item_change_approved' ? 'Cambio de Artículo Aprobado' :
-                  selectedNotification.type === 'item_change_rejected' ? 'Cambio de Artículo Rechazado' :
-                    'Venta Confirmada'}
+            {translateNotificationType(selectedNotification.type)}
             </h3>
             <div className="order-details">
               <h4>Detalles de la orden</h4>
@@ -563,7 +560,7 @@ const ShopNotifications = () => {
         return (
           <div className="message-details">
             <h3 className="notification-title">
-              {selectedNotification.type === 'contact_support' ? 'Mensaje de Soporte' : 'Mensaje del Usuario'}
+            {translateNotificationType(selectedNotification.type)}
             </h3>
             <h5> Venta con ID: {selectedNotification.sale_id}</h5>
             <p className="message-content">{selectedNotification.content}</p>
@@ -589,6 +586,20 @@ const ShopNotifications = () => {
     }
   };
 
+  const notificationTypes = {
+    new_sale: 'Nueva venta',
+    item_change_approved: 'Cambio de artículo aprobado',
+    item_change_rejected: 'Cambio de artículo rechazado',
+    confirmed: 'Venta confirmada',
+    contact_support: 'Mensaje de soporte',
+    contact_shop: 'Mensaje de la tienda',
+    contact_user: 'Mensaje del usuario'
+  };
+
+  const translateNotificationType = (type) => {
+    return notificationTypes[type] || type;
+  };
+
   const indexOfLastNotification = currentPage * notificationsPerPage;
   const indexOfFirstNotification = indexOfLastNotification - notificationsPerPage;
   const currentNotifications = filteredNotifications.slice(indexOfFirstNotification, indexOfLastNotification);
@@ -612,7 +623,7 @@ const ShopNotifications = () => {
         { key: 'read', label: 'Leídos', icon: faEnvelopeOpen },
         { key: 'contact_support', label: 'Soporte', icon: faComment },
         { key: 'contact_shop', label: 'Tienda', icon: faShoppingCart },
-        { key: 'contact_user', label: 'Usuario', icon: faEnvelope },
+        { key: 'contact_user', label: 'Usuario', icon: faUser },
       ];
 
     return (
@@ -649,7 +660,7 @@ const ShopNotifications = () => {
     }
   };
 
- if (loading) {
+  if (loading) {
     return (
       <Spinner />
     );
@@ -692,12 +703,10 @@ const ShopNotifications = () => {
             <thead>
               <tr>
                 <th>Tipo</th>
-                <th>Contenido</th>
                 <th>Fecha</th>
                 <th>Estado</th>
                 <th>Acciones</th>
-                <th></th> {/****NO BORRAR**, espacio que rellena el boton 'eliminar' en th*/}
-                </tr>
+              </tr>
             </thead>
             <tbody>
               {currentNotifications.map((notification) => (
@@ -706,8 +715,7 @@ const ShopNotifications = () => {
                   onClick={() => handleNotificationClick(notification)}
                   className={`cursor-pointer ${notification.type === 'item_change_approved' || notification.type === 'item_change_rejected' ? 'table-warning' : ''}`}
                 >
-                  <td>{notification.type}</td>
-                  <td>{notification.content}</td>
+                  <td>{translateNotificationType(notification.type)}</td>
                   <td>{new Date(notification.created_at).toLocaleString()}</td>
                   <td>
                     {notification.is_read ?
@@ -716,6 +724,14 @@ const ShopNotifications = () => {
                     }
                   </td>
                   <td>
+                    <Button //BOTON ELIMINAR NOTIFICACIONES
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteNotificaction(notification.id);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrashCan} /> Borrar
+                    </Button>
                     {notification.is_read && (
                       <Button
                         variant="outline-secondary"
@@ -724,21 +740,13 @@ const ShopNotifications = () => {
                           e.stopPropagation();
                           handleMarkSaleNotificationUnread(notification.id);
                         }}
+                        id="mark-as-unread-shops"
                       >
-                        Marcar como no leída
+                        <FontAwesomeIcon icon={faEnvelope} /> Marcar como no léida
                       </Button>
                     )}
                   </td>
-                  <td>
-                    <Button //BOTON ELIMINAR NOTIFICACIONES
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteNotificaction(notification.id);
-                      }}                  
-                    >
-                      Borrar Notificación {/*<i className="fa-regular fa-trash-can"></i> este es el icono de la papelera por si prefieres*/}
-                    </Button>
-                  </td>
+
 
                 </tr>
               ))}
@@ -747,9 +755,11 @@ const ShopNotifications = () => {
         </Tab>
 
         <Tab eventKey="messages" title="Mensajes">
-          <div className="mb-4">
+          <FilterButtons currentFilter={filter} setFilter={setFilter} activeTab={activeTab} />
+
+          <div className="mb-4 d-flex justify-content-end">
             <Button onClick={handleMarkAllRead} variant="secondary">
-              Marcar todos como leídos
+              Marcar todas como leídas
             </Button>
           </div>
 
@@ -757,9 +767,9 @@ const ShopNotifications = () => {
             <thead>
               <tr>
                 <th>Tipo</th>
-                <th>Contenido</th>
                 <th>Fecha</th>
                 <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -770,13 +780,35 @@ const ShopNotifications = () => {
                   className="cursor-pointer"
                 >
                   <td>{notification.type}</td>
-                  <td>{notification.content}</td>
                   <td>{new Date(notification.created_at).toLocaleString()}</td>
                   <td>
                     {notification.is_read ?
                       <FontAwesomeIcon icon={faEnvelopeOpen} className="text-muted" /> :
                       <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
                     }
+                  </td>
+                  <td>
+                    <Button //BOTON ELIMINAR NOTIFICACIONES
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteNotificaction(notification.id);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faTrashCan} /> Borrar
+                    </Button>
+                    {notification.is_read && (
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkSaleNotificationUnread(notification.id);
+                        }}
+                        id="mark-as-unread"
+                      >
+                        <FontAwesomeIcon icon={faEnvelope} /> Marcar como no léida
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -799,15 +831,7 @@ const ShopNotifications = () => {
 
       <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)} size="lg" className="custom-modal">
         <Modal.Header closeButton>
-          <Modal.Title>{
-            selectedNotification?.type === 'new_sale' ? 'Nueva Venta' :
-              selectedNotification?.type === 'item_change_approved' ? 'Cambio de Artículo Aprobado' :
-                selectedNotification?.type === 'item_change_rejected' ? 'Cambio de Artículo Rechazado' :
-                  selectedNotification?.type === 'confirmed' ? 'Venta Confirmada' :
-                    selectedNotification?.type === 'contact_support' ? 'Mensaje de Soporte' :
-                      selectedNotification?.type === 'contact_shop' || selectedNotification?.type === 'contact_user' ? 'Mensaje del Usuario' :
-                        'Detalles de la Notificación'
-          }</Modal.Title>
+          <Modal.Title>{translateNotificationType(selectedNotification?.type)}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {renderNotificationDetails()}
