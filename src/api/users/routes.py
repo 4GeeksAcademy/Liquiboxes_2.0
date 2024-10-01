@@ -6,6 +6,8 @@ import json
 
 users = Blueprint('users', __name__)
 
+## Todo lo que está dentro de este Blueprint lleva delante /api/users
+
 @users.route('/register', methods=['POST'])
 def register_user():
     data = request.get_json()
@@ -42,7 +44,7 @@ def register_user():
         return jsonify({'error': 'Error al crear el usuario: ' + str(e)}), 500
 
 @users.route('/profile', methods=['GET'])
-@jwt_required()
+@jwt_required() ## DECORADOR JWT
 def get_user_profile():
     current_user = get_jwt_identity()
     if current_user['type'] != 'user':
@@ -61,7 +63,6 @@ def update_user_profile():
         return jsonify({'error': 'You are not a normal user'}), 403
 
     user = User.query.get(current_user['id'])
-    
     if not user:
         return jsonify({"error": "Usuario no encontrado"}), 404
     
@@ -101,18 +102,14 @@ def update_user_profile():
                 if not isinstance(value, list):
                     return jsonify({"error": f"{field} debe ser una lista"}), 400
             setattr(user, field, value)
-    
+
     try:
         db.session.commit()
         return jsonify(user.serialize()), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 500
 
-@users.route('/', methods=['GET'])
-def get_all_users():
-    users = User.query.all()
-    return jsonify([user.serialize() for user in users]), 200
 
 @users.route('/<int:user_id>', methods=['GET'])
 @jwt_required()

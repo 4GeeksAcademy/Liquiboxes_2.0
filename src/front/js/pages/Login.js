@@ -121,7 +121,7 @@ export default function Login() {
                 if (prevPath && prevPath !== "/") {
                     navigate(prevPath);
                 } else {
-                    navigate(user_type === 'normal' ? "/home" : "/shophome");
+                    navigate(user_type === 'user' ? "/home" : "/shophome");
                 }
             }
         } catch (error) {
