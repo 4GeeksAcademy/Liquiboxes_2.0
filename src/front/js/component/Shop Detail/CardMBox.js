@@ -49,14 +49,11 @@ function CardMBox({ data }) {
           <FontAwesomeIcon icon={faStore} className="icon-shop" />
           {data.shop_name}
         </p>
-        <p className="card-text-shop">
+        <h5 className="card-text-shop">
           <FontAwesomeIcon icon={faEuroSign} className="icon-shop" />
           {Number(data.price).toFixed(2)}
-        </p>
-        <p className="card-text-shop card-address-shop">
-          <FontAwesomeIcon icon={faMapMarkerAlt} className="icon-shop" />
-          {data.address || 'Dirección no disponible'}
-        </p>
+        </h5>
+        
         <button className="card-button-shop" onClick={handleButtonClick}>
           Ver detalles
         </button>
