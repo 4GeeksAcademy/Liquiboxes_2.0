@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Context } from '../store/appContext';
 import CartItem from '../component/Cart/CartItem';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +35,16 @@ const Cart = () => {
       window.removeEventListener('storage', syncCartWithLocalStorage);
     };
   }, []);
+
+  const { cartItemsArray, isCartEmpty, total } = useMemo(() => {
+    const cartItems = store.cartWithDetails || {};
+    const itemsArray = Object.values(cartItems).filter(item => item != null);
+    return {
+      cartItemsArray: itemsArray,
+      isCartEmpty: itemsArray.length === 0,
+      total: itemsArray.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0)
+    };
+  }, [store.cartWithDetails]);
 
   const fetchCartDetails = async () => {
     try {
@@ -102,11 +112,6 @@ const Cart = () => {
   if (error) {
     return <div className="alert alert-danger">{error}</div>;
   }
-
-  const cartItems = store.cartWithDetails || {};
-  const cartItemsArray = Object.values(cartItems).filter(item => item != null);
-  const isCartEmpty = cartItemsArray.length === 0;
-  const total = cartItemsArray.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 1)), 0);
 
   return (
     <div className="container my-5">
