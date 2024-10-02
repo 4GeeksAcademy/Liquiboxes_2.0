@@ -1,6 +1,6 @@
 /* ContactSupport.css */
 
-#contact-support-full-container{
+#contact-support-full-container {
   min-height: 90vh;
   display: flex;
   align-items: center;
@@ -8,8 +8,8 @@
 }
 
 .contact-support-container {
-  max-width: 600px;
-  min-width: 350px;
+  max-width: 1040px;
+  min-width: 650px;
   margin: 0 auto !important;
   padding: 1rem;
   background-color: var(--background-secondary-color);
@@ -51,4 +51,28 @@
 .form-group textarea:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+@media (max-width: 768px) {
+  .contact-support-container {
+    max-width: 600px;
+    min-width: 550px;
+  }
+
+  #contact-support-full-container {
+    min-height: 70vh;
+  }
+}
+
+@media (max-width: 600px) {
+  .contact-support-container {
+    max-width: 600px;
+    width: 90% !important;
+    min-width: 300px;
+  }
+
+  #contact-support-full-container {
+    min-height: 70vh;
+    margin-bottom: 1rem;
+  }
 }
