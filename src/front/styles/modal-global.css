@@ -161,7 +161,7 @@
 
 @media (max-width: 768px) {
   .modal-global-content {
-    width: 95%;
+    width: 95% !important;
   }
 
   .modal-global-header {
@@ -172,8 +172,11 @@
     font-size: 1.5rem;
   }
 
-  .modal-global-body,
-  .modal-global-footer {
+  #modal-global-title {
+    padding-left: 0.5rem !important;
+  }
+
+  .modal-global-body {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
@@ -185,14 +188,20 @@
 
   .modal-global-footer {
     padding-bottom: 1.5rem;
+    padding-left: 0;
+    padding-right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .modal-global-body p {
     font-size: 1rem;
   }
 
-  .modal-global-footer .modal-global-button {
-    padding: 0.875rem 1.75rem;
-    font-size: 0.9rem;
+  .modal-global-button {
+    width: 100%;
+    margin: 0 1.5rem;
+
   }
 }

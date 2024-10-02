@@ -1,20 +1,31 @@
 import React, { useContext, useState, useEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { Context } from "../store/appContext";
+import Spinner from '../component/Spinner'
+import ModalGlobal from '../component/ModalGlobal'
 import "../../styles/login.css"
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function Login() {
     const { store, actions } = useContext(Context);
     const [showError, setShowError] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
+    const [loading, setLoading] = useState(true);
     const [loginData, setLoginData] = useState({
         email: "",
         password: ""
     });
     const navigate = useNavigate();
     const location = useLocation();
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+    const [showModal, setShowModal] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    
 
     useEffect(() => {
         // Guarda la ruta anterior cuando se monta el componente
@@ -22,6 +33,8 @@ export default function Login() {
         if (prevPath !== "/") {
             localStorage.setItem("prevPath", prevPath);
         }
+
+        setLoading(false)
     }, [location]);
 
     const handleChange = (e) => {
@@ -30,6 +43,11 @@ export default function Login() {
             [e.target.name]: e.target.value,
         });
     };
+    
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
 
     const attemptLogin = async (loginData) => {
         try {
@@ -56,6 +74,7 @@ export default function Login() {
         e.preventDefault();
         setShowError(false);
         setErrorMessage("");
+        setLoading(true)
 
         try {
             const loginResult = await attemptLogin(loginData);
@@ -64,13 +83,13 @@ export default function Login() {
                 sessionStorage.setItem("token", loginResult.access_token);
                 sessionStorage.setItem("userType", loginResult.user_type);
                 console.log(`Ha entrado como ${loginResult.user_type}`);
-                
+
                 // Obtén la ruta anterior del almacenamiento local
                 const prevPath = localStorage.getItem("prevPath");
-                
+
                 // Elimina la ruta anterior del almacenamiento local
                 localStorage.removeItem("prevPath");
-                
+
                 // Redirige al usuario a la ruta anterior o a la ruta por defecto
                 if (prevPath && prevPath !== "/") {
                     navigate(prevPath);
@@ -82,6 +101,8 @@ export default function Login() {
             console.log("Error de autenticación:", error);
             setShowError(true);
             setErrorMessage(error.message);
+            setLoading(false)
+
         }
     };
 
@@ -95,6 +116,7 @@ export default function Login() {
 
             if (is_new_user) {
                 // Usuario nuevo, navegar a la página de elección de tipo de registro
+                setLoading(false)
                 navigate('/chooseregistration', {
                     state: {
                         google_data,
@@ -105,26 +127,51 @@ export default function Login() {
                 // Usuario existente, guardar token y redirigir
                 sessionStorage.setItem('token', access_token);
                 sessionStorage.setItem('userType', user_type);
-                
+
                 // Obtén la ruta anterior del almacenamiento local
                 const prevPath = localStorage.getItem("prevPath");
-                
+
                 // Elimina la ruta anterior del almacenamiento local
                 localStorage.removeItem("prevPath");
-                
+
                 // Redirige al usuario a la ruta anterior o a la ruta por defecto
                 if (prevPath && prevPath !== "/") {
+                    setLoading(false)
                     navigate(prevPath);
                 } else {
-                    navigate(user_type === 'normal' ? "/home" : "/shophome");
+                    setLoading(false)
+                    navigate(user_type === 'user' ? "/home" : "/shophome");
                 }
             }
         } catch (error) {
             console.log("Error en la autenticación con Google:", error);
             setShowError(true);
             setErrorMessage("Error en la autenticación con Google");
+            setLoading(false)
+
         }
     };
+
+    const handleForgotPassword = async (e) => {
+        e.preventDefault();
+        setShowError(false);
+        setErrorMessage("");
+        setLoading(true);
+
+        try {
+            const response = await axios.post(`${process.env.BACKEND_URL}/auth/forgot-password`, { email: forgotPasswordEmail });
+
+        } catch (error) {
+            setShowError(true);
+            setErrorMessage(error.response?.data?.error || "Error al enviar el correo de recuperación");
+        } finally {
+            setShowModal(true)
+            setLoading(false);
+        }
+    };
+
+    if (loading) return < Spinner />
+
 
     return (
         <div className="login-container">
@@ -136,34 +183,69 @@ export default function Login() {
                 <div className="login-sections-wrapper">
                     <div className="login-form-wrapper">
                         <h2 className="login-title">Iniciar Sesión</h2>
-                        <form onSubmit={handleSubmit} className="login-form">
-                            <div className="form-group">
-                                <label htmlFor="email">Email</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={loginData.email}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="tu@email.com"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="password">Contraseña</label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    value={loginData.password}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="Tu contraseña"
-                                />
-                            </div>
-                            {showError && <div className="error-message"><strong>{errorMessage}</strong></div>}
-                            <button type="submit">Iniciar Sesión</button>
-                        </form>
+                        {!showForgotPassword ? (
+                            <form onSubmit={handleSubmit} className="login-form">
+                                <div className="form-group">
+                                    <label htmlFor="email">Email</label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        value={loginData.email}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="tu@email.com"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="password">Contraseña</label>
+                                    <div className="input-group" id="input-group-password" >
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            id="password"
+                                            name="password"
+                                            value={loginData.password}
+                                            onChange={handleChange}
+                                            className="form-control"
+                                            required
+                                            placeholder="Tu contraseña"
+                                        />
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-outline-secondary"
+                                            id="password-show-button-login"
+                                            onClick={togglePasswordVisibility}
+                                        >
+                                            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                        </button>
+                                    </div>
+                                </div>
+                                {showError && <div className="error-message"><strong>{errorMessage}</strong></div>}
+                                <button type="submit">Iniciar Sesión</button>
+                                <button type="button" onClick={() => setShowForgotPassword(true)} className="btn btn-outline-secondary mt-3">
+                                    ¿Olvidaste tu contraseña?
+                                </button>
+                            </form>
+                        ) : (
+                            <form onSubmit={handleForgotPassword} className="login-form">
+                                <div className="form-group">
+                                    <label htmlFor="forgotPasswordEmail">Email</label>
+                                    <input
+                                        type="email"
+                                        id="forgotPasswordEmail"
+                                        name="forgotPasswordEmail"
+                                        value={forgotPasswordEmail}
+                                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                                        required
+                                        placeholder="tu@email.com"
+                                    />
+                                </div>
+                                <button type="submit">Enviar correo de recuperación</button>
+                                <button type="button" onClick={() => setShowForgotPassword(false)} className="btn btn-outline-secondary mt-3">
+                                    Volver al inicio de sesión
+                                </button>
+                            </form>
+                        )}
                         <div className="google-login-wrapper">
                             <GoogleLogin
                                 onSuccess={handleGoogleLogin}
@@ -173,8 +255,8 @@ export default function Login() {
                                 }}
                             />
                         </div>
-                        <div className="mt-3 text-center"> 
-                            <a onClick={() => {navigate('/adminlogin')}} className="text-success">Acceso a Administradores</a>
+                        <div className="mt-3 text-center">
+                            <a onClick={() => { navigate('/adminlogin') }} className="text-success">Acceso a Administradores</a>
                         </div>
                     </div>
                     <div className="create-account-section my-auto">
@@ -190,6 +272,14 @@ export default function Login() {
                     </div>
                 </div>
             </div>
+
+               <ModalGlobal 
+               isOpen={showModal}
+               onClose={() => {setForgotPasswordEmail(false); setShowModal(false)}}
+               title='Email enviado'
+               body='Si tenemos registrada tu dirección de correo electrónico te ha debido llegar un mensaje con un enlace para restablecer la contraseña.'
+               buttonBody='Cerrar'
+               />                 
         </div>
     );
 }

@@ -110,6 +110,7 @@ Search Bar CSS
 
 .ultimate-search-input:focus {
     outline: none !important;
+    border: none !important;
 }
 
 .ultimate-search-submit-btn {

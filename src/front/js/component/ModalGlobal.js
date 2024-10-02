@@ -53,9 +53,11 @@ const ModalGlobal = ({ isOpen, onClose, title, body, buttonBody, className, imag
                         ×
                     </button>
                 </div>
-                <div className='m-0 p-0'>
-                <img src={image} className='img-fluid w-100' />
-                </div>
+                {image && (
+                    <div className='m-0 p-0'>
+                        <img src={image} className='img-fluid w-100' />
+                    </div>
+                )}
                 <div className="modal-global-body">
                     <p>{body}</p>
                 </div>

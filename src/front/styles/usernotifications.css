@@ -118,6 +118,7 @@
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  text-align: center  !important;
 }
 
 .notifications-table th {
@@ -214,5 +215,11 @@
   .custom-dropdown-toggle {
     width: 100%;
     margin-bottom: 0.5rem;
+  }
+}
+
+@media (max-width: 1040px) {
+  #mark-as-unread{
+    margin-top: 1rem !important;
   }
 }

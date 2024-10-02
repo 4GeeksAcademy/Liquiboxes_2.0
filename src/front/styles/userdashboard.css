@@ -39,7 +39,6 @@
 .wrapper {
   display: flex !important;
   position: relative !important;
-  min-height: 100%;
 }
 
 #sidebar-wrapper {
@@ -91,7 +90,7 @@
   color: var(--text-color) !important;
   padding: 0.2rem 0.4rem !important;
   transition: all 0.3s ease !important;
-  margin: 0;
+  margin: 0.5rem 1rem;
 }
 
 #menu-toggle:hover {

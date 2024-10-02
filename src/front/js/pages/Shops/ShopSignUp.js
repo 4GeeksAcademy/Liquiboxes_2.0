@@ -5,6 +5,7 @@ import { registerAndLogin } from "../../component/AuthenticationUtils";
 import Confetti from 'react-confetti';
 import ModalGlobal from '../../component/ModalGlobal'
 import "../../../styles/signup.css";
+import Spinner from "../../component/Spinner";
 
 
 const STEPS = [
@@ -27,6 +28,7 @@ export default function ShopSignUp() {
     postal_code: "",
     email: "",
     password: "",
+    confirmPassword: "",
     categories: [],
     business_core: "",
     shop_description: "",
@@ -38,6 +40,7 @@ export default function ShopSignUp() {
   const [userType, setUserType] = useState(null);
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false)
 
 
   const fileInputRef = useRef(null);
@@ -96,6 +99,8 @@ export default function ShopSignUp() {
         else if (!/\S+@\S+\.\S+/.test(signupData.email)) stepErrors.email = "El email no es válido";
         if (!signupData.password) stepErrors.password = "La contraseña es requerida";
         else if (signupData.password.length < 8) stepErrors.password = "La contraseña debe tener al menos 8 caracteres";
+        if (!signupData.confirmPassword) stepErrors.confirmPassword = "Confirma tu contraseña";
+        else if (signupData.password !== signupData.confirmPassword) stepErrors.confirmPassword = "Las contraseñas no coinciden";
         break;
       case 4:
         if (signupData.categories.length === 0) stepErrors.categories = "Selecciona al menos una categoría";
@@ -145,8 +150,10 @@ export default function ShopSignUp() {
       });
 
       try {
+        setLoading(true)
         const response = await registerAndLogin(`${process.env.BACKEND_URL}/shops/register`, formData);
         setUserType(response.user_type);
+        setLoading(false)
         setIsSuccess(true);
       } catch (error) {
         setErrors("Error en el registro o inicio de sesión. Por favor, inténtalo de nuevo.");
@@ -271,6 +278,19 @@ export default function ShopSignUp() {
                 placeholder="Contraseña"
               />
               {isSubmitted && errors.password && <p className="signup-error-message">{errors.password}</p>}
+            </div>
+            <div className="signup-input-group">
+              <label htmlFor="confirmPassword">Confirmar Contraseña</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                name="confirmPassword"
+                value={signupData.confirmPassword || ''}
+                onChange={handleChange}
+                className="signup-input"
+                placeholder="Confirmar Contraseña"
+              />
+              {isSubmitted && errors.confirmPassword && <p className="signup-error-message">{errors.confirmPassword}</p>}
             </div>
           </div>
         );
@@ -405,6 +425,8 @@ export default function ShopSignUp() {
     }
   };
 
+  if (loading) return <Spinner />
+
   return (
     <div className="signup-container">
       <div className="signup-content">
@@ -420,11 +442,12 @@ export default function ShopSignUp() {
           <p className="signup-step-description">{STEPS[step - 1].description}</p>
         </div>
         <div className="signup-form-section">
-          {step > 1 && (
-            <button className="signup-back-button" onClick={() => setStep(prev => prev - 1)}>
-              ←
-            </button>
-          )}
+          <button
+            className="signup-back-button"
+            onClick={() => step === 1 ? navigate('/') : setStep(prev => prev - 1)}
+          >
+            ←
+          </button>
           <form onSubmit={handleSubmit} noValidate>
             {renderStepContent()}
             <div className="signup-navigation-buttons">

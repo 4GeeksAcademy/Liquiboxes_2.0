@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCreditCard, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { faPaypal } from '@fortawesome/free-brands-svg-icons';
 import { useNavigate } from 'react-router-dom';
+import ModalGlobal from '../component/ModalGlobal'
 import Spinner from '../component/Spinner';
 
 const stripePromise = loadStripe(process.env.STRIPE_PK);
@@ -22,6 +23,7 @@ const PayingForm = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('stripe');
   const [forceUpdate, setForceUpdate] = useState(false);
+  const [modalPaypal, setModalPaypal] = useState(false)
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,21 +77,7 @@ const PayingForm = () => {
     };
 
     fetchCartData();
-  }, [store.cartWithDetails]);
-
-  useEffect(() => {
-    const handleCartCleared = () => {
-      setCheckoutCart([]);
-      setTotal(0);
-    };
-
-    window.addEventListener('cartCleared', handleCartCleared);
-
-    return () => {
-      window.removeEventListener('cartCleared', handleCartCleared);
-    };
   }, []);
-
 
   const handleStripePaymentSuccess = async (paymentIntentId) => {
     try {
@@ -125,8 +113,9 @@ const PayingForm = () => {
 
       console.log("Carrito antes de limpiar:", store.cart);
 
-      // Limpiar el carrito
-      await actions.clearCart();
+      // Limpiar el carrito en el store y en el LocalStoragge
+      actions.clearCart();
+
 
       // Forzar limpieza de localStorage
       localStorage.removeItem("cart");
@@ -139,22 +128,15 @@ const PayingForm = () => {
       console.log("Carrito después de limpiar:", store.cart);
       console.log("localStorage después de limpiar:", localStorage.getItem("cart"));
 
-      // Forzar actualización del contexto
-      await actions.initializeCart();
+      // Verificar una última vez antes de navegar
+      if (Object.keys(store.cart).length === 0) {
+        navigate("/home");
+      }
+      // else {
+      //   navigate("/home");
+      //   window.location.reload();
+      // }
 
-      // Forzar actualización del componente
-      setForceUpdate(prev => !prev);
-
-      // Esperar antes de navegar
-      setTimeout(() => {
-        // Verificar una última vez antes de navegar
-        if (Object.keys(store.cart).length === 0) {
-          navigate("/home");
-        } else {
-          navigate("/home");
-          window.location.reload();
-        }
-      }, 1000);
     } catch (err) {
       console.error("Error completo:", err);
       const errorMessage = err.response?.data?.error || err.message;
@@ -207,7 +189,7 @@ const PayingForm = () => {
   return (
     <div className="container mt-5">
       <h2 className="mb-4">
-        <FontAwesomeIcon icon={faShoppingCart} className="mr-2" />
+        <FontAwesomeIcon icon={faShoppingCart} className="mr-2 me-2" />
         Resumen de tu compra
       </h2>
       {checkoutCart.length > 0 ? (
@@ -247,17 +229,17 @@ const PayingForm = () => {
             <h4 className="mb-3">Método de pago</h4>
             <div className="d-flex justify-content-center">
               <button
-                className={`btn btn-lg mx-2 ${paymentMethod === 'stripe' ? 'btn-primary' : 'btn-outline-primary'}`}
+                className={`btn btn-lg mx-2 ${paymentMethod === 'stripe' ? 'btn-secondary' : 'btn-outline-secondary'}`}
                 onClick={() => setPaymentMethod('stripe')}
               >
-                <FontAwesomeIcon icon={faCreditCard} className="mr-2" />
+                <FontAwesomeIcon icon={faCreditCard} className="mr-2 me-2" />
                 Tarjeta de crédito
               </button>
               <button
-                className={`btn btn-lg mx-2 ${paymentMethod === 'paypal' ? 'btn-primary' : 'btn-outline-primary'}`}
-                onClick={() => setPaymentMethod('paypal')}
+                className={`btn btn-lg mx-2 ${paymentMethod === 'paypal' ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                onClick={() => {setPaymentMethod('paypal'); setModalPaypal(true)}}
               >
-                <FontAwesomeIcon icon={faPaypal} className="mr-2" />
+                <FontAwesomeIcon icon={faPaypal} className="mr-2 me-2" />
                 PayPal
               </button>
             </div>
@@ -278,16 +260,27 @@ const PayingForm = () => {
 
           {/* Botón de PayPal */}
           {paymentMethod === 'paypal' && (
-            <PayPalCheckoutButton
-              total={total}
-              onApprove={handlePayPalApprove}
-              onError={(err) => setError("Error en PayPal: " + err)}
-            />
+            <div className='my-5 py-3' >
+              <PayPalCheckoutButton
+                total={total}
+                onApprove={handlePayPalApprove}
+                onError={(err) => setError("Error en PayPal: " + err)}
+              />
+            </div>
+
           )}
         </>
       ) : (
         <div className="alert alert-warning">El carrito está vacío. Añade productos antes de proceder al pago.</div>
       )}
+
+      <ModalGlobal
+        isOpen={modalPaypal}
+        onClose={() => {setModalPaypal(false); setPaymentMethod('stripe')}}
+        title='Estamos trabajando en ello'
+        body='Estamos trabajando para que nuestra plataforma cada día sea mejor y seguimos trabajando en la incorporación de PayPal a nuestros servicios de pago. Sentimos las molestias.'
+        buttonBody="Cerrar"
+      />
     </div>
   );
 };
