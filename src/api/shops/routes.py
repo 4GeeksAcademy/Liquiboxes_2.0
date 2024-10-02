@@ -328,6 +328,8 @@ def update_mystery_box(box_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': f'Error updating Mystery Box: {str(e)}'}), 500
+
+
     
 @shops.route('/mystery-box/<int:box_id>', methods=['DELETE']) #RUTA PARA ELIMINAR MYSTERY BOX
 @jwt_required()

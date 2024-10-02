@@ -161,6 +161,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             decreaseQuantity: (id) => {
                 const store = getStore();
                 let newCart = store.cart;
+                let newCartWithDetails = store.cartWithDetails;
 
                 if (newCart[id]) {
                     if (newCart[id].quantity > 1) {
@@ -169,6 +170,12 @@ const getState = ({ getStore, getActions, setStore }) => {
                     else {
                         delete newCart[id];
                         delete newCartWithDetails[id];
+
+                        localStorage.setItem("cart", JSON.stringify(newCartWithDetails));
+                        setStore({
+                            cartWithDetails: newCartWithDetails,
+                        });
+
                     }
                     setStore({
                         cart: newCart,
