@@ -125,7 +125,8 @@ def forgot_password():
         encoded_token = base64.urlsafe_b64encode(token.encode()).decode()
         
         # Genera la URL de restablecimiento
-        reset_url = url_for('auth.reset_password', token=encoded_token, _external=True)
+        frontend_base_url = current_app.config['FRONTEND_BASE_URL']
+        reset_url = f"{frontend_base_url}/reset-password/{encoded_token}"
         
         # Prepara el correo electrónico
         message = Mail(
