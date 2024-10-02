@@ -4,7 +4,10 @@ import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { Context } from "../store/appContext";
 import Spinner from '../component/Spinner'
+import ModalGobal from '../component/ModalGlobal'
 import "../../styles/login.css"
+import { Modal } from "bootstrap";
+import ModalGlobal from "../component/ModalGlobal";
 
 export default function Login() {
     const { store, actions } = useContext(Context);
@@ -19,6 +22,7 @@ export default function Login() {
     const location = useLocation();
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         // Guarda la ruta anterior cuando se monta el componente
@@ -89,6 +93,8 @@ export default function Login() {
             console.log("Error de autenticación:", error);
             setShowError(true);
             setErrorMessage(error.message);
+            setLoading(false)
+
         }
     };
 
@@ -102,6 +108,7 @@ export default function Login() {
 
             if (is_new_user) {
                 // Usuario nuevo, navegar a la página de elección de tipo de registro
+                setLoading(false)
                 navigate('/chooseregistration', {
                     state: {
                         google_data,
@@ -121,8 +128,10 @@ export default function Login() {
 
                 // Redirige al usuario a la ruta anterior o a la ruta por defecto
                 if (prevPath && prevPath !== "/") {
+                    setLoading(false)
                     navigate(prevPath);
                 } else {
+                    setLoading(false)
                     navigate(user_type === 'user' ? "/home" : "/shophome");
                 }
             }
@@ -130,6 +139,8 @@ export default function Login() {
             console.log("Error en la autenticación con Google:", error);
             setShowError(true);
             setErrorMessage("Error en la autenticación con Google");
+            setLoading(false)
+
         }
     };
 
@@ -147,6 +158,7 @@ export default function Login() {
             setShowError(true);
             setErrorMessage(error.response?.data?.error || "Error al enviar el correo de recuperación");
         } finally {
+            setShowModal(true)
             setLoading(false);
         }
     };
@@ -192,7 +204,7 @@ export default function Login() {
                                 </div>
                                 {showError && <div className="error-message"><strong>{errorMessage}</strong></div>}
                                 <button type="submit">Iniciar Sesión</button>
-                                <button type="button" onClick={() => setShowForgotPassword(true)} className="btn btn-link">
+                                <button type="button" onClick={() => setShowForgotPassword(true)} className="btn btn-outline-secondary mt-3">
                                     ¿Olvidaste tu contraseña?
                                 </button>
                             </form>
@@ -211,7 +223,7 @@ export default function Login() {
                                     />
                                 </div>
                                 <button type="submit">Enviar correo de recuperación</button>
-                                <button type="button" onClick={() => setShowForgotPassword(false)} className="btn btn-link">
+                                <button type="button" onClick={() => setShowForgotPassword(false)} className="btn btn-outline-secondary mt-3">
                                     Volver al inicio de sesión
                                 </button>
                             </form>
@@ -243,6 +255,13 @@ export default function Login() {
                 </div>
             </div>
 
+               <ModalGlobal 
+               isOpen={showModal}
+               onClose={() => {setForgotPasswordEmail(false); setShowModal(false)}}
+               title='Email enviado'
+               body='Si tenemos registrada tu dirección de correo electrónico te ha debido llegar un mensaje con un enlace para restablecer la contraseña.'
+               buttonBody='Cerrar'
+               />                 
         </div>
     );
 }
