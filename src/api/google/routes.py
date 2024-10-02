@@ -9,6 +9,8 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, TrackingSettings, ClickTracking
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from datetime import timedelta
+import base64
+
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -18,6 +20,7 @@ auth = Blueprint('auth', __name__)
 # Configuración del serializador para el token
 def get_serializer():
     return URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+
 
 GOOGLE_CLIENT_ID = os.getenv("REACT_APP_ID_CLIENTE_GOOGLE")
 
@@ -106,64 +109,31 @@ def google_login():
         logging.error(f"Error inesperado: {str(e)}")
         return jsonify({'error': 'Error del servidor', 'details': str(e)}), 500
     
-@auth.route('/forgot-password', methods=['POST'])
-def forgot_password():
-    email = request.json.get('email')
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        user = Shop.query.filter_by(email=email).first()
-    
-    if user:
-        serializer = get_serializer()
-        token = serializer.dumps(email, salt='password-reset-salt')
-        frontend_base_url = current_app.config['FRONTEND_BASE_URL']
-        reset_url = f"{frontend_base_url}/reset-password/{token}"
-        
-        message = Mail(
-            from_email=os.getenv('SENDGRID_DEFAULT_FROM'),
-            to_emails=email,
-            subject='Restablecimiento de contraseña',
-            html_content=f'<strong>Para restablecer tu contraseña, visita el siguiente enlace:</strong><br>'
-                         f'<a href="{reset_url}">Haz click aquí</a><br>'
-                         f'Este enlace es válido por 1 hora.'
-        )
-        
-        # Desactivar el seguimiento de clics
-        tracking_settings = TrackingSettings()
-        tracking_settings.click_tracking = ClickTracking(enable=False)
-        message.tracking_settings = tracking_settings
-    
-        try:
-            sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-            response = sg.send(message)
-            current_app.logger.info(f"SendGrid response: {response.status_code}")
-            return jsonify({'message': 'Se ha enviado un correo electrónico con instrucciones para restablecer tu contraseña.'}), 200
-        except Exception as e:
-            current_app.logger.error(f"Error al enviar el correo: {str(e)}")
-            return jsonify({'error': 'Error al enviar el correo de recuperación'}), 500
-    else:
-        return jsonify({'error': 'No se encontró ninguna cuenta con ese correo electrónico.'}), 404
-    
 @auth.route('/reset-password/<token>', methods=['POST'])
 def reset_password(token):
     try:
-        serializer = get_serializer()
-        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)
+        # Decodifica el token de base64
+        decoded_token = base64.urlsafe_b64decode(token.encode()).decode()
+        
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        email = serializer.loads(decoded_token, salt='password-reset-salt', max_age=3600)  # 1 hora de validez
+        
+        new_password = request.json.get('new_password')
+        
+        if len(new_password) < 8:
+            return jsonify({'error': 'La nueva contraseña debe tener al menos 8 caracteres.'}), 400
+        
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = Shop.query.filter_by(email=email).first()
+        
+        if user:
+            user.set_password(new_password)
+            db.session.commit()
+            return jsonify({'message': 'Tu contraseña ha sido actualizada correctamente.'}), 200
+        else:
+            return jsonify({'error': 'No se encontró ninguna cuenta con ese correo electrónico.'}), 404
     except SignatureExpired:
         return jsonify({'error': 'El enlace de restablecimiento ha expirado.'}), 400
-    
-    new_password = request.json.get('new_password')
-    
-    if len(new_password) < 8:
-        return jsonify({'error': 'La nueva contraseña debe tener al menos 8 caracteres.'}), 400
-    
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        user = Shop.query.filter_by(email=email).first()
-    
-    if user:
-        user.set_password(new_password)
-        db.session.commit()
-        return jsonify({'message': 'Tu contraseña ha sido actualizada correctamente.'}), 200
-    else:
-        return jsonify({'error': 'No se encontró ninguna cuenta con ese correo electrónico.'}), 404
+    except (BadSignature, ValueError, TypeError):
+        return jsonify({'error': 'El token no es válido.'}), 400
