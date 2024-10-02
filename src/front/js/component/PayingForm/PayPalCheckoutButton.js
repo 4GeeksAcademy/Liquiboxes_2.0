@@ -18,7 +18,7 @@ function PayPalCheckoutButton({ total, onApprove, onError }) {
       createOrder={createOrder}
       onApprove={onApprove}
       onError={onError}
-      style={{ layout: "horizontal" }}
+      style={{ layout: "horizontal", disableMaxWidth:'true'}}
     />
   );
 }
