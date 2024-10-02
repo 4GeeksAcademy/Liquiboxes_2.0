@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Context } from "../../store/appContext";
 import { registerAndLogin } from "../../component/AuthenticationUtils";
-import Confetti from 'react-confetti';
+import FullScreenConfetti from "../../component/FullScreenConfetti";
 import ModalGlobal from '../../component/ModalGlobal'
 import "../../../styles/signup.css";
 import Spinner from "../../component/Spinner";
@@ -463,10 +463,7 @@ export default function ShopSignUp() {
       </div>
       {isSuccess && (
         <>
-          <Confetti
-            width={window.innerWidth}
-            height={window.innerHeight}
-          />
+          <FullScreenConfetti />
           <ModalGlobal
             isOpen={true}
             onClose={handleCloseModal}

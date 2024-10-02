@@ -4,6 +4,7 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBox, faCoins, faList, faImage } from '@fortawesome/free-solid-svg-icons';
 import Confetti from 'react-confetti';
+import FullScreenConfetti from '../../component/FullScreenConfetti';
 import ModalGlobal from '../../component/ModalGlobal';
 import { Context } from '../../store/appContext'
 import "../../../styles/shops/createMysteryBox.css";
@@ -359,7 +360,7 @@ const CreateMysteryBox = () => {
             </div>
             {isSuccess && (
                 <>
-                    <Confetti width={window.innerWidth} height={window.innerHeight} />
+                    <FullScreenConfetti />
                     <ModalGlobal
                         isOpen={true}
                         onClose={() => { handleCloseModal(mysteryBoxId) }}

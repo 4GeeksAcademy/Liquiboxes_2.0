@@ -41,6 +41,7 @@ function CardMBox({ data }) {
           src={data.image_url}
           alt={data.name}
           className="card-img-shop"
+          onClick={handleButtonClick}
         />
       </div>
       <div className="card-body-shop">
