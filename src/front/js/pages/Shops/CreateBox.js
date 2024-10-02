@@ -9,6 +9,7 @@ import { Context } from '../../store/appContext'
 import "../../../styles/shops/createMysteryBox.css";
 import ModalToken from '../../component/Modals/ModalToken';
 import ModalType from '../../component/Modals/ModalType';
+import Spinner from '../../component/Spinner';
 
 const STEPS = [
     { icon: faBox, title: "Información Básica", description: "Nombre y descripción de tu caja misteriosa", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Package_fwghe4.gif" },
@@ -35,6 +36,8 @@ const CreateMysteryBox = () => {
     const [mysteryBoxId, setMysteryBoxId] = useState(null)
     const { store, actions } = useContext(Context)
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(true)
+
 
     useEffect(() => {                                                   // FUNCIÓN PARA COMPROBAR QUE HA INICIADO SESIÓN Y QUE ES EL TIPO DE USUARIO QUE QUEREMOS.
         const token = sessionStorage.getItem('token');
@@ -42,10 +45,12 @@ const CreateMysteryBox = () => {
 
         if (!token) {
             actions.setModalToken(true)
+            setLoading(false)
             return
         }
         if (userType !== 'shop') {  // Tipo de usuario, si queremos que sea una tienda utilizamos 'shop'. Si queremos que sea un usuario normal utilziamos 'user'.
             actions.setModalType(true)
+            setLoading(false)
         }
 
     }, [navigate]);                                                     // COPIAR Y PEGAR ESTA FUNCIÓN ¡¡¡¡¡CUIDADO CON QUE EL COTNEXTO ESTÉ BIEN IMPORTADO!!!!!
@@ -114,6 +119,7 @@ const CreateMysteryBox = () => {
     };
 
     const handleSubmit = async (e) => {
+        setLoading(true)
         e.preventDefault();
         if (!validateStep()) return;
 
@@ -147,9 +153,11 @@ const CreateMysteryBox = () => {
                     }
                 );
                 setMysteryBoxId(response.data.id)
+                setLoading(false)
                 setIsSuccess(true);
             } catch (error) {
                 console.error('Error al crear la caja misteriosa:', error);
+                setLoading(false)
                 setErrors(prev => ({ ...prev, submit: error.response?.data?.error || 'Hubo un error al crear la caja misteriosa. Por favor, inténtalo de nuevo.' }));
             }
         }
@@ -290,10 +298,10 @@ const CreateMysteryBox = () => {
                             />
                             {errors.image && <p className="signup-error-message">{errors.image}</p>}
                         </div>
-                            {previewImage && (
+                        {previewImage && (
 
-                                <img src={previewImage} alt="Vista previa" className="signup-preview-image mx-auto" />
-                            )}
+                            <img src={previewImage} alt="Vista previa" className="signup-preview-image mx-auto" />
+                        )}
 
                         <div className="signup-summary">
                             <h3>Resumen de la Caja Misteriosa</h3>
@@ -316,6 +324,8 @@ const CreateMysteryBox = () => {
         }
     };
 
+    if (loading) return <Spinner />
+
     return (
         <div className="signup-container">
             <div className="signup-content">
@@ -327,11 +337,12 @@ const CreateMysteryBox = () => {
                     <p className="signup-step-description">{STEPS[step - 1].description}</p>
                 </div>
                 <div className="signup-form-section">
-                    {step > 1 && (
-                        <button className="signup-back-button" onClick={() => setStep(prev => prev - 1)}>
-                            <FontAwesomeIcon icon={faArrowLeft} />
-                        </button>
-                    )}
+                    <button
+                        className="signup-back-button"
+                        onClick={() => step === 1 ? navigate('/shophome') : setStep(prev => prev - 1)}
+                    >
+                        ←
+                    </button>
                     <form onSubmit={handleSubmit} noValidate>
                         {renderStepContent()}
                         {errors.submit && <p className="signup-error-message">{errors.submit}</p>}
