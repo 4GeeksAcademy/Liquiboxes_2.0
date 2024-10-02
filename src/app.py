@@ -43,6 +43,8 @@ jwt = JWTManager(app)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SENDGRID_API_KEY'] = os.getenv('SENDGRID_API_KEY')
 app.config['SENDGRID_DEFAULT_FROM'] = os.getenv('SENDGRID_DEFAULT_FROM')
+app.config['FRONTEND_BASE_URL'] = os.getenv('FRONTEND_BASE_URL')
+
 
 
 @jwt.user_identity_loader

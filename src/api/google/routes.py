@@ -6,7 +6,7 @@ from google.auth.transport import requests
 import os
 import logging
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Mail, TrackingSettings, ClickTracking
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from datetime import timedelta
 
@@ -116,17 +116,23 @@ def forgot_password():
     if user:
         serializer = get_serializer()
         token = serializer.dumps(email, salt='password-reset-salt')
-        reset_url = url_for('auth.reset_password', token=token, _external=True)
+        frontend_base_url = current_app.config['FRONTEND_BASE_URL']
+        reset_url = f"{frontend_base_url}/reset-password/{token}"
         
         message = Mail(
             from_email=os.getenv('SENDGRID_DEFAULT_FROM'),
             to_emails=email,
             subject='Restablecimiento de contraseña',
             html_content=f'<strong>Para restablecer tu contraseña, visita el siguiente enlace:</strong><br>'
-                         f'<a href="{reset_url}">{reset_url}</a><br>'
+                         f'<a href="{reset_url}">Haz click aquí</a><br>'
                          f'Este enlace es válido por 1 hora.'
         )
         
+        # Desactivar el seguimiento de clics
+        tracking_settings = TrackingSettings()
+        tracking_settings.click_tracking = ClickTracking(enable=False)
+        message.tracking_settings = tracking_settings
+    
         try:
             sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
             response = sg.send(message)
@@ -142,7 +148,7 @@ def forgot_password():
 def reset_password(token):
     try:
         serializer = get_serializer()
-        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # 1 hora de validez
+        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)
     except SignatureExpired:
         return jsonify({'error': 'El enlace de restablecimiento ha expirado.'}), 400
     
