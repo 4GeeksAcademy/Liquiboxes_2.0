@@ -5,6 +5,7 @@ import { Context } from "../store/appContext";
 import { registerAndLogin } from "../component/AuthenticationUtils";
 import Confetti from 'react-confetti';
 import ModalGlobal from '../component/ModalGlobal'
+import Spinner from "../component/Spinner";
 
 
 const STEPS = [
@@ -30,7 +31,7 @@ export default function SignUp() {
   const [step, setStep] = useState(1);
   const [signupData, setSignUpData] = useState({
     name: "", surname: "", gender: "", address: "", postalCode: "",
-    email: "", password: "", upperSize: "", lowerSize: "", capSize: "", shoeSize: "",
+    email: "", password: "", confirmPassword: "", upperSize: "", lowerSize: "", capSize: "", shoeSize: "",
     notColors: [], stamps: "", fit: "", notClothes: [], categories: [], profession: "",
   });
   const [errors, setErrors] = useState({});
@@ -41,6 +42,9 @@ export default function SignUp() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [userType, setUserType] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false)
+
+
 
   const { google_data, access_token } = location.state || {};
 
@@ -87,6 +91,8 @@ export default function SignUp() {
         else if (!/\S+@\S+\.\S+/.test(signupData.email)) newErrors.email = "El email no es válido";
         if (!signupData.password) newErrors.password = "La contraseña es requerida";
         else if (signupData.password.length < 8) newErrors.password = "La contraseña debe tener al menos 8 caracteres";
+        if (!signupData.confirmPassword) newErrors.confirmPassword = "Confirma tu contraseña";
+        else if (signupData.password !== signupData.confirmPassword) newErrors.confirmPassword = "Las contraseñas no coinciden";
         break;
       case 3:
         if (!signupData.upperSize) newErrors.upperSize = "La talla superior es requerida";
@@ -255,7 +261,19 @@ export default function SignUp() {
               />
               {errors.password && <p className="signup-error-message">{errors.password}</p>}
             </div>
-            {/* TODO: METER DOBLE CAMPO DE CONTRASEÑA */}
+            <div className="signup-input-group">
+              <label htmlFor="confirmPassword">Confirmar Contraseña</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={signupData.confirmPassword || ''}
+                onChange={handleChange}
+                placeholder="Confirmar Contraseña"
+                className="signup-input"
+              />
+              {errors.confirmPassword && <p className="signup-error-message">{errors.confirmPassword}</p>}
+            </div>
           </div>
         );
       case 3:
@@ -455,6 +473,8 @@ export default function SignUp() {
     }
   };
 
+  if (loading) return <Spinner />
+
   return (
     <div className="signup-container">
       <div className="signup-content">
@@ -470,11 +490,12 @@ export default function SignUp() {
           <p className="signup-step-description">{STEPS[step - 1].description}</p>
         </div>
         <div className="signup-form-section">
-          {step > 1 && (
-            <button className="signup-back-button" onClick={() => setStep(prev => prev - 1)}>
-              ←
-            </button>
-          )}
+          <button
+            className="signup-back-button"
+            onClick={() => step === 1 ? navigate('/') : setStep(prev => prev - 1)}
+          >
+            ←
+          </button>
           <form onSubmit={handleSubmit} noValidate>
             {renderStep()}
             <div className="signup-navigation-buttons">

@@ -1,16 +1,26 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, url_for, current_app
 from flask_jwt_extended import create_access_token
-from api.models import User, Shop
+from api.models import User, Shop, db
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import os
 import logging
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, TrackingSettings, ClickTracking
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+from datetime import timedelta
+import base64
+
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-
 auth = Blueprint('auth', __name__)
+
+# Configuración del serializador para el token
+def get_serializer():
+    return URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+
 
 GOOGLE_CLIENT_ID = os.getenv("REACT_APP_ID_CLIENTE_GOOGLE")
 
@@ -98,3 +108,32 @@ def google_login():
     except Exception as e:
         logging.error(f"Error inesperado: {str(e)}")
         return jsonify({'error': 'Error del servidor', 'details': str(e)}), 500
+    
+@auth.route('/reset-password/<token>', methods=['POST'])
+def reset_password(token):
+    try:
+        # Decodifica el token de base64
+        decoded_token = base64.urlsafe_b64decode(token.encode()).decode()
+        
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        email = serializer.loads(decoded_token, salt='password-reset-salt', max_age=3600)  # 1 hora de validez
+        
+        new_password = request.json.get('new_password')
+        
+        if len(new_password) < 8:
+            return jsonify({'error': 'La nueva contraseña debe tener al menos 8 caracteres.'}), 400
+        
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            user = Shop.query.filter_by(email=email).first()
+        
+        if user:
+            user.set_password(new_password)
+            db.session.commit()
+            return jsonify({'message': 'Tu contraseña ha sido actualizada correctamente.'}), 200
+        else:
+            return jsonify({'error': 'No se encontró ninguna cuenta con ese correo electrónico.'}), 404
+    except SignatureExpired:
+        return jsonify({'error': 'El enlace de restablecimiento ha expirado.'}), 400
+    except (BadSignature, ValueError, TypeError):
+        return jsonify({'error': 'El token no es válido.'}), 400
