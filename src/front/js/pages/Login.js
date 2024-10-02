@@ -17,6 +17,8 @@ export default function Login() {
     });
     const navigate = useNavigate();
     const location = useLocation();
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
 
     useEffect(() => {
         // Guarda la ruta anterior cuando se monta el componente
@@ -131,6 +133,24 @@ export default function Login() {
         }
     };
 
+    const handleForgotPassword = async (e) => {
+        e.preventDefault();
+        setShowError(false);
+        setErrorMessage("");
+        setLoading(true);
+
+        try {
+            const response = await axios.post(`${process.env.BACKEND_URL}/auth/forgot-password`, { email: forgotPasswordEmail });
+            setShowError(true);
+            setErrorMessage(response.data.message);
+        } catch (error) {
+            setShowError(true);
+            setErrorMessage(error.response?.data?.error || "Error al enviar el correo de recuperación");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading) return < Spinner />
 
 
@@ -144,34 +164,58 @@ export default function Login() {
                 <div className="login-sections-wrapper">
                     <div className="login-form-wrapper">
                         <h2 className="login-title">Iniciar Sesión</h2>
-                        <form onSubmit={handleSubmit} className="login-form">
-                            <div className="form-group">
-                                <label htmlFor="email">Email</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={loginData.email}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="tu@email.com"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="password">Contraseña</label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    value={loginData.password}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="Tu contraseña"
-                                />
-                            </div>
-                            {showError && <div className="error-message"><strong>{errorMessage}</strong></div>}
-                            <button type="submit">Iniciar Sesión</button>
-                        </form>
+                        {!showForgotPassword ? (
+                            <form onSubmit={handleSubmit} className="login-form">
+                                <div className="form-group">
+                                    <label htmlFor="email">Email</label>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        name="email"
+                                        value={loginData.email}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="tu@email.com"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="password">Contraseña</label>
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        value={loginData.password}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="Tu contraseña"
+                                    />
+                                </div>
+                                {showError && <div className="error-message"><strong>{errorMessage}</strong></div>}
+                                <button type="submit">Iniciar Sesión</button>
+                                <button type="button" onClick={() => setShowForgotPassword(true)} className="btn btn-link">
+                                    ¿Olvidaste tu contraseña?
+                                </button>
+                            </form>
+                        ) : (
+                            <form onSubmit={handleForgotPassword} className="login-form">
+                                <div className="form-group">
+                                    <label htmlFor="forgotPasswordEmail">Email</label>
+                                    <input
+                                        type="email"
+                                        id="forgotPasswordEmail"
+                                        name="forgotPasswordEmail"
+                                        value={forgotPasswordEmail}
+                                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                                        required
+                                        placeholder="tu@email.com"
+                                    />
+                                </div>
+                                <button type="submit">Enviar correo de recuperación</button>
+                                <button type="button" onClick={() => setShowForgotPassword(false)} className="btn btn-link">
+                                    Volver al inicio de sesión
+                                </button>
+                            </form>
+                        )}
                         <div className="google-login-wrapper">
                             <GoogleLogin
                                 onSuccess={handleGoogleLogin}

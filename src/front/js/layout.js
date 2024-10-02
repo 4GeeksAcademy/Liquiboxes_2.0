@@ -4,6 +4,8 @@ import ScrollToTop from "./component/scrollToTop";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
+import ResetPassword from "./pages/ResetPassword";
+
 // Imports para las vistas de cliente
 import { Home } from "./pages/Home";
 import SignUp from "./pages/SignUp";
@@ -76,6 +78,7 @@ const Layout = () => {
                   <Route element={<Login />} path="/" />
                   <Route element={<ChooseRegistration />} path="/chooseregistration" />
                   <Route element={<SignUp />} path="/signup" />
+                  <Route path="/reset-password/:token" element={<ResetPassword />} />
 
 
 

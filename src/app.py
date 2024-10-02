@@ -22,9 +22,10 @@ from api.notifications.routes import notifications
 
 from datetime import timedelta
 
+from dotenv import load_dotenv
 
+load_dotenv()  # Esto carga las variables del archivo .env
 
-# from models import Person
 
 ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
@@ -36,8 +37,13 @@ CORS(app)
 
 app.config['JWT_SECRET_KEY'] = 'tu_clave_secreta_aqui'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=10)
-
 jwt = JWTManager(app)
+
+
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['SENDGRID_API_KEY'] = os.getenv('SENDGRID_API_KEY')
+app.config['SENDGRID_DEFAULT_FROM'] = os.getenv('SENDGRID_DEFAULT_FROM')
+
 
 @jwt.user_identity_loader
 def user_identity_lookup(user):
