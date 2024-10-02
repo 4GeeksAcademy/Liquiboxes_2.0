@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Slide, Fade, Zoom } from "react-awesome-reveal";
 import { faSearch, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import '../../../styles/searchbar.css'
 
