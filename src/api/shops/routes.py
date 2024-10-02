@@ -78,6 +78,7 @@ def register_shop():
         new_shop.set_password(data['password'])
 
         db.session.add(new_shop)
+        db.session.flush()
 
         welcome_notification = Notification(
             recipient_type='shop',

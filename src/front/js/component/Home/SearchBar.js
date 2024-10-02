@@ -89,7 +89,7 @@ export default function UltimateSearchBar({ onSearch, onCategoryChange, initialS
 
     return (
         <div className="ultimate-search-bar-container">
-            <h2 className="ultimate-search-title">Descubre Nuestras<br />Tiendas:</h2>
+            <h2 className="ultimate-search-title">Descubre Nuestras Tiendas:</h2>
             <div className={`ultimate-search-inner-container ${showSuggestions && suggestions.length > 0 ? 'showing-suggestions' : ''}`}>
                 <form className="ultimate-search-form" onSubmit={handleSubmitSearch}>
                     <div className="ultimate-search-input-group">
