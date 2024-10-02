@@ -1,13 +1,13 @@
 import React, { useContext, useState, useEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { GoogleLogin } from "@react-oauth/google";
 import { Context } from "../store/appContext";
 import Spinner from '../component/Spinner'
-import ModalGobal from '../component/ModalGlobal'
+import ModalGlobal from '../component/ModalGlobal'
 import "../../styles/login.css"
-import { Modal } from "bootstrap";
-import ModalGlobal from "../component/ModalGlobal";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function Login() {
     const { store, actions } = useContext(Context);
@@ -23,6 +23,9 @@ export default function Login() {
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
     const [showModal, setShowModal] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    
 
     useEffect(() => {
         // Guarda la ruta anterior cuando se monta el componente
@@ -40,6 +43,11 @@ export default function Login() {
             [e.target.name]: e.target.value,
         });
     };
+    
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
 
     const attemptLogin = async (loginData) => {
         try {
@@ -152,8 +160,7 @@ export default function Login() {
 
         try {
             const response = await axios.post(`${process.env.BACKEND_URL}/auth/forgot-password`, { email: forgotPasswordEmail });
-            setShowError(true);
-            setErrorMessage(response.data.message);
+
         } catch (error) {
             setShowError(true);
             setErrorMessage(error.response?.data?.error || "Error al enviar el correo de recuperación");
@@ -192,15 +199,26 @@ export default function Login() {
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="password">Contraseña</label>
-                                    <input
-                                        type="password"
-                                        id="password"
-                                        name="password"
-                                        value={loginData.password}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="Tu contraseña"
-                                    />
+                                    <div className="input-group" id="input-group-password" >
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            id="password"
+                                            name="password"
+                                            value={loginData.password}
+                                            onChange={handleChange}
+                                            className="form-control"
+                                            required
+                                            placeholder="Tu contraseña"
+                                        />
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-outline-secondary"
+                                            id="password-show-button-login"
+                                            onClick={togglePasswordVisibility}
+                                        >
+                                            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                        </button>
+                                    </div>
                                 </div>
                                 {showError && <div className="error-message"><strong>{errorMessage}</strong></div>}
                                 <button type="submit">Iniciar Sesión</button>
