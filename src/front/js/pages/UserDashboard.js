@@ -18,7 +18,8 @@ import {
   faBell,
   faShoppingBag,
   faHeadset,
-  faPowerOff
+  faPowerOff,
+  faToolbox
 } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/userdashboard.css";
 import ProfileField from '../component/Profile/ProfileField';
@@ -415,7 +416,7 @@ function UserDashboard() {
       </div>
       <div id="page-content-wrapper">
         <button className="btn" id="menu-toggle" onClick={toggleSidebar}>
-          Mostrar Panel de Control
+          Panel de Control <FontAwesomeIcon icon={faToolbox} className='ms-1'/>
         </button>
         <div className="container-fluid profile-container">
           <div className="profile-content">
