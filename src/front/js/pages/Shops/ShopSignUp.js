@@ -131,7 +131,6 @@ export default function ShopSignUp() {
     e.preventDefault();
     setErrors(null);
     setIsSubmitted(true)
-    setLoading(true)
 
     if (!validateStep()) return;
 
@@ -151,6 +150,7 @@ export default function ShopSignUp() {
       });
 
       try {
+        setLoading(true)
         const response = await registerAndLogin(`${process.env.BACKEND_URL}/shops/register`, formData);
         setUserType(response.user_type);
         setLoading(false)

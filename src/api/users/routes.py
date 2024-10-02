@@ -35,6 +35,9 @@ def register_user():
     )
     new_user.set_password(data.get('password'))
 
+    db.session.add(new_user)
+    db.session.flush()
+
     if new_user.gender == 'masculino':
         welcome = 'Bienvenido'
     elif  new_user.gender == 'femenino':
@@ -48,12 +51,12 @@ def register_user():
         recipient_type='user',
         sender_type='Admin',
         content=f'{welcome} {new_user.name} a Liquiboxes. No dudes en echarle un ojo a nuestra gran variadad de Mystery Boxes.',
-        recipient_id=new_user-id,
+        recipient_id=new_user.id,
     )
     db.session.add(new_notification)
 
     try:
-        db.session.add(new_user)
+        
         db.session.commit()
         return jsonify(new_user.serialize()), 201
     except Exception as e:

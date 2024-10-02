@@ -618,6 +618,7 @@ const ShopNotifications = () => {
       case 'contact_support':
       case 'contact_shop':
       case 'contact_user':
+      case 'welcome_notification':
         return (
           <div className="message-details">
             <h3 className="notification-title">
