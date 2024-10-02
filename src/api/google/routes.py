@@ -7,7 +7,7 @@ import os
 import logging
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, TrackingSettings, ClickTracking
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from datetime import timedelta
 import base64
 
@@ -109,6 +109,64 @@ def google_login():
         logging.error(f"Error inesperado: {str(e)}")
         return jsonify({'error': 'Error del servidor', 'details': str(e)}), 500
     
+@auth.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    email = request.json.get('email')
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = Shop.query.filter_by(email=email).first()
+    
+    if user:
+        # Genera el token
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        token = serializer.dumps(email, salt='password-reset-salt')
+        
+        # Codifica el token en base64
+        encoded_token = base64.urlsafe_b64encode(token.encode()).decode()
+        
+        # Genera la URL de restablecimiento
+        reset_url = url_for('auth.reset_password', token=encoded_token, _external=True)
+        
+        # Prepara el correo electrónico
+        message = Mail(
+            from_email=current_app.config['SENDGRID_DEFAULT_FROM'],
+            to_emails=email,
+            subject='Restablecimiento de contraseña',
+            html_content=f'<strong>Para restablecer tu contraseña, visita el siguiente enlace:</strong><br>'
+                         f'<a href="{reset_url}">Haga click aquí para restablecer la contraseña</a><br>'
+                         f'<p>Este enlace es válido por <strong>1</strong> hora.</p>'
+        )
+        
+        try:
+            # Envía el correo electrónico usando SendGrid
+            sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+            response = sg.send(message)
+            
+            # Log de la respuesta de SendGrid (opcional)
+            current_app.logger.info(f"SendGrid response status code: {response.status_code}")
+            
+            return jsonify({
+                'message': 'Se ha enviado un correo electrónico con instrucciones para restablecer tu contraseña.',
+                'status': 'success'
+            }), 200
+        
+        except Exception as e:
+            # Log del error (muy importante para debugging)
+            current_app.logger.error(f"Error al enviar el correo: {str(e)}")
+            
+            return jsonify({
+                'message': 'Hubo un error al enviar el correo electrónico. Por favor, inténtalo de nuevo más tarde.',
+                'status': 'error'
+            }), 500
+    
+    else:
+        # No revelar si el email existe o no por razones de seguridad
+        return jsonify({
+            'message': 'Si existe una cuenta con ese correo electrónico, recibirás instrucciones para restablecer tu contraseña.',
+            'status': 'success'
+        }), 200
+
+# Asegúrate de tener también la ruta para reset_password
 @auth.route('/reset-password/<token>', methods=['POST'])
 def reset_password(token):
     try:
@@ -133,6 +191,7 @@ def reset_password(token):
             return jsonify({'message': 'Tu contraseña ha sido actualizada correctamente.'}), 200
         else:
             return jsonify({'error': 'No se encontró ninguna cuenta con ese correo electrónico.'}), 404
+    
     except SignatureExpired:
         return jsonify({'error': 'El enlace de restablecimiento ha expirado.'}), 400
     except (BadSignature, ValueError, TypeError):
