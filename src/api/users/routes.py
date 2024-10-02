@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
-from api.models import db, User
+from api.models import db, User, Notification
 from marshmallow import Schema, fields, validate
 import json
 
@@ -34,6 +34,23 @@ def register_user():
         profession=data.get('profession')
     )
     new_user.set_password(data.get('password'))
+
+    if new_user.gender == 'masculino':
+        welcome = 'Bienvenido'
+    elif  new_user.gender == 'femenino':
+        welcome = 'Bienvenida'
+    else:
+        welcome = 'Bienvenide'
+
+
+    new_notification = Notification(
+        type='welcome_notification',
+        recipient_type='user',
+        sender_type='Admin',
+        content=f'{welcome} {new_user.name} a Liquiboxes. No dudes en echarle un ojo a nuestra gran variadad de Mystery Boxes.',
+        recipient_id=new_user-id,
+    )
+    db.session.add(new_notification)
 
     try:
         db.session.add(new_user)

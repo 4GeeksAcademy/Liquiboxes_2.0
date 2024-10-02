@@ -81,7 +81,8 @@ def register_shop():
 
         welcome_notification = Notification(
             recipient_type='shop',
-            sender_type='platform',
+            recipient_id=new_shop.id,
+            sender_type='Admin',
             shop_id=new_shop.id,
             type="welcome_notification",
             content=f"Te damos la bienvenida a Liquiboxes {new_shop.owner_name}, tu tienda {new_shop.name} ha sido registrada. No dudes en crear tu primera mystery box. Si tienes cualquier duda contactanos en la pestaña de Contacto con soporte que tienes en el menú lateral.",
@@ -112,14 +113,14 @@ def register_shop():
 def create_mystery_box():
     current_user = get_jwt_identity()
     if current_user['type'] != 'shop':
-        return jsonify({'error': 'You should have login as a shop'}), 403
+        return jsonify({'error': 'Deberías estar registrado como una tienda'}), 403
 
     data = request.form
     
     try:
         shop = Shop.query.get(current_user['id'])
         if not shop:
-            return jsonify({'error': 'Shop not found'}), 404
+            return jsonify({'error': 'Lo sentimos no hemos encontrado esta tienda'}), 404
 
         image_file = request.files.get('image')
         if not image_file:
@@ -173,18 +174,14 @@ def get_shop(shop_id):
     
 @shops.route('/<int:shop_id>/mysteryboxes', methods=['GET'])
 def get_shop_mystery_boxes(shop_id):
-    print(f"Received request for shop_id: {shop_id}")
-    print(f"Request headers: {request.headers}")
     
     shop = Shop.query.get(shop_id)
     if shop:
         mystery_boxes = MysteryBox.query.filter_by(shop_id=shop_id).all()
         result = [box.serialize_for_card() for box in mystery_boxes]
-        print(f"Returning {len(result)} mystery boxes for shop {shop_id}")
         return jsonify(result), 200
     else:
-        print(f"Shop {shop_id} not found")
-        return jsonify({'error': 'Shop not found'}), 404      
+        return jsonify({'error': 'Tienda no encontrada'}), 404      
      
 
 @shops.route('/mystery-box/<int:box_id>', methods=['GET'])
@@ -200,7 +197,7 @@ def get_mystery_box(box_id):
 def get_shop_profile():
     current_user = get_jwt_identity()
     if current_user['type'] != 'shop':
-        return jsonify({"error": "Unauthorized. Only shops can access this profile."}), 403
+        return jsonify({"error": "No autorizado. Solo las tiendas pueden utilzar este recurso."}), 403
     
     try:
         shop = Shop.query.get(current_user['id'])
@@ -210,13 +207,12 @@ def get_shop_profile():
     
     except SQLAlchemyError as e:
         logging.error(f"Database error: {str(e)}")
-        return jsonify({'error': 'Database error occurred'}), 500
+        return jsonify({'error': 'Error en la base de datos'}), 500
 
 @shops.route('/profile', methods=['PATCH'])
 @jwt_required()
 def update_shop_profile():
     current_user = get_jwt_identity()
-    print(f"Current user from token: {current_user}")  # Add this line for debugging
 
     if current_user['type'] != 'shop':
         return jsonify({'error': 'You must be logged in as a shop'}), 403
