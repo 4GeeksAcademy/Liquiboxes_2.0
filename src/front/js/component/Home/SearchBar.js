@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Slide, Fade, Zoom, Bounce, } from "react-awesome-reveal";
 import { faSearch, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import '../../../styles/searchbar.css'
 
@@ -25,7 +26,7 @@ export default function UltimateSearchBar({ onSearch, onCategoryChange, initialS
     const handleInputSearch = useCallback((event) => {
         const value = event.target.value;
         setSearch(value);
-        
+
         if (value.length > 0 && shops.length > 0) {
             const normalizedValue = normalizeString(value);
             const filteredSuggestions = shops.filter(shop =>
@@ -89,7 +90,9 @@ export default function UltimateSearchBar({ onSearch, onCategoryChange, initialS
 
     return (
         <div className="ultimate-search-bar-container">
-            <h2 className="ultimate-search-title">Descubre Nuestras Tiendas:</h2>
+            <Zoom cascade triggerOnce>
+                <h2 className="ultimate-search-title">Descubre Nuestras Tiendas:</h2>
+            </Zoom >
             <div className={`ultimate-search-inner-container ${showSuggestions && suggestions.length > 0 ? 'showing-suggestions' : ''}`}>
                 <form className="ultimate-search-form" onSubmit={handleSubmitSearch}>
                     <div className="ultimate-search-input-group">

@@ -137,25 +137,70 @@ button:disabled {
   color: #555;
 }
 
-textarea {
-  width: 100%;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  resize: vertical;
-}
-
 textarea:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
   outline: none;
 }
 
-.carouselbg{
-  background-color: rgba(240, 234, 234, 0.697); /* Carousel de home*/
+
+/*Estilos del carousel que esta en Home*/
+.carouselbg {
   color: #073b3a;
   border-radius: 5px;
+  text-align: center;
+  padding: 5px;
+  backdrop-filter: blur(8px);
 }
+.carouselbg h3 {
+  font-size: 2rem; 
+}
+
+.carouselbg p {
+  font-size: 1rem;
+}
+
+@media (max-width: 992px) {
+  .carouselbg h3 {
+    font-size: 1.5rem; 
+  }
+
+  .carouselbg p {
+    font-size: 0.9rem;
+  }
+}
+/*pantallas medianas*/
+@media (max-width: 768px) {
+  .carouselbg h3 {
+    font-size: 1.2rem; 
+  }
+
+  .carouselbg p {
+    font-size: 0.8rem;
+  }
+    .carouselbg {
+    height: 60px; 
+    backdrop-filter: blur(6px); 
+  }
+}
+ /*pantallas moviles*/
+@media (max-width: 576px) {
+  .carouselbg h3 {
+    font-size: 1rem; 
+  }
+
+  .carouselbg p {
+    font-size: 0.7rem;
+  }
+
+  .carouselbg {
+    height: 65px; 
+    backdrop-filter: blur(4px);
+}
+
+img {
+  max-height: 100%; 
+  object-fit: cover; 
+}
+
+}  
