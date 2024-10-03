@@ -9,7 +9,7 @@ function CarruselTopSellers({ shopData }) {
     };
 
     return (
-        <div className="container">
+        <div className="container-fluid"> 
             <Carousel fade>
                 {shopData.map((shop, index) => (
                     <Carousel.Item key={shop.id}>
@@ -34,4 +34,5 @@ function CarruselTopSellers({ shopData }) {
         </div>
     );
 }
-export default CarruselTopSellers
+
+export default CarruselTopSellers;
