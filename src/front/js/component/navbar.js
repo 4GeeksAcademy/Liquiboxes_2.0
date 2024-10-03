@@ -6,7 +6,7 @@ import { faShoppingCart, faBars, faHome } from "@fortawesome/free-solid-svg-icon
 import "../../styles/navbar.css"
 
 export const Navbar = () => {
-    const { store } = useContext(Context);
+    const { store, actions } = useContext(Context);
     const [cartItemCount, setCartItemCount] = useState(0);
     const [isNavCollapsed, setIsNavCollapsed] = useState(true);
     const location = useLocation();
@@ -17,7 +17,7 @@ export const Navbar = () => {
     useEffect(() => {
         const totalItems = Object.values(store.cart).reduce((total, item) => total + item.quantity, 0);
         setCartItemCount(totalItems);
-    }, [store.cart]);
+    }, [actions]);
 
     useEffect(() => {
         setToken(access_token)
