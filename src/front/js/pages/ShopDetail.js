@@ -42,7 +42,7 @@ export default function ShopDetail() {
       {/* Pasa el estado y la función a SwitchButtons */}
       <SwitchButtons boxVisible={boxVisible} setBoxVisible={setBoxVisible} />
 
-      <div className="container">
+      <div className="container mt-4">
         {/* Renderiza las mystery boxes solo si boxVisible es true */}
         {boxVisible && mysteryBoxes && (
           <div className="row">
@@ -56,13 +56,13 @@ export default function ShopDetail() {
           </div>
         )}
 
-      {/* Renderiza las VALORACIONES */}
-      {!boxVisible && (
-        <div>
-          <RatingSystem />
-        </div>
-      )}
-    </div>
+        {/* Renderiza las VALORACIONES */}
+        {!boxVisible && (
+          <div>
+            <RatingSystem />
+          </div>
+        )}
+      </div>
 
     </main >
   );

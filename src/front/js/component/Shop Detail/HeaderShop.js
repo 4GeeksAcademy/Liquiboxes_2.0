@@ -10,7 +10,7 @@ function HeaderShop({ data }) {
   const categories = formatCategories(data.categories);
 
   return (
-    <div className="header-shop-container">
+    <div className="header-shop-container mb-3">
       <div className="header-shop-card">
         <div className="header-shop-image">
           <img src={data.image_shop_url} alt={data.name} />
@@ -18,22 +18,8 @@ function HeaderShop({ data }) {
         <div className="header-shop-content">
           <h1 className="shop-name">{data.name}</h1>
           <p className="shop-summary">{data.shop_summary}</p>
-          
+
           <div className="shop-details">
-            <div className="detail-item">
-              <i className="fas fa-map-marker-alt"></i>
-              <div>
-                <strong>Dirección</strong>
-                <p>{data.address}</p>
-              </div>
-            </div>
-            <div className="detail-item">
-              <i className="fas fa-envelope"></i>
-              <div>
-                <strong>Correo electrónico</strong>
-                <p>{data.email}</p>
-              </div>
-            </div>
             <div className="detail-item">
               <i className="fas fa-building"></i>
               <div>
@@ -46,6 +32,13 @@ function HeaderShop({ data }) {
               <div>
                 <strong>Propietario</strong>
                 <p>{data.owner_name} {data.owner_surname}</p>
+              </div>
+            </div>
+            <div className="detail-item">
+              <i className="fas fa-map-marker-alt"></i>
+              <div>
+                <strong>Dirección</strong>
+                <p>{data.address}</p>
               </div>
             </div>
           </div>

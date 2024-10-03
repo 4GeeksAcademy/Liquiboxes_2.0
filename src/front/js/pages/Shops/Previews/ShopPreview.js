@@ -11,7 +11,6 @@ import { faBoxOpen, faStar } from '@fortawesome/free-solid-svg-icons'; // Import
 
 export default function ShopPreview() {
   const [mysteryBoxes, setMysteryBoxes] = useState([]);
-  const [boxVisible, setBoxVisible] = useState(true);  // Maneja el estado entre cajas y valoraciones
   const { store, actions } = useContext(Context);
   const { id } = useParams();  // ID de la tienda
   const navigate = useNavigate()
@@ -70,9 +69,8 @@ export default function ShopPreview() {
         </div>
       </div>
 
-      <div className="mb-5">
+      <div className="mb-5 mt-4">
         {/* Renderiza las mystery boxes solo si boxVisible es true */}
-        {boxVisible && mysteryBoxes && (
           <div className='row mx-5'>
             {mysteryBoxes.map((mysterybox) => {
               return (
@@ -82,7 +80,6 @@ export default function ShopPreview() {
               );
             })}
           </div>
-        )}
 
       </div>
 

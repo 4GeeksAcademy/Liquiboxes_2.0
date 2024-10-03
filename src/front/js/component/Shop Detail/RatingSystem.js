@@ -65,7 +65,7 @@ const RatingSystem = () => {
   };
 
   return (
-    <div className="container my-5">
+    <div className="container">
       {/* <div className="text-center mb-4">
         <h2 className="mb-3">Valora tu experiencia</h2>
         <RatingStar rating={currentRating} setRating={setCurrentRating} />
