@@ -312,7 +312,7 @@ const ShopNotifications = () => {
       // Confirmar el pedido
       const orderConfirmation = await axios.post(
         `${process.env.BACKEND_URL}/sales/shop/${orderDetails.id}/confirm`,
-        {}, 
+        {},
         {
           headers: {
             Authorization: `Bearer ${sessionStorage.getItem('token')}`
@@ -331,11 +331,15 @@ const ShopNotifications = () => {
         // Generar y descargar el PDF
         generatePDF(shipmentResponse.data, shopSaleId);
 
+        setIsModalOpen(false)
+
         // Mostrar mensaje de éxito
         showModalGlobal('Éxito', '¡Pedido confirmado con éxito!');
 
-        setIsModalOpen(false)
-        // Opcionalmente, actualizar la lista de notificaciones
+        // Eliminar la notificación actual
+        await handleDeleteNotificaction(selectedNotification.id);
+
+        // Actualizar la lista de notificaciones
         fetchNotifications();
       } else {
         throw new Error('La confirmación del pedido no fue exitosa');
@@ -966,7 +970,7 @@ const ShopNotifications = () => {
         body={modalGlobalContent.body}
         buttonBody="Cerrar"
       />
-      
+
     </div>
   );
 };
