@@ -83,11 +83,10 @@ const PayingForm = () => {
     fetchCartData();
   }, []);
 
-  const showModal = (title, body) => {
-    setModalContent({ title, body });
+  const showModal = (title, body, onClose) => {
+    setModalContent({ title, body, onClose });
     setModalOpen(true);
   };
-
   const handleStripePaymentSuccess = async (paymentIntentId) => {
     try {
       const token = sessionStorage.getItem('token');
@@ -114,26 +113,20 @@ const PayingForm = () => {
         }
       );
 
+      showModal('Compra Exitosa', 'Compra realizada con éxito. ID de la venta: ' + response.data.sale_id, () => {
+        // Limpiar el carrito
+        localStorage.removeItem("cart");
+        localStorage.removeItem("cartWithDetails");
+        actions.clearCart();
 
-      showModal('Compra Exitosa', 'Compra realizada con éxito. ID de la venta: ' + response.data.sale_id);
+        // Actualizar estado local
+        setCheckoutCart([]);
+        setTotal(0);
 
-      // Forzar limpieza de localStorage
-      localStorage.removeItem("cart");
-      localStorage.removeItem("cartWithDetails");
-
-      // Actualizar estado local
-      setCheckoutCart([]);
-      setTotal(0);
-
-
-      // Verificar una última vez antes de navegar
-      if (Object.keys(store.cart).length === 0) {
-        navigate("/userdashboard");
-      }
-      else {
+        // Navegar y recargar
         navigate("/userdashboard");
         window.location.reload();
-      }
+      });
 
     } catch (err) {
       const errorMessage = err.response?.data?.error || err.message;
@@ -280,7 +273,12 @@ const PayingForm = () => {
 
       <ModalGlobal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false);
+          if (modalContent.onClose) {
+            modalContent.onClose();
+          }
+        }}
         title={modalContent.title}
         body={modalContent.body}
         buttonBody="Cerrar"
