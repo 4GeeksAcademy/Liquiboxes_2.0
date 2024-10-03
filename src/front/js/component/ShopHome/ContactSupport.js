@@ -77,7 +77,7 @@ const ContactSupport = () => {
     console.log("Tipo de usuario", userType)
     setIsModalSuccessOpen(false);
     if (userType === 'user') {
-      navigate('/home');
+      navigate('/userdashboard');
       return
     }
     else {

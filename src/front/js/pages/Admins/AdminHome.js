@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Table, Button, Modal, Form, Tab, Tabs } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faStar } from '@fortawesome/free-solid-svg-icons';
@@ -8,6 +8,7 @@ import '../../../styles/admins/adminhome.css';
 import ModalToken from '../../component/Modals/ModalToken';
 import ModalType from '../../component/Modals/ModalType';
 import ModalGlobal from '../../component/ModalGlobal';
+import { useNavigate } from 'react-router-dom';
 
 const AdminHome = () => {
   const [admins, setAdmins] = useState([]);
@@ -17,6 +18,7 @@ const AdminHome = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showTypeModal, setShowTypeModal] = useState(false);
+  const navigate = useNavigate()
   const [modalGlobalOpen, setModalGlobalOpen] = useState(false);
   const [modalGlobalContent, setModalGlobalContent] = useState({
     title: '',
@@ -214,6 +216,16 @@ const AdminHome = () => {
               ))}
             </tbody>
           </Table>
+        </Tab>
+        <Tab eventKey="close" title="Log Out">
+          <Button variant="danger" onClick={() => {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('userData');
+            sessionStorage.removeItem('userType');
+            navigate('/')
+          }}>
+            Log out
+          </Button>
         </Tab>
       </Tabs>
 

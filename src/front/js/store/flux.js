@@ -109,6 +109,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
             logout: () => {
                 sessionStorage.removeItem('token');
+                sessionStorage.removeItem('userData');
                 sessionStorage.removeItem('userType');
                 setStore({
                     userData: null,
