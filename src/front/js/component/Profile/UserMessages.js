@@ -5,6 +5,7 @@ import { faBell, faEnvelope, faEnvelopeOpen, faList, faUser, faStore, faHeadset,
 import { Modal, Button, Form, Table } from 'react-bootstrap';
 import '../../../styles/usermessages.css';
 import Spinner from '../Spinner';
+import ModalGlobal from '../ModalGlobal';
 
 const UserMessages = () => {
     const [messages, setMessages] = useState([]);
@@ -16,6 +17,8 @@ const UserMessages = () => {
     const [messagesPerPage] = useState(10);
     const [replyMessage, setReplyMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [modalGlobalOpen, setModalGlobalOpen] = useState(false);
+    const [modalGlobalContent, setModalGlobalContent] = useState({ title: '', body: '' });
 
     const messageConfig = {
         contact_support: { label: 'Soporte', icon: faHeadset },
@@ -35,7 +38,7 @@ const UserMessages = () => {
             });
             setMessages(response.data.filter(msg => ['contact_support', 'contact_shop', 'contact_user'].includes(msg.type)));
         } catch (error) {
-            console.error('Error fetching messages:', error);
+            showModalGlobal('Error', 'No se pudieron cargar los mensajes. Por favor, inténtalo de nuevo.');
         } finally {
             setTimeout(() => setIsLoading(false), 500);
         }
@@ -50,6 +53,11 @@ const UserMessages = () => {
     useEffect(() => {
         filterMessages();
     }, [messages, filter]);
+
+    const showModalGlobal = useCallback((title, body) => {
+        setModalGlobalContent({ title, body });
+        setModalGlobalOpen(true);
+    }, []);
 
     const filterMessages = useCallback(() => {
         let filtered = messages;
@@ -97,7 +105,7 @@ const UserMessages = () => {
         if (results.every(result => result)) {
             setMessages(prevMessages => prevMessages.map(m => ({ ...m, is_read: true })));
         } else {
-            console.error('Some messages could not be marked as read');
+            showModalGlobal('Error', 'Algunos mensajes no se pudieron marcar como leídos. Por favor, inténtalo de nuevo.');
         }
         fetchMessages();
     }, [messages, markMessageAsRead, fetchMessages]);
@@ -111,7 +119,7 @@ const UserMessages = () => {
                 content: replyMessage,
                 saleId: selectedMessage.sale_id,
                 recipientId: selectedMessage.shop_id,
-                shopId:  selectedMessage.shop_id,
+                shopId: selectedMessage.shop_id,
                 recipientType: selectedMessage.sender_type,
                 type: selectedMessage.type,
                 message: replyMessage
@@ -122,7 +130,7 @@ const UserMessages = () => {
             setIsModalOpen(false);
             fetchMessages();
         } catch (error) {
-            console.error('Error sending reply:', error);
+            showModalGlobal('Error', 'No se pudo enviar la respuesta. Por favor, inténtalo de nuevo.');
         }
     }, [selectedMessage, replyMessage, fetchMessages]);
 
@@ -260,6 +268,14 @@ const UserMessages = () => {
                     <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cerrar</Button>
                 </Modal.Footer>
             </Modal>
+
+            <ModalGlobal
+                isOpen={modalGlobalOpen}
+                onClose={() => setModalGlobalOpen(false)}
+                title={modalGlobalContent.title}
+                body={modalGlobalContent.body}
+                buttonBody="Cerrar"
+            />
         </div>
     );
 };

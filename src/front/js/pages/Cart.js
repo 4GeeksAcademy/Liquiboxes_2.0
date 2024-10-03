@@ -7,6 +7,7 @@ import { faShoppingCart, faCreditCard } from '@fortawesome/free-solid-svg-icons'
 import "../../styles/cart.css"
 import Spinner from '../component/Spinner';
 import NotType from '../component/Utils/NotType';
+import ModalGlobal from '../component/ModalGlobal';
 
 
 
@@ -15,6 +16,8 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', body: '' });
 
   useEffect(() => {
     setLoading(true);
@@ -36,6 +39,11 @@ const Cart = () => {
       window.removeEventListener('storage', syncCartWithLocalStorage);
     };
   }, []);
+
+  const showModal = (title, body) => {
+    setModalContent({ title, body });
+    setModalOpen(true);
+  };
 
   const { cartItemsArray, isCartEmpty, total } = useMemo(() => {
     const cartItems = store.cartWithDetails || {};
@@ -80,7 +88,7 @@ const Cart = () => {
       }, {}));
     } catch (err) {
       console.error("Error fetching cart details:", err);
-      setError("No se pudieron cargar los detalles del carrito. Por favor, intente de nuevo.");
+      showModal("Error", "No se pudieron cargar los detalles del carrito. Por favor, intente de nuevo.");
       setLoading(false);
     }
   };
@@ -111,7 +119,8 @@ const Cart = () => {
   }
 
   if (error) {
-    return <div className="alert alert-danger">{error}</div>;
+    showModal("Error", error);
+    return null;
   }
 
   return (
@@ -156,6 +165,14 @@ const Cart = () => {
           </div>
         </>
       )}
+
+      <ModalGlobal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
+        body={modalContent.body}
+        buttonBody="Cerrar"
+      />
 
       <NotType user_or_shop='user' />
 

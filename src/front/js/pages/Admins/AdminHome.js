@@ -7,6 +7,7 @@ import AdminNotifications from '../../component/Admin Home/AdminNotifications';
 import '../../../styles/admins/adminhome.css';
 import ModalToken from '../../component/Modals/ModalToken';
 import ModalType from '../../component/Modals/ModalType';
+import ModalGlobal from '../../component/ModalGlobal';
 
 const AdminHome = () => {
   const [admins, setAdmins] = useState([]);
@@ -16,15 +17,27 @@ const AdminHome = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [showTypeModal, setShowTypeModal] = useState(false);
+  const [modalGlobalOpen, setModalGlobalOpen] = useState(false);
+  const [modalGlobalContent, setModalGlobalContent] = useState({
+    title: '',
+    body: '',
+    buttonBody: 'Cerrar',
+    onClick: null
+  });
 
   useEffect(() => {
     checkAuthorization();
   }, []);
-  
+
+  const showModalGlobal = (title, body, buttonBody = 'Cerrar', onClick = null) => {
+    setModalGlobalContent({ title, body, buttonBody, onClick });
+    setModalGlobalOpen(true);
+  };
+
   const checkAuthorization = () => {
     const token = sessionStorage.getItem('token');
     const userType = sessionStorage.getItem('userType');
-    
+
     if (!token) {
       setShowTokenModal(true);
     } else if (userType !== 'SuperAdmin' && userType !== 'Admin') {
@@ -54,24 +67,30 @@ const AdminHome = () => {
         setAdmins([]);
       }
     } catch (error) {
-      console.error('Error fetching admins:', error);
+      showModalGlobal('Error', 'Failed to fetch admins. Please try again.');
       setAdmins([]);
     }
   };
 
-  const handleDelete = async (adminId) => {
-    if (window.confirm('Are you sure you want to delete this admin?')) {
-      try {
-        await axios.delete(`${process.env.BACKEND_URL}/admins/${adminId}`, {
-          headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-          }
-        });
-        fetchAdmins();
-      } catch (error) {
-        console.error('Error deleting admin:', error);
+  const handleDelete = (adminId) => {
+    showModalGlobal(
+      'Confirm Delete',
+      'Are you sure you want to delete this admin?',
+      'Delete',
+      async () => {
+        try {
+          await axios.delete(`${process.env.BACKEND_URL}/admins/${adminId}`, {
+            headers: {
+              'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+            }
+          });
+          fetchAdmins();
+          setModalGlobalOpen(false);
+        } catch (error) {
+          showModalGlobal('Error', 'No se pudo eliminar el administrador. Por favor, inténtalo de nuevo.');
+        }
       }
-    }
+    );
   };
 
   const handleToggleSuperuser = async (adminId) => {
@@ -83,7 +102,7 @@ const AdminHome = () => {
       });
       fetchAdmins();
     } catch (error) {
-      console.error('Error toggling superuser status:', error);
+      showModalGlobal('Error', 'Failed to toggle superuser status. Please try again.');
     }
   };
 
@@ -107,7 +126,7 @@ const AdminHome = () => {
         ? `${process.env.BACKEND_URL}/admins/${currentAdmin.id}`
         : `${process.env.BACKEND_URL}/admins`;
       const method = currentAdmin ? 'put' : 'post';
-      
+
       const response = await axios({
         method: method,
         url: url,
@@ -122,13 +141,12 @@ const AdminHome = () => {
       setShowModal(false);
       fetchAdmins();
     } catch (error) {
-      console.error('Error saving admin:', error);
       if (error.response) {
-        setError(error.response.data.error || 'An unknown error occurred');
+        showModalGlobal('Error', error.response.data.error || 'An unknown error occurred');
       } else if (error.request) {
-        setError('No response received from the server. Please try again.');
+        showModalGlobal('Error', 'No response received from the server. Please try again.');
       } else {
-        setError('An error occurred while sending the request. Please try again.');
+        showModalGlobal('Error', 'An error occurred while sending the request. Please try again.');
       }
     }
   };
@@ -257,6 +275,15 @@ const AdminHome = () => {
           </Form>
         </Modal.Body>
       </Modal>
+
+      <ModalGlobal
+        isOpen={modalGlobalOpen}
+        onClose={() => setModalGlobalOpen(false)}
+        title={modalGlobalContent.title}
+        body={modalGlobalContent.body}
+        buttonBody={modalGlobalContent.buttonBody}
+        onClick={modalGlobalContent.onClick}
+      />
     </div>
   );
 };

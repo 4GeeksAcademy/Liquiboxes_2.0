@@ -7,6 +7,7 @@ import '../../styles/mysteryboxdetail.css';
 import RatingSystem from '../component/Shop Detail/RatingSystem';
 import Spinner from '../component/Spinner';
 import NotType from '../component/Utils/NotType';
+import ModalGlobal from '../component/ModalGlobal';
 
 function MysteryBoxDetail() {
   const { store, actions } = useContext(Context);
@@ -15,6 +16,8 @@ function MysteryBoxDetail() {
   const navigate = useNavigate();
   const token = sessionStorage.getItem('token')
   const [loading, setLoading] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', body: '' });
 
 
 
@@ -35,10 +38,20 @@ function MysteryBoxDetail() {
 
   const handleAddToCart = () => {
     actions.addToCart(id);
+    setModalContent({
+      title: 'Añadido al carrito',
+      body: `${mysteryBox.name} añadida al carrito. Para seguir comprando cierra este mensaje.`
+    });
+    setModalOpen(true);
   };
 
   const handleCloseError = () => {
     navigate('/home');
+  };
+
+  const handleModalAction = () => {
+    setModalOpen(false);
+    navigate('/cart');
   };
 
   const handleBuyNow = async (id) => {
@@ -54,7 +67,11 @@ function MysteryBoxDetail() {
       }
     } catch (error) {
       console.error('Error en Comprar Ya:', error);
-      alert('No se ha podido utilizar Comprar Ya: ' + error.message);
+      setModalContent({
+        title: "Error",
+        body: 'No se ha podido utilizar Comprar Ya: ' + error.message
+      });
+      setModalOpen(true);
     }
   };
 
@@ -164,6 +181,15 @@ function MysteryBoxDetail() {
       <div className="row reviews-section mt-1 mt-md-4">
         <RatingSystem />
       </div>
+
+      <ModalGlobal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
+        body={modalContent.body}
+        buttonBody="Ir al carrito"
+        onClick={handleModalAction}
+      />
 
       <NotType user_or_shop='user' />
 

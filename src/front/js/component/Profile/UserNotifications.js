@@ -5,6 +5,7 @@ import { faBell, faEnvelope, faEnvelopeOpen, faList, faShoppingCart, faCheck, fa
 import { Modal, Button, Table } from 'react-bootstrap';
 import '../../../styles/usernotifications.css';
 import Spinner from '../Spinner';
+import ModalGlobal from '../ModalGlobal';
 
 const UserNotifications = () => {
     const [notifications, setNotifications] = useState([]);
@@ -15,6 +16,8 @@ const UserNotifications = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [notificationsPerPage] = useState(10);
     const [isLoading, setIsLoading] = useState(true);
+    const [modalGlobalOpen, setModalGlobalOpen] = useState(false);
+    const [modalGlobalContent, setModalGlobalContent] = useState({ title: '', body: '' });
 
 
     useEffect(() => {
@@ -28,6 +31,11 @@ const UserNotifications = () => {
             filterNotifications();
         }
     }, [notifications, filter, isLoading]);
+
+    const showModalGlobal = (title, body) => {
+        setModalGlobalContent({ title, body });
+        setModalGlobalOpen(true);
+    };
 
     const fetchNotifications = async () => {
         try {
@@ -43,7 +51,7 @@ const UserNotifications = () => {
                 setIsLoading(false);
             }, 500);
         } catch (error) {
-            console.error('Error fetching notifications:', error);
+            showModalGlobal('Error', 'No se pudieron cargar las notificaciones. Por favor, inténtalo de nuevo.');
             setIsLoading(false);
         }
     };
@@ -123,7 +131,7 @@ const UserNotifications = () => {
         if (results.every(result => result)) {
             setNotifications(notifications.map(n => ({ ...n, is_read: true })));
         } else {
-            console.error('Some notifications could not be marked as read');
+            showModalGlobal('Error', 'Algunas notificaciones no se pudieron marcar como leídas. Por favor, inténtalo de nuevo.');
         }
         fetchNotifications();
     };
@@ -196,10 +204,10 @@ const UserNotifications = () => {
             if (response.status === 200) {
                 setNotifications(notifications.filter(n => n.id !== notificationId));
             } else {
-                console.error('Error al eliminar la notificación:', response.data);
+                showModalGlobal('Error', 'No se pudo eliminar la notificación. Por favor, inténtalo de nuevo.');
             }
         } catch (error) {
-            console.error('Error al eliminar la notificación:', error);
+            showModalGlobal('Error', 'Ocurrió un error al eliminar la notificación. Por favor, inténtalo de nuevo.');
         }
     };
 
@@ -255,13 +263,13 @@ const UserNotifications = () => {
                                         )}
                                     </td>
                                     <td data-label="Acciones">
-                                        <Button  className='me-4 '//BOTON ELIMINAR NOTIFICACIONES
+                                        <Button className='me-4 '//BOTON ELIMINAR NOTIFICACIONES
                                             onClick={(e) => {
                                                 e.stopPropagation();  // Evita que se dispare el evento de click en la fila
                                                 handleDeleteNotificaction(notification.id);
                                             }}
                                         >
-                                            <FontAwesomeIcon icon={faTrashCan}/> Borrar
+                                            <FontAwesomeIcon icon={faTrashCan} /> Borrar
                                         </Button>
                                         {notification.is_read && (
                                             <Button
@@ -270,7 +278,7 @@ const UserNotifications = () => {
                                                 onClick={(e) => handleMarkAsUnread(e, notification.id)}
                                                 id="mark-as-unread"
                                             >
-                                                <FontAwesomeIcon icon={faEnvelope}/> Marcar como no léida
+                                                <FontAwesomeIcon icon={faEnvelope} /> Marcar como no léida
                                             </Button>
                                         )}
 
@@ -312,6 +320,14 @@ const UserNotifications = () => {
                     </Modal.Footer>
                 </Modal>
             </div >
+
+            <ModalGlobal
+                isOpen={modalGlobalOpen}
+                onClose={() => setModalGlobalOpen(false)}
+                title={modalGlobalContent.title}
+                body={modalGlobalContent.body}
+                buttonBody="Cerrar"
+            />
 
 
         </>

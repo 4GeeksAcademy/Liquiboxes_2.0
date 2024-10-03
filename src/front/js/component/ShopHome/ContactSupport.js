@@ -14,6 +14,8 @@ const ContactSupport = () => {
   const [isModalLoggingOpen, setIsModalLoggingOpen] = useState(false);
   const [isModalSuccessOpen, setIsModalSuccessOpen] = useState(false);
   const navigate = useNavigate();
+  const [isModalErrorOpen, setIsModalErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const storedUserType = sessionStorage.getItem('userType');
@@ -57,8 +59,13 @@ const ContactSupport = () => {
         content: ""
       });
     } catch (error) {
-      console.error(error);
+      setErrorMessage(error.response?.data?.message || 'Ha ocurrido un error al enviar el mensaje. Por favor, inténtelo de nuevo.');
+      setIsModalErrorOpen(true);
     }
+  };
+
+  const closeErrorModal = () => {
+    setIsModalErrorOpen(false);
   };
 
   const closeLoginModal = () => {
@@ -137,6 +144,14 @@ const ContactSupport = () => {
           title='Mensaje de contacto con soporte enviado'
           body='Mensaje de contacto con soporte enviado, contactaremos lo antes posible.'
           buttonBody='Volver al panel de control'
+        />
+
+        <ModalGlobal
+          isOpen={isModalErrorOpen}
+          onClose={closeErrorModal}
+          title="Error"
+          body={errorMessage}
+          buttonBody="Cerrar"
         />
       </div>
     </div>

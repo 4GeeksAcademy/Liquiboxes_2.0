@@ -5,6 +5,7 @@ import { Fade, Zoom } from 'react-awesome-reveal';
 import NotType from '../component/Utils/NotType';
 
 
+
 const AboutUs = () => {
   return (
     <div className="about-us-container">

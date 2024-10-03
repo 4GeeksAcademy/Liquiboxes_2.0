@@ -7,6 +7,7 @@ import SwitchButtons from '../component/Shop Detail/SwitchButtons';
 import RatingSystem from '../component/Shop Detail/RatingSystem';
 import Spinner from '../component/Spinner';
 import NotType from '../component/Utils/NotType';
+import ModalGlobal from '../component/ModalGlobal';
 
 
 export default function ShopDetail() {
@@ -15,12 +16,19 @@ export default function ShopDetail() {
   const { store, actions } = useContext(Context);
   const { id } = useParams();  // ID de la tienda
   const [loading, setLoading] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', body: '' });
 
   // Trae los datos de la tienda y del ID
   useEffect(() => {
     const fetchData = async () => {
-      await actions.getShopDetail(id);
-      setTimeout(() => setLoading(false), 500);
+      try {
+        await actions.getShopDetail(id);
+        setTimeout(() => setLoading(false), 500);
+      } catch (error) {
+        showModal("Error", "No se pudo cargar los detalles de la tienda. Por favor, intentelo más tarde.");
+        setLoading(false);
+      }
     };
     fetchData();
   }, [id]);
@@ -34,6 +42,11 @@ export default function ShopDetail() {
   if (store.isLoading) {
     return <div className="text-center mt-5">Cargando...</div>;
   }
+
+  const showModal = (title, body) => {
+    setModalContent({ title, body });
+    setModalOpen(true);
+  };
 
   if (loading) return <Spinner />
 
@@ -66,7 +79,15 @@ export default function ShopDetail() {
         )}
       </div>
 
-        <NotType user_or_shop = 'user' />
+      <ModalGlobal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
+        body={modalContent.body}
+        buttonBody="Cerrar"
+      />
+
+      <NotType user_or_shop='user' />
 
     </main >
   );

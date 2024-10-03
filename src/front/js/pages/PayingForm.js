@@ -27,6 +27,8 @@ const PayingForm = () => {
   const [paymentMethod, setPaymentMethod] = useState('stripe');
   const [modalPaypal, setModalPaypal] = useState(false)
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', body: '' });
 
 
   useEffect(() => {
@@ -60,7 +62,7 @@ const PayingForm = () => {
         console.log('Precio total calculado:', totalPrice);
 
         setTotal(Number(totalPrice.toFixed(2)));
-        setError(null);
+        showModal("Error", err.message);
 
         // Fetch user profile
         const token = sessionStorage.getItem('token');
@@ -81,6 +83,11 @@ const PayingForm = () => {
 
     fetchCartData();
   }, []);
+
+  const showModal = (title, body) => {
+    setModalContent({ title, body });
+    setModalOpen(true);
+  };
 
   const handleStripePaymentSuccess = async (paymentIntentId) => {
     try {
@@ -108,17 +115,8 @@ const PayingForm = () => {
         }
       );
 
-      console.log('Respuesta del backend:', response.data);
 
-      // Usar un modal en lugar de alert
-      // TODO: Implementar lógica del modal
-      console.log('Compra realizada con éxito. ID de la venta: ' + response.data.sale_id);
-
-      console.log("Carrito antes de limpiar:", store.cart);
-
-      // Limpiar el carrito en el store y en el LocalStoragge
-      actions.clearCart();
-
+      showModal('Compra Exitosa', 'Compra realizada con éxito. ID de la venta: ' + response.data.sale_id);
 
       // Forzar limpieza de localStorage
       localStorage.removeItem("cart");
@@ -128,8 +126,6 @@ const PayingForm = () => {
       setCheckoutCart([]);
       setTotal(0);
 
-      console.log("Carrito después de limpiar:", store.cart);
-      console.log("localStorage después de limpiar:", localStorage.getItem("cart"));
 
       // Verificar una última vez antes de navegar
       if (Object.keys(store.cart).length === 0) {
@@ -141,10 +137,8 @@ const PayingForm = () => {
       }
 
     } catch (err) {
-      console.error("Error completo:", err);
       const errorMessage = err.response?.data?.error || err.message;
-      console.error("Mensaje de error:", errorMessage);
-      setError("Error al procesar la compra: " + errorMessage);
+      showModal("Error", "Error al procesar la compra: " + errorMessage);
     }
   };
 
@@ -167,7 +161,7 @@ const PayingForm = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      alert('Transacción completada por ' + details.payer.name.given_name + '. ID de la venta: ' + response.data.sale_id);
+      showModal('Transacción Completada', 'Transacción completada por ' + details.payer.name.given_name + '. ID de la venta: ' + response.data.sale_id);
 
       console.log("Carrito antes de limpiar:", store.cart);
       await actions.clearCart();
@@ -181,7 +175,7 @@ const PayingForm = () => {
 
       navigate("/home");
     } catch (err) {
-      setError("Error al procesar el pago: " + err.message);
+      showModal("Error", "Error al procesar el pago: " + err.message);
     }
   };
 
@@ -284,7 +278,15 @@ const PayingForm = () => {
         body='Estamos trabajando para que nuestra plataforma cada día sea mejor y seguimos trabajando en la incorporación de PayPal a nuestros servicios de pago. Sentimos las molestias.'
         buttonBody="Cerrar"
       />
-      
+
+      <ModalGlobal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
+        body={modalContent.body}
+        buttonBody="Cerrar"
+      />
+
       <NotToken />
       <NotType user_or_shop='user' />
 

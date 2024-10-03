@@ -7,24 +7,30 @@ import '../../styles/shopssearch.css';
 import { Context } from '../store/appContext'
 import Spinner from '../component/Spinner'
 import NotType from '../component/Utils/NotType'
-
+import ModalGlobal from '../component/ModalGlobal'
 
 function ShopsSearch() {
   const [shops, setShops] = useState([])
   const [filteredShops, setFilteredShops] = useState([])
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
   const { store } = useContext(Context)
   const categories = store.categories;
 
+  // Nuevos estados para el ModalGlobal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', body: '' });
+
+  const showModal = (title, body) => {
+    setModalContent({ title, body });
+    setModalOpen(true);
+  };
 
   useEffect(() => {
     const fetchShops = async () => {
       try {
         setIsLoading(true);
-        setError(null);
 
         const url = `${process.env.BACKEND_URL}/shops`;
         console.log('Fetching shops from:', url);
@@ -55,7 +61,7 @@ function ShopsSearch() {
       } catch (error) {
         console.error("Error fetching shops:", error);
         console.error("Error details:", error.response || error.message);
-        setError("No se pudieron cargar las tiendas. Por favor, intente más tarde.");
+        showModal("Error", "No se pudieron cargar las tiendas. Por favor, intente más tarde.");
         setShops([]);
         setFilteredShops([]);
       } finally {
@@ -78,6 +84,10 @@ function ShopsSearch() {
       (shop.address && normalizeString(shop.address).includes(normalizedSearchTerm))
     );
     setFilteredShops(filtered);
+    
+    if (filtered.length === 0) {
+      showModal("Sin resultados", "No se encontraron tiendas que coincidan con tu búsqueda.");
+    }
   };
 
   const handleCategoryChange = (selectedCategories) => {
@@ -90,14 +100,14 @@ function ShopsSearch() {
         )
       );
       setFilteredShops(filtered);
+      
+      if (filtered.length === 0) {
+        showModal("Sin resultados", "No se encontraron tiendas en las categorías seleccionadas.");
+      }
     }
   };
 
   if (isLoading) return <Spinner />
-
-  if (error) {
-    return <div className="error">{error}</div>;
-  }
 
   return (
     <div className="shops-search">
@@ -111,26 +121,28 @@ function ShopsSearch() {
         />
       </div>
       <div className="row">
-        {filteredShops.length > 0 ? (
-          filteredShops.map((shop) => (
-            <div className="col-12 col-md-6 col-lg-4 col-xxl-3"
-            >
-              <CardTienda
-                key={shop.id}
-                id={shop.id}
-                imageSrc={shop.image_shop_url}
-                shopName={shop.name}
-                shopSummary={shop.shop_summary}
-                shopAddress={shop.address}
-              />
-            </div>
-          ))
-        ) : (
-          <p>No se encontraron tiendas que coincidan con tu búsqueda.</p>
-        )}
+        {filteredShops.map((shop) => (
+          <div className="col-12 col-md-6 col-lg-4 col-xxl-3" key={shop.id}>
+            <CardTienda
+              id={shop.id}
+              imageSrc={shop.image_shop_url}
+              shopName={shop.name}
+              shopSummary={shop.shop_summary}
+              shopAddress={shop.address}
+            />
+          </div>
+        ))}
       </div>
 
       <NotType user_or_shop = 'user' />
+
+      <ModalGlobal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
+        body={modalContent.body}
+        buttonBody="Cerrar"
+      />
     </div>
   )
 }

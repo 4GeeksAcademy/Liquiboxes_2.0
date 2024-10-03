@@ -22,6 +22,8 @@ const UserPurchases = ({ id }) => {
     });
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [errorModalOpen, setErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const token = sessionStorage.getItem('token');
 
@@ -29,7 +31,7 @@ const UserPurchases = ({ id }) => {
         setIsLoading(true);
         try {
             const response = await axios.get(`${process.env.BACKEND_URL}/sales/user/${userId}`, {
-                headers: { 
+                headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`
                 }
@@ -38,7 +40,7 @@ const UserPurchases = ({ id }) => {
                 setPurchases(response.data);
             }
         } catch (error) {
-            console.error("Error fetching user purchases:", error);
+            showError("Error al cargar las compras del usuario. Por favor, inténtalo de nuevo.");
         } finally {
             setTimeout(() => setIsLoading(false), 500); // 500 ms delay
         }
@@ -80,7 +82,7 @@ const UserPurchases = ({ id }) => {
             setShowConfirmationModal(true);
             setContactForm({ content: '', subjectAffair: '', shopId: null, saleId: null });
         } catch (error) {
-            console.error('Error sending message:', error);
+            showError('Error al enviar el mensaje. Por favor, inténtalo de nuevo.');
             // Handle error (e.g., show error message to user)
         }
     }, [contactForm]);
@@ -119,7 +121,7 @@ const UserPurchases = ({ id }) => {
         if (sortConfig.key !== null) {
             sortablePurchases.sort((a, b) => {
                 if (sortConfig.key === 'updated') {
-                    return sortConfig.direction === 'ascending' 
+                    return sortConfig.direction === 'ascending'
                         ? new Date(a.updated) - new Date(b.updated)
                         : new Date(b.updated) - new Date(a.updated);
                 }
@@ -147,7 +149,14 @@ const UserPurchases = ({ id }) => {
         return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
     }, []);
 
+    const showError = (message) => {
+        setErrorMessage(message);
+        setErrorModalOpen(true);
+    };
+
     if (isLoading) return <Spinner />
+
+
     return (
         <div className="user-purchases-container text-center">
             <h2 className="mb-4">
@@ -189,8 +198,8 @@ const UserPurchases = ({ id }) => {
                                     {getStatusBadge(purchase.shop_sales[0]?.status || 'Desconocido')}
                                 </td>
                                 <td data-label="Acciones">
-                                    <Button 
-                                        variant="primary" 
+                                    <Button
+                                        variant="primary"
                                         size="sm"
                                         onClick={() => handleShowDetails(purchase)}
                                     >
@@ -230,9 +239,9 @@ const UserPurchases = ({ id }) => {
                                             <p><strong>Subtotal:</strong> {detail.subtotal.toFixed(2)} €</p>
                                             <p><strong>Tienda:</strong> {detail.shop.name}</p>
                                             <p><strong>Estado:</strong> {getStatusBadge(selectedPurchase.shop_sales.find(ss => ss.shop_id === detail.shop_id)?.status || 'Desconocido')}</p>
-                                            <Button 
-                                                variant="primary" 
-                                                size="sm" 
+                                            <Button
+                                                variant="primary"
+                                                size="sm"
                                                 onClick={() => handleContactSeller(detail.shop_id, detail.sale_id)}
                                             >
                                                 <FontAwesomeIcon icon={faEnvelope} className="me-2" />
@@ -285,6 +294,14 @@ const UserPurchases = ({ id }) => {
                     </Form>
                 </Modal.Body>
             </Modal>
+
+            <ModalGlobal
+                isOpen={errorModalOpen}
+                onClose={() => setErrorModalOpen(false)}
+                title="Error"
+                body={errorMessage}
+                buttonBody="Cerrar"
+            />
 
             <ModalGlobal
                 isOpen={showConfirmationModal}

@@ -5,6 +5,7 @@ import { faBell, faEnvelope, faEnvelopeOpen, faList, faExchangeAlt, faUser, faSt
 import { Modal, Button, Form, Table, Tabs, Tab } from 'react-bootstrap';
 import Spinner from '../Spinner'
 import '../../../styles/admins/adminnotifications.css'
+import ModalGlobal from '../ModalGlobal';
 
 const AdminNotifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -23,6 +24,8 @@ const AdminNotifications = () => {
   const [activeTab, setActiveTab] = useState('notifications');
   const [showStatsModal, setShowStatsModal] = useState(false);
   const [replyMessage, setReplyMessage] = useState('');
+  const [modalGlobalOpen, setModalGlobalOpen] = useState(false);
+  const [modalGlobalContent, setModalGlobalContent] = useState({ title: '', body: '' });
 
   useEffect(() => {
     fetchNotifications();
@@ -40,6 +43,11 @@ const AdminNotifications = () => {
     filterSupportNotifications();
   }, [supportNotifications, supportFilter]);
 
+  const showModalGlobal = (title, body) => {
+    setModalGlobalContent({ title, body });
+    setModalGlobalOpen(true);
+  };
+
   const fetchNotifications = async () => {
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/notifications/admin`, {
@@ -51,7 +59,7 @@ const AdminNotifications = () => {
       setSupportNotifications(response.data.filter(n => n.type === 'contact_support'));
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      showModalGlobal('Error', 'Failed to fetch notifications. Please try again.');
       setError('Failed to fetch notifications. Please try again.');
       setLoading(false);
     }
@@ -66,7 +74,7 @@ const AdminNotifications = () => {
       });
       setChangeRequests(response.data);
     } catch (error) {
-      console.error('Error fetching change requests:', error);
+      showModalGlobal('Error', error.response?.data?.error || 'Failed to fetch change requests. Please try again.');
       setError(error.response?.data?.error || 'Failed to fetch change requests. Please try again.');
     }
   };
@@ -169,8 +177,7 @@ const AdminNotifications = () => {
       fetchStats();
       fetchNotifications();
     } catch (error) {
-      console.error('Error processing change request:', error);
-      alert(error.response?.data?.error || 'Error al procesar la solicitud de cambio. Por favor, inténtalo de nuevo.');
+      showModalGlobal('Error', error.response?.data?.error || 'Failed to process the aproval request. Try again later.');
     }
   };
 
@@ -471,6 +478,14 @@ const AdminNotifications = () => {
           <Button variant="secondary" onClick={() => setShowStatsModal(false)}>Close</Button>
         </Modal.Footer>
       </Modal>
+
+      <ModalGlobal
+        isOpen={modalGlobalOpen}
+        onClose={() => setModalGlobalOpen(false)}
+        title={modalGlobalContent.title}
+        body={modalGlobalContent.body}
+        buttonBody="Cerrar"
+      />
     </div>
   );
 };

@@ -174,7 +174,6 @@ function ShopHome() {
 
       showModal('Éxito', 'Los cambios se han guardado correctamente.');
     } catch (error) {
-      console.error("Error updating shop data:", error);
       showModal('Error', "Error al actualizar el perfil. Por favor, inténtalo de nuevo.");
     } finally {
       setLoading(false);

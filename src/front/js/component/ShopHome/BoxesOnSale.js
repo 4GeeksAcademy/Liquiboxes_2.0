@@ -29,12 +29,11 @@ function BoxesOnSale({ shopData, fetchData }) {
     try {
       const response = await axios.get(`${process.env.BACKEND_URL}/shops/mystery-box/${box.id}`);
       if (response.data) {
-        console.log(response.data);
         setSelectedBox(response.data);
         setPreviewImage(response.data.image_url);
       }
     } catch (error) {
-      console.log('error' + error);
+      showModalGlobal('Error', 'No se pudo cargar la información de la caja misteriosa. Por favor, inténtalo de nuevo.');
     }
     setShowModal(true);
   };
@@ -107,11 +106,9 @@ function BoxesOnSale({ shopData, fetchData }) {
           }
         }
       );
-      console.log('Caja misteriosa actualizada:', response.data);
       showModalGlobal('Caja misteriosa actualizada', 'Los datos de tu caja misteriosa se han actualizado correctamente')
       setShowModal(false);
     } catch (error) {
-      console.error('Error al actualizar la caja misteriosa:', error);
       showModalGlobal('Vaya ha habido algún error', 'Hubo un error al actualizar la caja misteriosa. Por favor, inténtalo de nuevo.')
     }
   };
@@ -133,6 +130,8 @@ function BoxesOnSale({ shopData, fetchData }) {
       showModalGlobal('Vaya ha habido algún error', 'Hubo un error al eliminar la Mystery Box. Inténtalo de nuevo.')
     }
   };
+
+  
 
   return (
     <>

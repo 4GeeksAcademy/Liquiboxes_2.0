@@ -13,7 +13,7 @@ const STEPS = [
   { title: "Cuenta", description: "Crea tu cuenta segura", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Smartphone_Lock_cvnebi.gif" },
   { title: "Tallas", description: "Ayúdanos a personalizar tu experiencia", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850497/Filter_Item_altaic.gif" },
   { title: "Estilo", description: "Define tus preferencias de estilo", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Shopping_Bag_jlntsk.gif" },
-  { title: "Preferencias", description: "Dinos qué te gusta y qué no", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Remove_Item_sqgou4.gif" },
+  { title: "Preferencias", description: "Si hay algo que no te guste, este es el momento de decirlo", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Remove_Item_sqgou4.gif" },
   { title: "Últimos detalles", description: "Solo necesitamos unos últimos detalles para completar tu perfil", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850497/Checklist_l0hzyf.gif" }
 ];
 
@@ -399,7 +399,7 @@ export default function SignUp() {
       case 5:
         return (
           <div className="signup-step-content">
-            <h2 className="signup-step-question">Dinos si hay alguna prenda o algún color que no te represente</h2>
+            <h2 className="signup-step-question">No queremos equivocarnos, dinos si hay alguna prenda o algún color que no te represente</h2>
             <div className="signup-checkbox-group">
               <p>Opcional: ¿Hay alguna prenda que no vaya con tu estilo? (máximo 3):</p>
               <div className="signup-checkbox-options">

@@ -7,6 +7,7 @@ import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import '../../../styles/shops/shopnotifications.css';
 import Spinner from '../../component/Spinner'
+import ModalGlobal from '../../component/ModalGlobal';
 
 const ShopNotifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -33,6 +34,8 @@ const ShopNotifications = () => {
   const hasUnreadNotifications = unreadNotifications.length > 0;
   const [salesWithPendingChanges, setSalesWithPendingChanges] = useState({});
   const [isPDFLoading, setIsPDFLoading] = useState(false);
+  const [modalGlobalOpen, setModalGlobalOpen] = useState(false);
+  const [modalGlobalContent, setModalGlobalContent] = useState({ title: '', body: '' });
 
 
 
@@ -48,6 +51,11 @@ const ShopNotifications = () => {
   useEffect(() => {
     filterNotifications();
   }, [notifications, filter, activeTab]);
+
+  const showModalGlobal = (title, body) => {
+    setModalGlobalContent({ title, body });
+    setModalGlobalOpen(true);
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -208,7 +216,7 @@ const ShopNotifications = () => {
       setLoadingModal(false)
 
     } catch (error) {
-      console.error('Error fetching order details:', error);
+      showModalGlobal('Error', 'No se pudieron obtener los datos de la venta. Por favor, inténtelo de nuevo.');
       setError('Failed to fetch order details. Please try again.');
       setLoadingModal(false)
     }
@@ -226,7 +234,7 @@ const ShopNotifications = () => {
       console.log(response.data)
       setTimeout(() => setLoadingModal(false), 500);
     } catch (error) {
-      console.error('Error fetching user preferences:', error);
+      showModalGlobal('Error', 'No se pudieron obtener las preferencias del usuario comprador. Por favor, inténtelo de nuevo.');
       setError('Failed to fetch user preferences. Please try again.');
       setLoadingModal(false)
     }
@@ -276,12 +284,12 @@ const ShopNotifications = () => {
           Authorization: `Bearer ${sessionStorage.getItem('token')}`
         }
       });
-      alert('Solicitud de cambio enviada exitosamente');
+      showModalGlobal('Éxito', 'Solicitud de cambio enviada exitosamente');
       setShowChangeRequestForm(false);
       fetchChangeRequests();
       fetchNotifications();
     } catch (error) {
-      console.error('Error al crear la solicitud de cambio:', error);
+      showModalGlobal('Error', 'No se pudo crear la solicitud de cambio. Por favor, inténtelo de nuevo.');
       setError('No se pudo crear la solicitud de cambio. Por favor, inténtelo de nuevo.');
     }
   };
@@ -304,7 +312,7 @@ const ShopNotifications = () => {
       // Confirmar el pedido
       const orderConfirmation = await axios.post(
         `${process.env.BACKEND_URL}/sales/shop/${orderDetails.id}/confirm`,
-        {}, // Cuerpo vacío, ya que no estamos enviando datos
+        {}, 
         {
           headers: {
             Authorization: `Bearer ${sessionStorage.getItem('token')}`
@@ -324,7 +332,8 @@ const ShopNotifications = () => {
         generatePDF(shipmentResponse.data, shopSaleId);
 
         // Mostrar mensaje de éxito
-        alert('¡Pedido confirmado con éxito!');
+        showModalGlobal('Éxito', '¡Pedido confirmado con éxito!');
+
         setIsModalOpen(false)
         // Opcionalmente, actualizar la lista de notificaciones
         fetchNotifications();
@@ -488,7 +497,8 @@ const ShopNotifications = () => {
       }
     } catch (error) {
       console.error('Error al generar el PDF:', error);
-      alert(error.message || 'No se pueden obtener los detalles necesarios para generar el PDF.');
+      showModalGlobal('Error', error.message || 'No se pueden obtener los detalles necesarios para generar el PDF.');
+
     } finally {
       setIsPDFLoading(false);
     }
@@ -948,6 +958,15 @@ const ShopNotifications = () => {
           </Form>
         </Modal.Body>
       </Modal>
+
+      <ModalGlobal
+        isOpen={modalGlobalOpen}
+        onClose={() => setModalGlobalOpen(false)}
+        title={modalGlobalContent.title}
+        body={modalGlobalContent.body}
+        buttonBody="Cerrar"
+      />
+      
     </div>
   );
 };
