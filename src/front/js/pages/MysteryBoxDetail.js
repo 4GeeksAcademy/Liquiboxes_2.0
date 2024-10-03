@@ -148,7 +148,7 @@ function MysteryBoxDetail() {
           <p>{mysteryBox.description}</p>
 
           <div className="price-info">
-            <h3>Precio: {mysteryBox.price} €</h3>
+            <h3>{mysteryBox.price} €</h3>
           </div>
 
           <div className="action-buttons mt-4">
