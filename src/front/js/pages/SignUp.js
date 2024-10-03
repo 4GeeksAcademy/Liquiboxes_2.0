@@ -131,23 +131,17 @@ export default function SignUp() {
     setError(null);
 
     try {
-      setLoading(true);
-      const response = await fetch(`${process.env.BACKEND_URL}/users/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(signupData),
-      });
-
+      setLoading(true)
+      const response = await registerAndLogin(`${process.env.BACKEND_URL}/users/register`, formData);
+      setUserType(response.user_type);
+      setLoading(false)
+      
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || 'Error en el registro');
       }
 
-      const { user_type } = data;
-      setUserType(user_type);
       setIsSuccess(true);
     } catch (error) {
       setError(error.message);
