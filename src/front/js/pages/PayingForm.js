@@ -62,7 +62,6 @@ const PayingForm = () => {
         console.log('Precio total calculado:', totalPrice);
 
         setTotal(Number(totalPrice.toFixed(2)));
-        showModal("Error", err.message);
 
         // Fetch user profile
         const token = sessionStorage.getItem('token');
