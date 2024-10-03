@@ -76,7 +76,7 @@ export default function SignUp() {
     setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
-  const validateStep = (e, ) => {
+  const validateStep = (e,) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -122,9 +122,8 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     setError(null);
-    if (!validateStep(e, 6)) return;
 
     try {
       setLoading(true);
@@ -371,25 +370,7 @@ export default function SignUp() {
         return (
           <div className="signup-step-content">
             <h2 className="signup-step-question">Define tus preferencias de estilo</h2>
-            <div className="signup-checkbox-group">
-              <p>Opcional: ¿Hay algún color que no te identifique? (Máximo 3):</p>
-              <div className="signup-checkbox-options">
-                {COLORS.map(color => (
-                  <label key={color} className="signup-checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="notColors"
-                      value={color}
-                      checked={signupData.notColors.includes(color)}
-                      onChange={handleChange}
-                      disabled={signupData.notColors.length >= 3 && !signupData.notColors.includes(color)}
-                      className="signup-checkbox"
-                    />
-                    {color}
-                  </label>
-                ))}
-              </div>
-            </div>
+
             <div className="signup-input-group">
               <label htmlFor="stamps">Preferencia de Estampado</label>
               <select
@@ -425,7 +406,7 @@ export default function SignUp() {
       case 5:
         return (
           <div className="signup-step-content">
-            <h2 className="signup-step-question">Dinos qué prendas prefieres</h2>
+            <h2 className="signup-step-question">Dinos qué prendas y qué colores prefieres</h2>
             <div className="signup-checkbox-group">
               <p>Opcional: ¿Hay alguna prenda que no vaya con tu estilo? (máximo 3):</p>
               <div className="signup-checkbox-options">
@@ -441,6 +422,25 @@ export default function SignUp() {
                       className="signup-checkbox"
                     />
                     {cloth}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="signup-checkbox-group">
+              <p>Opcional: ¿Hay algún color que no te identifique? (Máximo 3):</p>
+              <div className="signup-checkbox-options">
+                {COLORS.map(color => (
+                  <label key={color} className="signup-checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="notColors"
+                      value={color}
+                      checked={signupData.notColors.includes(color)}
+                      onChange={handleChange}
+                      disabled={signupData.notColors.length >= 3 && !signupData.notColors.includes(color)}
+                      className="signup-checkbox"
+                    />
+                    {color}
                   </label>
                 ))}
               </div>
@@ -494,6 +494,41 @@ export default function SignUp() {
     }
   };
 
+  const renderNavigationButtons = () => {
+    if (step < 5) {
+      return (
+        <button
+          type="button"
+          onClick={(e) => {
+            if (validateStep(e)) setStep(prev => prev + 1);
+          }}
+          className="signup-next-button"
+        >
+          Continuar
+        </button>
+      );
+    } else if (step === 5) {
+      const isStepEmpty = signupData.notClothes.length === 0 && signupData.notColors.length === 0;
+      return (
+        <button
+          type="button"
+          onClick={() => setStep(prev => prev + 1)}
+          className={isStepEmpty ? 'btn btn-outline-secondary' : 'signup-next-button'}
+        >
+          {isStepEmpty ? 'Omitir' : 'Continuar'}
+        </button>
+      );
+    } else {
+      return (
+        <button type="button" className="signup-next-button" onClick={(e) => {
+          if (validateStep(e)) handleSubmit(e)}}
+          >
+          Registrarse
+        </button>
+      );
+    }
+  };
+
   if (loading) return <Spinner />
 
   return (
@@ -517,25 +552,12 @@ export default function SignUp() {
           >
             ←
           </button>
-          <form onSubmit={(e) => handleSubmit(e)} noValidate>
+          <form  noValidate>
             {renderStep()}
             {error && <p className="signup-error-message">{error}</p>}
+
             <div className="signup-navigation-buttons">
-              {step < 6 ? (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    if (validateStep(e)) setStep(prev => prev + 1);
-                  }}
-                  className="signup-next-button"
-                >
-                  Continuar
-                </button>
-              ) : (
-                <button type="submit" className="signup-next-button">
-                  Registrarse
-                </button>
-              )}
+              {renderNavigationButtons()}
             </div>
           </form>
         </div>
