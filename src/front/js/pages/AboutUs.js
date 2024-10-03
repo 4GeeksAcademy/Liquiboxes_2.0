@@ -13,7 +13,7 @@ const AboutUs = () => {
         <Fade triggerOnce>
           <h2>Sobre Nosotros</h2>
           <p>
-            Liquiboxes fue fundada por tres estudiantes apasionados de la programación: <strong>Miguel, Michell y Elis</strong>.
+            Liquiboxes ha sido fundada por tres estudiantes apasionados de la programación: <strong>Miguel, Michell y Elis</strong>.
             Nuestra misión es ayudar a los comercios a liquidar su stock de manera eficiente, conectándolos con clientes
             que buscan productos de calidad a precios irresistibles. Lo hacemos a través de <strong>Mistery Boxes</strong>
             que los usuarios pueden comprar, basadas en sus preferencias.
@@ -75,7 +75,7 @@ const AboutUs = () => {
 
           <Zoom>
             <div className="team-member">
-              <img src="/images/michell.jpg" alt="Michell" className="team-photo" />
+              <img src="https://res.cloudinary.com/dg7u2cizh/image/upload/v1727986307/fotoperfil_hh5zfp.jpg" alt="Michell" className="team-photo" />
               <h3>Michell Denjoy</h3>
               <p>Desarrolladora Full-Stack</p>
               <div className="social-links">
@@ -91,7 +91,7 @@ const AboutUs = () => {
 
           <Zoom>
             <div className="team-member">
-              <img src="src/front/img/elis g.jpg/images/elis.jpg" alt="Elis" className="team-photo" />
+              <img src="https://res.cloudinary.com/dg7u2cizh/image/upload/v1727986511/Imagen_de_WhatsApp_2024-10-03_a_las_16.58.01_ec968be9_zevtu6.jpg" alt="Elis" className="team-photo" />
               <h3>Elis Gomez</h3>
               <p>Desarrolladora Full-Stack</p>
               <div className="social-links">
