@@ -6,6 +6,7 @@ import { faTimes, faHome } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/mysteryboxdetail.css';
 import RatingSystem from '../component/Shop Detail/RatingSystem';
 import Spinner from '../component/Spinner';
+import NotType from '../component/Utils/NotType';
 
 function MysteryBoxDetail() {
   const { store, actions } = useContext(Context);
@@ -14,6 +15,8 @@ function MysteryBoxDetail() {
   const navigate = useNavigate();
   const token = sessionStorage.getItem('token')
   const [loading, setLoading] = useState(true)
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -161,6 +164,10 @@ function MysteryBoxDetail() {
       <div className="row reviews-section mt-1 mt-md-4">
         <RatingSystem />
       </div>
+
+      <NotType user_or_shop='user' />
+
+
     </div>
 
   );

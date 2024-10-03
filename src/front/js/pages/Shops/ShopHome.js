@@ -26,6 +26,8 @@ import ShopNotifications from '../../component/ShopHome/ShopNotifications';
 import ShopSales from '../../component/ShopHome/ShopSales';
 import { faSignalMessenger } from '@fortawesome/free-brands-svg-icons';
 import Spinner from '../../component/Spinner';
+import NotToken from '../../component/Utils/NotToken';
+import NotType from '../../component/Utils/NotType';
 
 function ShopHome() {
   const navigate = useNavigate();
@@ -65,6 +67,7 @@ function ShopHome() {
     } catch (error) {
       console.error("Error fetching shop data:", error.response || error);
       setError(error.response?.data?.msg || error.message);
+      setLoading(false)
     }
   };
 
@@ -435,6 +438,9 @@ function ShopHome() {
         body={modalContent.body}
         buttonBody="Cerrar"
       />
+
+      <NotToken />
+      <NotType user_or_shop='shop' />
     </div>
   );
 }

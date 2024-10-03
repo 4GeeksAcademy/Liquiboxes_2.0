@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import "./../../styles/aboutus.css";
 import { Fade, Zoom } from 'react-awesome-reveal';
+import NotType from '../component/Utils/NotType';
 
 
 const AboutUs = () => {
@@ -34,7 +35,7 @@ const AboutUs = () => {
         <Fade triggerOnce>
           <h2>¿Cómo funciona Liquiboxes?</h2>
           <p>
-           Las tiendas crean <strong>Mistery Boxes</strong> de diferentes tamaños y precios, seleccionando los productos posibles que pueden tocar en esa caja y el número de artículos que va a contener la Mystery Box.
+            Las tiendas crean <strong>Mistery Boxes</strong> de diferentes tamaños y precios, seleccionando los productos posibles que pueden tocar en esa caja y el número de artículos que va a contener la Mystery Box.
 
           </p>
           <p>
@@ -104,6 +105,10 @@ const AboutUs = () => {
           </Zoom>
         </div>
       </section>
+
+
+      <NotType user_or_shop='user' />
+
     </div>
   );
 };

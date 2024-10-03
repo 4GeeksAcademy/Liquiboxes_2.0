@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Slide, Fade } from "react-awesome-reveal";
 import Spinner from "../component/Spinner";
+import NotType from "../component/Utils/NotType";
 
 export const Home = () => {
     const { store, actions } = useContext(Context);
@@ -18,6 +19,7 @@ export const Home = () => {
     const [topSellingShops, setTopSellingShops] = useState([]); // Nueva variable para las tiendas más vendidas
     const token = sessionStorage.getItem('token')
     const navigate = useNavigate()
+
 
     useEffect(() => {
 
@@ -102,11 +104,11 @@ export const Home = () => {
         setTopSellingShops(sortedShops); // Guardamos en el estado
     };
 
-    if (loading){
+    if (loading) {
         return (
-                <Spinner />            
+            <Spinner />
         )
-    } 
+    }
 
     return (
         <div className="text-center mt-2 mb-5 mx-5">
@@ -139,7 +141,7 @@ export const Home = () => {
                     />
                 </div>
                 <div className="col-12 col-lg-6">
-                  
+
                     <CarruselTopSellers shopData={topSellingShops} />
                 </div>
             </div>
@@ -176,6 +178,9 @@ export const Home = () => {
                     <button type="button" className="btn btn-secondary fs-5 my-2" onClick={() => { navigate('/', { state: { from: location.pathname } }) }}>Iniciar sesión</button>
                 </div>
             )}
+
+      <NotType user_or_shop='user' />
+
         </div>
     );
 };

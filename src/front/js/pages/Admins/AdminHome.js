@@ -5,12 +5,35 @@ import { faEdit, faTrash, faStar } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import AdminNotifications from '../../component/Admin Home/AdminNotifications';
 import '../../../styles/admins/adminhome.css';
+import ModalToken from '../../component/Modals/ModalToken';
+import ModalType from '../../component/Modals/ModalType';
 
 const AdminHome = () => {
   const [admins, setAdmins] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState(null);
   const [error, setError] = useState(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [showTypeModal, setShowTypeModal] = useState(false);
+
+  useEffect(() => {
+    checkAuthorization();
+  }, []);
+  
+  const checkAuthorization = () => {
+    const token = sessionStorage.getItem('token');
+    const userType = sessionStorage.getItem('userType');
+    
+    if (!token) {
+      setShowTokenModal(true);
+    } else if (userType !== 'SuperAdmin' && userType !== 'Admin') {
+      setShowTypeModal(true);
+    } else {
+      setIsAuthorized(true);
+      fetchAdmins();
+    }
+  };
 
 
   useEffect(() => {
@@ -114,6 +137,18 @@ const AdminHome = () => {
     setCurrentAdmin(admin);
     setShowModal(true);
   };
+
+  if (showTokenModal) {
+    return <ModalToken />;
+  }
+
+  if (showTypeModal) {
+    return <ModalType />;
+  }
+
+  if (!isAuthorized) {
+    return null; // No renderiza nada si el usuario no está autorizado
+  }
 
   return (
     <div className="admin-home">

@@ -2,14 +2,14 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {  faBox, faCoins, faList, faImage, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faBox, faCoins, faList, faImage, faXmark } from '@fortawesome/free-solid-svg-icons';
 import FullScreenConfetti from '../../component/FullScreenConfetti';
 import ModalGlobal from '../../component/ModalGlobal';
 import { Context } from '../../store/appContext'
 import "../../../styles/shops/createMysteryBox.css";
-import ModalToken from '../../component/Modals/ModalToken';
-import ModalType from '../../component/Modals/ModalType';
 import Spinner from '../../component/Spinner';
+import NotToken from '../../component/Utils/NotToken';
+import NotType from '../../component/Utils/NotType';
 
 const STEPS = [
     { icon: faBox, title: "Información Básica", description: "Nombre y descripción de tu caja misteriosa", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Package_fwghe4.gif" },
@@ -34,29 +34,9 @@ const CreateMysteryBox = () => {
     const [previewImage, setPreviewImage] = useState(null);
     const [isSuccess, setIsSuccess] = useState(false);
     const [mysteryBoxId, setMysteryBoxId] = useState(null)
-    const { store, actions } = useContext(Context)
+    const { store } = useContext(Context)
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true)
-
-
-    useEffect(() => {                                                   // FUNCIÓN PARA COMPROBAR QUE HA INICIADO SESIÓN Y QUE ES EL TIPO DE USUARIO QUE QUEREMOS.
-        const token = sessionStorage.getItem('token');
-        const userType = sessionStorage.getItem('userType')
-
-        if (!token) {
-            actions.setModalToken(true)
-            setLoading(false)
-            return
-        }
-        else if (userType !== 'shop') {  // Tipo de usuario, si queremos que sea una tienda utilizamos 'shop'. Si queremos que sea un usuario normal utilziamos 'user'.
-            actions.setModalType(true)
-            setLoading(false)
-        }
-        else {
-            setLoading(false)
-        }
-
-    }, [navigate]);                                                     // COPIAR Y PEGAR ESTA FUNCIÓN ¡¡¡¡¡CUIDADO CON QUE EL COTNEXTO ESTÉ BIEN IMPORTADO!!!!!
+    const [loading, setLoading] = useState(false)
 
     const validateStep = () => {
         let stepErrors = {};
@@ -117,7 +97,7 @@ const CreateMysteryBox = () => {
     const handleRemoveItem = (e, index) => {
         e.preventDefault(); // Prevenir la acción por defecto
         e.stopPropagation(); // Detener la propagación del evento
-        
+
         setNewBox(prevState => ({
             ...prevState,
             possibleItems: prevState.possibleItems.filter((_, i) => i !== index)
@@ -286,7 +266,7 @@ const CreateMysteryBox = () => {
                                 <div key={index} className="item-card ">
                                     <span className="item-name">{item}</span>
                                     <button onClick={(e) => handleRemoveItem(e, index)} className="remove-button">
-                                        <FontAwesomeIcon icon={faXmark} /> 
+                                        <FontAwesomeIcon icon={faXmark} />
                                     </button>
                                 </div>
                             ))}
@@ -381,12 +361,9 @@ const CreateMysteryBox = () => {
                     />
                 </>
             )}
-            {store.modalToken && (
-                <ModalToken />
-            )}
-            {store.modalType && (
-                <ModalType />
-            )}
+
+            <NotToken />
+            <NotType user_or_shop='shop' />
         </div>
     );
 };

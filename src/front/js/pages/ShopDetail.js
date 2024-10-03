@@ -6,6 +6,8 @@ import CardMBox from '../component/Shop Detail/CardMBox';
 import SwitchButtons from '../component/Shop Detail/SwitchButtons';
 import RatingSystem from '../component/Shop Detail/RatingSystem';
 import Spinner from '../component/Spinner';
+import NotType from '../component/Utils/NotType';
+
 
 export default function ShopDetail() {
   const [mysteryBoxes, setMysteryBoxes] = useState([]);
@@ -63,6 +65,8 @@ export default function ShopDetail() {
           </div>
         )}
       </div>
+
+        <NotType user_or_shop = 'user' />
 
     </main >
   );

@@ -11,6 +11,9 @@ import { faPaypal } from '@fortawesome/free-brands-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import ModalGlobal from '../component/ModalGlobal'
 import Spinner from '../component/Spinner';
+import NotToken from '../component/Utils/NotToken';
+import NotType from '../component/Utils/NotType';
+
 
 const stripePromise = loadStripe(process.env.STRIPE_PK);
 
@@ -22,9 +25,9 @@ const PayingForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('stripe');
-  const [forceUpdate, setForceUpdate] = useState(false);
   const [modalPaypal, setModalPaypal] = useState(false)
   const navigate = useNavigate();
+
 
   useEffect(() => {
     const fetchCartData = async () => {
@@ -281,6 +284,10 @@ const PayingForm = () => {
         body='Estamos trabajando para que nuestra plataforma cada día sea mejor y seguimos trabajando en la incorporación de PayPal a nuestros servicios de pago. Sentimos las molestias.'
         buttonBody="Cerrar"
       />
+      
+      <NotToken />
+      <NotType user_or_shop='user' />
+
     </div>
   );
 };

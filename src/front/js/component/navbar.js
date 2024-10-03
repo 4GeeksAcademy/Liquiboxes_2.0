@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Context } from "../store/appContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShoppingCart, faBars } from "@fortawesome/free-solid-svg-icons";
+import { faShoppingCart, faBars, faHome } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/navbar.css"
 
 
@@ -32,7 +32,7 @@ export const Navbar = () => {
                 <button className="navbar-toggler" type="button" onClick={handleNavCollapse} aria-expanded={!isNavCollapsed}>
                     <FontAwesomeIcon icon={faBars} />
                 </button>
-                <Link to="/home" className="navbar-brand">Liquiboxes</Link>
+                <Link to="/home" className="navbar-brand"><FontAwesomeIcon icon={faHome}/></Link>
                 <div className={`${isNavCollapsed ? 'collapse' : ''} navbar-collapse`}>
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                         <li className="nav-item">
@@ -51,10 +51,10 @@ export const Navbar = () => {
 
                     </ul>
                 </div>
-                <Link to="/cart" className="nav-link position-relative cart-icon">
-                    <FontAwesomeIcon icon={faShoppingCart} size="lg" />
+                <Link to="/cart" className="position-relative navbar-brand mt-1">
+                    <FontAwesomeIcon icon={faShoppingCart} />
                     {cartItemCount > 0 && (
-                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        <span className="position-absolute top-25 start-100 translate-middle badge rounded-pill bg-danger py-1 px-2">
                             {cartItemCount}
                             <span className="visually-hidden">items en el carrito</span>
                         </span>

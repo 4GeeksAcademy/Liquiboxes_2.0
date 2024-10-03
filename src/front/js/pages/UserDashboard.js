@@ -31,6 +31,9 @@ import ModalLogout from '../component/Modals/ModalLogout'
 import UserPurchases from '../component/Profile/UserPurchases';
 import Spinner from '../component/Spinner';
 import ModalGlobal from '../component/ModalGlobal';
+import NotType from '../component/Utils/NotType';
+import NotToken from '../component/Utils/NotToken';
+
 
 function UserDashboard() {
   const [userData, setUserData] = useState(null);
@@ -50,6 +53,7 @@ function UserDashboard() {
   const colorOptions = ['Rojo', 'Azul', 'Verde', 'Amarillo', 'Naranja', 'Morado', 'Rosa', 'Marrón', 'Negro', 'Blanco'];
   const clothesOptions = ['Camisetas', 'Pantalones', 'Faldas', 'Vestidos', 'Chaquetas', 'Abrigos', 'Zapatos', 'Accesorios', 'Ropa Interior', 'Trajes'];
   const categoryOptions = store.categories;
+
 
   useEffect(() => {
     setIsLoading(true)
@@ -416,7 +420,7 @@ function UserDashboard() {
       </div>
       <div id="page-content-wrapper">
         <button className="btn" id="menu-toggle" onClick={toggleSidebar}>
-          Panel de Control <FontAwesomeIcon icon={faToolbox} className='ms-1'/>
+          Panel de Control <FontAwesomeIcon icon={faToolbox} className='ms-1' />
         </button>
         <div className="container-fluid profile-container">
           <div className="profile-content">
@@ -439,6 +443,10 @@ function UserDashboard() {
         body={modalContent.body}
         buttonBody="Cerrar"
       />
+
+      <NotToken />
+      <NotType user_or_shop='user' />
+
     </div>
   );
 }

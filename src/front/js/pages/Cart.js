@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart, faCreditCard } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/cart.css"
 import Spinner from '../component/Spinner';
+import NotType from '../component/Utils/NotType';
 
 
 
@@ -155,6 +156,9 @@ const Cart = () => {
           </div>
         </>
       )}
+
+      <NotType user_or_shop='user' />
+
     </div>
   );
 };

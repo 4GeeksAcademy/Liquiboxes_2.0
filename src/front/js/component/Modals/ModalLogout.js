@@ -4,7 +4,7 @@ import { Context } from "../../store/appContext";
 import { useNavigate } from "react-router-dom";
 
 
-export default function ModalToken() {
+export default function ModalLogout() {
     const {actions} = useContext(Context)
     const navigate = useNavigate ()
 

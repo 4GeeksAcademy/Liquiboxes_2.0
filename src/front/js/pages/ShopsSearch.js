@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom'
 import '../../styles/shopssearch.css';
 import { Context } from '../store/appContext'
 import Spinner from '../component/Spinner'
+import NotType from '../component/Utils/NotType'
 
 
 function ShopsSearch() {
@@ -15,7 +16,7 @@ function ShopsSearch() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
-  const {store} = useContext(Context)
+  const { store } = useContext(Context)
   const categories = store.categories;
 
 
@@ -129,6 +130,7 @@ function ShopsSearch() {
         )}
       </div>
 
+      <NotType user_or_shop = 'user' />
     </div>
   )
 }
