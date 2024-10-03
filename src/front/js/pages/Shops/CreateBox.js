@@ -4,6 +4,7 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faBox, faCoins, faList, faImage } from '@fortawesome/free-solid-svg-icons';
 import Confetti from 'react-confetti';
+import FullScreenConfetti from '../../component/FullScreenConfetti';
 import ModalGlobal from '../../component/ModalGlobal';
 import { Context } from '../../store/appContext'
 import "../../../styles/shops/createMysteryBox.css";
@@ -48,8 +49,11 @@ const CreateMysteryBox = () => {
             setLoading(false)
             return
         }
-        if (userType !== 'shop') {  // Tipo de usuario, si queremos que sea una tienda utilizamos 'shop'. Si queremos que sea un usuario normal utilziamos 'user'.
+        else if (userType !== 'shop') {  // Tipo de usuario, si queremos que sea una tienda utilizamos 'shop'. Si queremos que sea un usuario normal utilziamos 'user'.
             actions.setModalType(true)
+            setLoading(false)
+        }
+        else {
             setLoading(false)
         }
 
@@ -119,7 +123,6 @@ const CreateMysteryBox = () => {
     };
 
     const handleSubmit = async (e) => {
-        setLoading(true)
         e.preventDefault();
         if (!validateStep()) return;
 
@@ -142,6 +145,7 @@ const CreateMysteryBox = () => {
             const token = sessionStorage.getItem('token');
 
             try {
+                setLoading(true)
                 const response = await axios.post(
                     `${process.env.BACKEND_URL}/shops/mystery-box`,
                     formData,
@@ -157,8 +161,10 @@ const CreateMysteryBox = () => {
                 setIsSuccess(true);
             } catch (error) {
                 console.error('Error al crear la caja misteriosa:', error);
-                setLoading(false)
                 setErrors(prev => ({ ...prev, submit: error.response?.data?.error || 'Hubo un error al crear la caja misteriosa. Por favor, inténtalo de nuevo.' }));
+            }
+            finally {
+                setLoading(false)
             }
         }
     };
@@ -359,7 +365,7 @@ const CreateMysteryBox = () => {
             </div>
             {isSuccess && (
                 <>
-                    <Confetti width={window.innerWidth} height={window.innerHeight} />
+                    <FullScreenConfetti />
                     <ModalGlobal
                         isOpen={true}
                         onClose={() => { handleCloseModal(mysteryBoxId) }}

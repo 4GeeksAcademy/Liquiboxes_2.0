@@ -119,12 +119,16 @@ export default function SignUp() {
     if (!validateStep()) return;
 
     try {
+      setLoading(true)
       const { user_type } = await registerAndLogin(`${process.env.BACKEND_URL}/users/register`, signupData);
       setUserType(user_type);
       setIsSuccess(true);
     } catch (error) {
       setError("Error en el registro o inicio de sesión. Por favor, inténtalo de nuevo.");
       console.error(error);
+    }
+    finally {
+      setLoading(false)
     }
   };
 
@@ -136,10 +140,7 @@ export default function SignUp() {
   if (isSuccess) {
     return (
       <>
-        <Confetti
-          width={window.innerWidth}
-          height={window.innerHeight}
-        />
+        <FullScreenConfetti />
         <ModalGlobal
           isOpen={true}
           onClose={handleCloseModal}

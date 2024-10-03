@@ -49,13 +49,6 @@ const NavbarWrapper = ({ children }) => (
   </>
 );
 
-const PreviewWrapper = ({ children }) => (
-  <>
-    <NavbarPreview />
-    {children}
-    <FooterPreview />
-  </>
-)
 
 const Layout = () => {
   const basename = process.env.BASENAME || "";
@@ -102,8 +95,8 @@ const Layout = () => {
                   <Route element={<CreateBox />} path="/createbox" />
 
                   {/* Vistas Preview */}
-                  <Route element={<PreviewWrapper><ShopPreview /></PreviewWrapper>} path="/shoppreview/:id" />
-                  <Route element={<PreviewWrapper><MisteryBoxPreview /></PreviewWrapper>} path="/mysteryboxpreview/:id" />
+                  <Route element={<ShopPreview />} path="/shoppreview/:id" />
+                  <Route element={<MisteryBoxPreview />} path="/mysteryboxpreview/:id" />
 
                   <Route element={<NotFound />} path="*" />
                 </Routes>
