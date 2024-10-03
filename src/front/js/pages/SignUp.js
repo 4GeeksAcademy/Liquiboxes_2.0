@@ -399,7 +399,7 @@ export default function SignUp() {
       case 5:
         return (
           <div className="signup-step-content">
-            <h2 className="signup-step-question">Dinos qué prendas y qué colores prefieres</h2>
+            <h2 className="signup-step-question">Dinos si hay alguna prenda o algún color que no te represente</h2>
             <div className="signup-checkbox-group">
               <p>Opcional: ¿Hay alguna prenda que no vaya con tu estilo? (máximo 3):</p>
               <div className="signup-checkbox-options">
