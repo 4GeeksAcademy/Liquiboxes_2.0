@@ -10,8 +10,8 @@
   .images-section .main-image img {
     border-radius: 8px;
     width: 100%;
-    object-fit: cover;
-    max-height: 400px;
+    object-fit: contain ;
+    max-height: 500px;
   }
   
   .thumbnail-images img {
@@ -21,6 +21,14 @@
     border-radius: 8px;
     object-fit: cover;
     cursor: pointer;
+  }
+  .details-section{
+    padding-left: 5rem;
+  }
+
+  .sending-price{
+    font-size: 0.7rem;
+    margin-top: 1.5rem;
   }
   
   .details-section .price-info h3 {
@@ -47,8 +55,7 @@
   }
   
   .details-section .possible-items h4 {
-    font-size: 18px;
-    margin-top: 20px;
+    font-size: 1rem;
   }
   
   .shipping-info p {

@@ -94,41 +94,43 @@ function MysteryBoxDetail() {
     <div className="mysterybox-detail container my-5">
       <div className="row">
         {/* Sección de Imágenes */}
-        <div className="col-md-6 images-section">
-          <div className="main-image">
+        <div className="col-md-8 images-section my-auto mx-auto">
+          <div className="main-image px-2">
             <img src={mysteryBox.image_url} className="img-fluid" alt={mysteryBox.name} />
-          </div>
-          <div className="thumbnail-images d-flex justify-content-start mt-2">
-            {/* Añadir thumbnails adicionales si tienes */}
-            <img src={mysteryBox.image_url} className="img-thumbnail" alt="Thumbnail 1" />
-            <img src={mysteryBox.image_url} className="img-thumbnail" alt="Thumbnail 2" />
           </div>
         </div>
 
         {/* Sección de Detalles */}
-        <div className="col-md-6 details-section">
+        <div className="col-md-4 details-section mt-3 my-md-auto">
+          <div className='row d-flex aling-items-center'>
+            <div className='col-12 col-lg-6 my-auto'>
+              <div className="item-info">
+                <p><strong>Nombre:</strong> {mysteryBox.name}</p>
+                <p><strong>Tamaño:</strong> {mysteryBox.size}</p>
+                <p><strong>Número de ítems:</strong> {mysteryBox.number_of_items}</p>
+              </div>
+            </div>
+            <div className='col-12 col-lg-6 my-auto'>
+              <div className="possible-items">
+                <h4><strong>Ítems posibles:</strong></h4>
+                <ul>
+                  {mysteryBox.possible_items && (
+                    mysteryBox.possible_items.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    )))}
+                </ul>
+              </div>
+              <div className="shipping-info">
+              </div>
+            </div>
+          </div>
+          <h2>Descripción</h2>
+          <p>{mysteryBox.description}</p>
+
           <div className="price-info">
-            <h3>{mysteryBox.price} €</h3>
+            <h3>Precio: {mysteryBox.price} €</h3>
           </div>
-          <div className="item-info">
-            <p><strong>Nombre:</strong> {mysteryBox.name}</p>
-            <p><strong>Tamaño:</strong> {mysteryBox.size}</p>
-            <p><strong>Número de ítems:</strong> {mysteryBox.number_of_items}</p>
-            <h2>Descripción</h2>
-            <p>{mysteryBox.description}</p>
-          </div>
-          <div className="possible-items">
-            <h4>Ítems posibles:</h4>
-            <ul>
-              {mysteryBox.possible_items && (
-                mysteryBox.possible_items.map((item, index) => (
-                  <li key={index}>{item}</li>
-                )))}
-            </ul>
-          </div>
-          <div className="shipping-info">
-            <p><strong>Envío:</strong> desde 3,99 €</p>
-          </div>
+
           <div className="action-buttons mt-4">
             {token ? (
               <button
@@ -148,16 +150,19 @@ function MysteryBoxDetail() {
               </button>
             )}
             <button type="button" className="btn btn-secondary w-100" onClick={handleAddToCart}>Añadir al Carrito</button>
+
+            <p className='sending-price'><strong>Envío:</strong> desde 3,99 €</p>
+
           </div>
         </div>
       </div>
 
       {/* Sección de Valoraciones */}
-      <div className="row reviews-section mt-4">
-          <RatingSystem />
-        </div>
+      <div className="row reviews-section mt-1 mt-md-4">
+        <RatingSystem />
       </div>
-    
+    </div>
+
   );
 }
 
