@@ -86,7 +86,12 @@ export default function SignUp() {
         if (!signupData.name) newErrors.name = "El nombre es requerido";
         if (!signupData.surname) newErrors.surname = "El apellido es requerido";
         if (!signupData.gender) newErrors.gender = "El género es requerido";
-        if (!signupData.address) newErrors.address = "La dirección es requerida";
+        if (!signupData.address) {
+          newErrors.address = "La dirección es requerida";
+        } else if (signupData.address.length > 300) {
+          newErrors.address = "La dirección no puede tener más de 300 caracteres";
+          signupData.address = signupData.address.slice(0, 300);
+        }
         if (!signupData.postalCode) newErrors.postalCode = "El código postal es requerido";
         else if (!/^\d{5}$/.test(signupData.postalCode)) newErrors.postalCode = "El código postal debe tener 5 dígitos";
         break;
@@ -521,8 +526,9 @@ export default function SignUp() {
     } else {
       return (
         <button type="button" className="signup-next-button" onClick={(e) => {
-          if (validateStep(e)) handleSubmit(e)}}
-          >
+          if (validateStep(e)) handleSubmit(e)
+        }}
+        >
           Registrarse
         </button>
       );
@@ -552,7 +558,7 @@ export default function SignUp() {
           >
             ←
           </button>
-          <form  noValidate>
+          <form noValidate>
             {renderStep()}
             {error && <p className="signup-error-message">{error}</p>}
 
