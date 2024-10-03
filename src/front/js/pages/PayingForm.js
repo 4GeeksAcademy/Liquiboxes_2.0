@@ -130,12 +130,12 @@ const PayingForm = () => {
 
       // Verificar una última vez antes de navegar
       if (Object.keys(store.cart).length === 0) {
-        navigate("/home");
+        navigate("/userdashboard");
       }
-      // else {
-      //   navigate("/home");
-      //   window.location.reload();
-      // }
+      else {
+        navigate("/userdashboard");
+        window.location.reload();
+      }
 
     } catch (err) {
       console.error("Error completo:", err);
@@ -237,7 +237,7 @@ const PayingForm = () => {
               </button>
               <button
                 className={`btn btn-lg mx-2 ${paymentMethod === 'paypal' ? 'btn-secondary' : 'btn-outline-secondary'}`}
-                onClick={() => {setPaymentMethod('paypal'); setModalPaypal(true)}}
+                onClick={() => { setPaymentMethod('paypal'); setModalPaypal(true) }}
               >
                 <FontAwesomeIcon icon={faPaypal} className="mr-2 me-2" />
                 PayPal
@@ -276,7 +276,7 @@ const PayingForm = () => {
 
       <ModalGlobal
         isOpen={modalPaypal}
-        onClose={() => {setModalPaypal(false); setPaymentMethod('stripe')}}
+        onClose={() => { setModalPaypal(false); setPaymentMethod('stripe') }}
         title='Estamos trabajando en ello'
         body='Estamos trabajando para que nuestra plataforma cada día sea mejor y seguimos trabajando en la incorporación de PayPal a nuestros servicios de pago. Sentimos las molestias.'
         buttonBody="Cerrar"

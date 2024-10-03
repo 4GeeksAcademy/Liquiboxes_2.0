@@ -2,8 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faBox, faCoins, faList, faImage } from '@fortawesome/free-solid-svg-icons';
-import Confetti from 'react-confetti';
+import {  faBox, faCoins, faList, faImage, faXmark } from '@fortawesome/free-solid-svg-icons';
 import FullScreenConfetti from '../../component/FullScreenConfetti';
 import ModalGlobal from '../../component/ModalGlobal';
 import { Context } from '../../store/appContext'
@@ -115,7 +114,10 @@ const CreateMysteryBox = () => {
         }
     };
 
-    const handleRemoveItem = (index) => {
+    const handleRemoveItem = (e, index) => {
+        e.preventDefault(); // Prevenir la acción por defecto
+        e.stopPropagation(); // Detener la propagación del evento
+        
         setNewBox(prevState => ({
             ...prevState,
             possibleItems: prevState.possibleItems.filter((_, i) => i !== index)
@@ -264,24 +266,27 @@ const CreateMysteryBox = () => {
                         <div className="signup-input-group">
                             <label htmlFor="newItem">Añadir nuevo artículo</label>
                             <div className="signup-add-item-container">
-                                <input
-                                    id="newItem"
-                                    type="text"
-                                    value={newItem}
-                                    onChange={(e) => setNewItem(e.target.value)}
-                                    className="signup-input"
-                                    placeholder="Ej: Camiseta, Libro, Taza..."
-                                />
-                                <button onClick={handleAddItem} className="signup-add-button">Añadir</button>
+                                <div className='input-group'>
+                                    <input
+                                        id="newItem"
+                                        type="text"
+                                        value={newItem}
+                                        onChange={(e) => setNewItem(e.target.value)}
+                                        className="form-control"
+                                        placeholder="Ej: Camiseta, Libro, Taza..."
+                                    />
+                                    <button onClick={handleAddItem} className="btn btn-outline-secondary">Añadir</button>
+                                </div>
+
                             </div>
                         </div>
                         {errors.possibleItems && <p className="signup-error-message">{errors.possibleItems}</p>}
-                        <div className="signup-items-grid">
+                        <div className="items-grid">
                             {newBox.possibleItems.map((item, index) => (
-                                <div key={index} className="signup-item-card">
-                                    <span className="signup-item-name">{item}</span>
-                                    <button onClick={() => handleRemoveItem(index)} className="signup-remove-button">
-                                        <FontAwesomeIcon icon={faArrowLeft} />
+                                <div key={index} className="item-card ">
+                                    <span className="item-name">{item}</span>
+                                    <button onClick={(e) => handleRemoveItem(e, index)} className="remove-button">
+                                        <FontAwesomeIcon icon={faXmark} /> 
                                     </button>
                                 </div>
                             ))}
@@ -313,7 +318,7 @@ const CreateMysteryBox = () => {
                             <h3>Resumen de la Caja Misteriosa</h3>
                             <p><strong>Nombre:</strong> {newBox.name}</p>
                             <p><strong>Descripción:</strong> {newBox.description}</p>
-                            <p><strong>Precio:</strong> ${newBox.price}</p>
+                            <p><strong>Precio:</strong> {newBox.price} €</p>
                             <p><strong>Tamaño:</strong> {newBox.size}</p>
                             <p><strong>Número de artículos:</strong> {newBox.numberOfItems}</p>
                             <p><strong>Posibles artículos:</strong></p>

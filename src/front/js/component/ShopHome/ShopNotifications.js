@@ -155,12 +155,14 @@ const ShopNotifications = () => {
         ));
       } else {
         console.error('Failed to mark notification as read');
-
+        setLoadingModal(false)
       }
     }
     if (['new_sale', 'item_change_requested', 'item_change_approved', 'item_change_rejected', 'confirmed'].includes(notification.type)) {
       fetchOrderDetails(notification.sale_id);
+      setLoadingModal(false)
     }
+    setLoadingModal(false)
   };
 
   const handleMarkAllRead = async () => {
@@ -624,7 +626,7 @@ const ShopNotifications = () => {
             <h3 className="notification-title">
               {translateNotificationType(selectedNotification.type)}
             </h3>
-            <h5> Venta con ID: {selectedNotification.sale_id}</h5>
+            {selectedNotification.sale_id && (<h5> Venta con ID: {selectedNotification.sale_id}</h5>)}
             <p className="message-content">{selectedNotification.content}</p>
             <Form onSubmit={handleReplySubmit} className="message-reply-form">
               <Form.Group>
@@ -659,14 +661,15 @@ const ShopNotifications = () => {
   };
 
   const notificationTypes = {
-    new_sale: 'Nueva venta',
+    new_sale: 'Nueva Venta',
     item_change_requested: 'Cambio de artículo solicitado',
     item_change_approved: 'Cambio de artículo aprobado',
     item_change_rejected: 'Cambio de artículo rechazado',
-    confirmed: 'Venta confirmada',
+    confirmed: 'Venta Confirmada',
     contact_support: 'Mensaje de soporte',
     contact_shop: 'Mensaje de la tienda',
-    contact_user: 'Mensaje del usuario'
+    contact_user: 'Mensaje del usuario',
+    welcome_notification: 'Mensaje de Bienvenida'
   };
 
   const translateNotificationType = (type) => {
@@ -847,6 +850,8 @@ const ShopNotifications = () => {
                 <th>Tipo</th>
                 <th>Fecha</th>
                 <th>Estado</th>
+                <th>ID Venta</th>
+                <th>ID Pedido</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -857,7 +862,7 @@ const ShopNotifications = () => {
                   onClick={() => handleNotificationClick(notification)}
                   className="cursor-pointer"
                 >
-                  <td>{notification.type}</td>
+                  <td>{translateNotificationType(notification.type)}</td>
                   <td>{new Date(notification.created_at).toLocaleString()}</td>
                   <td>
                     {notification.is_read ?
@@ -865,6 +870,8 @@ const ShopNotifications = () => {
                       <FontAwesomeIcon icon={faEnvelope} className="text-primary" />
                     }
                   </td>
+                  <td>{notification.extra_data.shop_sale_id || '-'}</td>
+                  <td>{notification.sale_id || '-'}</td>
                   <td>
                     <Button //BOTON ELIMINAR NOTIFICACIONES
                       onClick={(e) => {
@@ -882,7 +889,7 @@ const ShopNotifications = () => {
                           e.stopPropagation();
                           handleMarkSaleNotificationUnread(notification.id);
                         }}
-                        id="mark-as-unread"
+                        id="mark-as-unread-shops"
                       >
                         <FontAwesomeIcon icon={faEnvelope} /> Marcar como no léida
                       </Button>

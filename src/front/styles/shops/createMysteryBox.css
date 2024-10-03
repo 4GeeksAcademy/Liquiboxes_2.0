@@ -148,17 +148,23 @@ input {
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  padding: 0.5rem !important;
+  padding: 0.2rem 0.5rem !important;
   background-color: var(--background-secondary-color) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: 8px !important;
 }
 
+.item-name {
+  color: var(--text-color);
+  padding: 0.2rem 0.5rem !important;
+}
+
 .remove-button {
   background: none !important;
   border: none !important;
-  color: #ff4d4f !important;
+  color: #E4717A !important;
   cursor: pointer !important;
+  padding: 0.3rem !important;
 }
 
 .preview-image {
