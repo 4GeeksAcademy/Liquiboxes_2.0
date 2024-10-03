@@ -132,15 +132,9 @@ export default function SignUp() {
 
     try {
       setLoading(true)
-      const response = await registerAndLogin(`${process.env.BACKEND_URL}/users/register`, formData);
+      const response = await registerAndLogin(`${process.env.BACKEND_URL}/users/register`, signupData);
       setUserType(response.user_type);
       setLoading(false)
-      
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error en el registro');
-      }
 
       setIsSuccess(true);
     } catch (error) {
@@ -548,7 +542,7 @@ export default function SignUp() {
         <div className="signup-form-section">
           <button
             className="signup-back-button"
-            onClick={() => step === 1 ? navigate('/') : setStep(prev => prev - 1)}
+            onClick={() => { step === 1 ? navigate('/') : setStep(prev => prev - 1); setError(null); }}
           >
             ←
           </button>
