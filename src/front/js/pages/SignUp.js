@@ -14,7 +14,7 @@ const STEPS = [
   { title: "Tallas", description: "Ayúdanos a personalizar tu experiencia", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850497/Filter_Item_altaic.gif" },
   { title: "Estilo", description: "Define tus preferencias de estilo", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Shopping_Bag_jlntsk.gif" },
   { title: "Preferencias", description: "Dinos qué te gusta y qué no", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850498/Remove_Item_sqgou4.gif" },
-  { title: "Finalizar", description: "Últimos detalles para completar tu perfil", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850497/Checklist_l0hzyf.gif" }
+  { title: "Últimos detalles", description: "Solo necesitamos unos últimos detalles para completar tu perfil", src: "https://res.cloudinary.com/dg7u2cizh/image/upload/v1726850497/Checklist_l0hzyf.gif" }
 ];
 
 const SIZES = {
@@ -43,6 +43,7 @@ export default function SignUp() {
   const [userType, setUserType] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false)
+
 
 
 
@@ -75,7 +76,10 @@ export default function SignUp() {
     setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
-  const validateStep = () => {
+  const validateStep = (e, ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     const newErrors = {};
     switch (step) {
       case 1:
@@ -104,6 +108,8 @@ export default function SignUp() {
         if (!signupData.stamps) newErrors.stamps = "La preferencia de estampado es requerida";
         if (!signupData.fit) newErrors.fit = "La preferencia de ajuste es requerida";
         break;
+      case 5:
+        break
       case 6:
         if (signupData.categories.length === 0) newErrors.categories = "Selecciona al menos una categoría";
         if (!signupData.profession) newErrors.profession = "La profesión es requerida";
@@ -115,20 +121,34 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    
     setError(null);
-    if (!validateStep()) return;
+    if (!validateStep(e, 6)) return;
 
     try {
-      setLoading(true)
-      const { user_type } = await registerAndLogin(`${process.env.BACKEND_URL}/users/register`, signupData);
+      setLoading(true);
+      const response = await fetch(`${process.env.BACKEND_URL}/users/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(signupData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error en el registro');
+      }
+
+      const { user_type } = data;
       setUserType(user_type);
       setIsSuccess(true);
     } catch (error) {
-      setError("Error en el registro o inicio de sesión. Por favor, inténtalo de nuevo.");
-      console.error(error);
-    }
-    finally {
-      setLoading(false)
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -497,14 +517,15 @@ export default function SignUp() {
           >
             ←
           </button>
-          <form onSubmit={handleSubmit} noValidate>
+          <form onSubmit={(e) => handleSubmit(e)} noValidate>
             {renderStep()}
+            {error && <p className="signup-error-message">{error}</p>}
             <div className="signup-navigation-buttons">
               {step < 6 ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    if (validateStep()) setStep(prev => prev + 1);
+                  onClick={(e) => {
+                    if (validateStep(e)) setStep(prev => prev + 1);
                   }}
                   className="signup-next-button"
                 >

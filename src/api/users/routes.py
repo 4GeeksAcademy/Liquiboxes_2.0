@@ -3,6 +3,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_tok
 from api.models import db, User, Notification
 from marshmallow import Schema, fields, validate
 import json
+from sqlalchemy.exc import IntegrityError
+
 
 users = Blueprint('users', __name__)
 
@@ -59,6 +61,13 @@ def register_user():
         
         db.session.commit()
         return jsonify(new_user.serialize()), 201
+    except IntegrityError as e:
+        db.session.rollback()
+        # Capturar errores específicos de integridad
+        if 'unique constraint' in str(e.orig).lower():
+            if 'email' in str(e.orig).lower():
+                return jsonify({'error': 'Este email ya está registrado'}), 400
+        return jsonify({'error': 'Error de integridad en la base de datos'}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Error al crear el usuario: ' + str(e)}), 500
