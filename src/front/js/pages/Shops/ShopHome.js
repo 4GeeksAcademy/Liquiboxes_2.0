@@ -313,8 +313,8 @@ function ShopHome() {
             <div className="row">
               {renderField('owner_name', faUser, 'Nombre del Propietario')}
               {renderField('owner_surname', faUser, 'Apellido del Propietario')}
-              {renderField('shop_name', faStore, 'Nombre de la Tienda')}
-              {renderField('shop_address', faStore, 'Dirección de la Tienda')}
+              {renderField('name', faStore, 'Nombre de la Tienda')}
+              {renderField('address', faStore, 'Dirección de la Tienda')}
               {renderField('postal_code', faStore, 'Código Postal')}
               {renderField('email', faEnvelope, 'Correo electrónico')}
               {renderField('categories', faStore, 'Categorías')}
