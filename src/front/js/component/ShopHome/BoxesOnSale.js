@@ -124,10 +124,12 @@ function BoxesOnSale({ shopData, fetchData }) {
       showModalGlobal('Eliminación exitosa', 'Tu caja misteriosa ha sido eliminada. ¡No dudes en crear otra!')
       setShowDeleteModal(false);  // Cierra el modal después de eliminar
       window.location.reload(); //actualiza la lista de mystery boxes después de la eliminación
-      fetchData();
     } catch (error) {
       console.error('Error al eliminar la Mystery Box:', error);
       showModalGlobal('Vaya ha habido algún error', 'Hubo un error al eliminar la Mystery Box. Inténtalo de nuevo.')
+    }
+    finally{
+      fetchData();
     }
   };
 

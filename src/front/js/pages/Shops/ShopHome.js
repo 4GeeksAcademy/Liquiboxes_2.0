@@ -74,8 +74,6 @@ function ShopHome() {
   useEffect(() => {
     setLoading(true)
 
-
-
     fetchShopData();
   }, []);
 
@@ -345,7 +343,7 @@ function ShopHome() {
         </div>;
       case 'boxesOnSale':
         return <div>
-          <BoxesOnSale shopData={shopData} fetchData={fetchShopData()} />
+          <BoxesOnSale shopData={shopData} fetchData={fetchShopData} />
         </div>;
       default:
         return <div>Selecciona una opción del menú</div>;
