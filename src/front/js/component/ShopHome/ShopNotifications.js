@@ -385,7 +385,7 @@ const ShopNotifications = () => {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
     doc.text(`ID de Venta: ${shopSaleId || 'N/A'}`, 20, 50);
-    doc.text(`ID de Pedido: ${orderDetails?.id || 'N/A'}`, 20, 50);
+    doc.text(`ID de Pedido: ${orderDetails?.id || 'N/A'}`, 100, 50);
     doc.text(`Fecha: ${orderDetails?.date ? new Date(orderDetails.date).toLocaleString() : 'N/A'}`, 20, 60);
     doc.text(`Importe Total: ${orderDetails?.total_amount ? `${orderDetails.total_amount} €` : 'N/A'}`, 20, 70);
 
