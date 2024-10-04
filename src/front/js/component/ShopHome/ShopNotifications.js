@@ -690,6 +690,27 @@ const ShopNotifications = () => {
     return notificationTypes[type] || type;
   };
 
+  const renderNotificationContent = (notification) => {
+    switch (notification.type) {
+      case 'new_sale':
+        return `¡Nueva venta realizada! ID de venta: ${notification.extra_data.shop_sale_id}`;
+      case 'item_change_requested':
+        return `Se ha solicitado un cambio de artículo para la venta ${notification.extra_data.shop_sale_id}`;
+      case 'item_change_approved':
+        return `Se ha aprobado un cambio de artículo para la venta ${notification.extra_data.shop_sale_id}`;
+      case 'item_change_rejected':
+        return `Se ha rechazado un cambio de artículo para la venta ${notification.extra_data.shop_sale_id}`;
+      case 'confirmed':
+        return `La venta ${notification.extra_data.shop_sale_id} ha sido confirmada`;
+      case 'contact_support':
+      case 'contact_shop':
+      case 'contact_user':
+        return notification.content;
+      default:
+        return 'Notificación sin contenido específico';
+    }
+  };
+
   const indexOfLastNotification = currentPage * notificationsPerPage;
   const indexOfFirstNotification = indexOfLastNotification - notificationsPerPage;
   const currentNotifications = filteredNotifications.slice(indexOfFirstNotification, indexOfLastNotification);
