@@ -3,9 +3,6 @@ import axios from 'axios';
 import "../../../styles/shops/contactsupport.css";
 import { useNavigate } from 'react-router-dom';
 import ModalGlobal from '../ModalGlobal';
-import supportImagen from '/workspaces/Liquiboxes_2.0/src/front/img/rb_2148899114.png';
-import supportImage from '/workspaces/Liquiboxes_2.0/src/front/img/rb_2148887720.png';
-import { Zoom } from 'react-awesome-reveal';
 
 
 

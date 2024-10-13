@@ -115,7 +115,7 @@ h1, h2, h3 {
 }
 
 .step {
-  flex-basis: calc(50% - 10px); /* 50% de ancho menos la mitad del gap */
+  flex-basis: calc(50% - 10px); 
   display: flex;
   align-items: center;
   background: #ffffff;
@@ -175,8 +175,8 @@ h1, h2, h3 {
 
 @media (max-width: 768px) {
   .step, .centered-step {
-    flex-basis: 100%; /* Ocupar todo el ancho en móviles (equivalente a col-12) */
-    margin-bottom: 20px; /* Añadir espacio entre los elementos en vista móvil */
+    flex-basis: 100%; 
+    margin-bottom: 20px; 
   }
 
   .step {
@@ -190,7 +190,7 @@ h1, h2, h3 {
   }
 
   .centered-step {
-    width: 100%; /* Asegurarse de que ocupe todo el ancho en móviles */
+    width: 100%; 
   }
 }
 
