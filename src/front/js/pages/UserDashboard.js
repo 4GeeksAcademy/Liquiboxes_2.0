@@ -35,6 +35,7 @@ import NotType from '../component/Utils/NotType';
 import NotToken from '../component/Utils/NotToken';
 
 
+
 function UserDashboard() {
   const [userData, setUserData] = useState(null);
   const [editMode, setEditMode] = useState({});
@@ -347,7 +348,7 @@ function UserDashboard() {
       case 'profile':
         return (
           <div className='mt-3'>
-            <h2>Edita aquí los datos de tu perfil:</h2>
+              <h2>Edita aqui los datos de tu perfil</h2>            
             <div className="row my-3">
               {renderField('name', faUser, 'Nombre')}
               {renderField('surname', faUser, 'Apellido')}

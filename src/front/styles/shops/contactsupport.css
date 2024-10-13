@@ -10,11 +10,11 @@
 .contact-support-container {
   max-width: 1040px;
   min-width: 650px;
-  margin: 0 auto !important;
   padding: 1rem;
   background-color: var(--background-secondary-color);
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 5%;
 }
 
 .contact-support-container h2 {
@@ -76,3 +76,15 @@
     margin-bottom: 1rem;
   }
 }
+
+.support-image {
+  width: 100%;
+  max-width: 300px;
+  display: block;
+  border-radius: 20px;
+  animation: bounce 2s infinite;
+}
+
+
+
+
