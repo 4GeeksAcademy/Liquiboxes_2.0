@@ -4,8 +4,6 @@ import "../../../styles/shops/contactsupport.css";
 import { useNavigate } from 'react-router-dom';
 import ModalGlobal from '../ModalGlobal';
 
-
-
 const ContactSupport = () => {
   const [newform, setNewForm] = useState({
     saleId: null,

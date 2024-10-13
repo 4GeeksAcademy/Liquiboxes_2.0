@@ -348,7 +348,7 @@ function UserDashboard() {
       case 'profile':
         return (
           <div className='mt-3'>
-              <h2>Edita aqui los datos de tu perfil</h2>            
+              <h2>Edita aquí los datos de tu perfil</h2>            
             <div className="row my-3">
               {renderField('name', faUser, 'Nombre')}
               {renderField('surname', faUser, 'Apellido')}

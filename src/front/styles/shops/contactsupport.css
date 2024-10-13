@@ -10,6 +10,7 @@
 .contact-support-container {
   max-width: 1040px;
   min-width: 650px;
+  margin: 0 auto !important;
   padding: 1rem;
   background-color: var(--background-secondary-color);
   border-radius: 8px;
