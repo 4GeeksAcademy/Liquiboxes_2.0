@@ -16,6 +16,26 @@ We aim to **transform** the way businesses manage their inventory while offering
 
 ---
 
+## 👥 User Types
+
+### 🛍️ Customers
+Those who make purchases on the platform.
+
+![GIFUsuario-ezgif com-optimize](https://github.com/user-attachments/assets/8a9373f2-b7c6-41af-992e-79fb420cf8a0)
+
+
+### 🏪 Stores
+Those who create and sell mystery boxes.
+
+![GIF TIENDA](https://github.com/user-attachments/assets/17d71458-c318-4f97-a6db-d1f7fb83dfb6)
+
+### 👨‍💼 Administrators
+In charge of website management and technical support for the platform.
+
+![GIF AADMIN](https://github.com/user-attachments/assets/1debe716-da1a-492f-9142-e8af54082fff)
+
+---
+
 ## 🛠️ How Liquiboxes Works
 
 ### For Stores 🏪:
