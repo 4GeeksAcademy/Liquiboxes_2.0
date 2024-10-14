@@ -1,60 +1,75 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import "./../../styles/aboutus.css";
 import { Fade, Zoom } from 'react-awesome-reveal';
 import NotType from '../component/Utils/NotType';
-
-
+import createbox from '/workspaces/Liquiboxes_2.0/src/front/img/createbox.gif';
+import clothes from '/workspaces/Liquiboxes_2.0/src/front/img/clothes.gif';
+import usergif from '/workspaces/Liquiboxes_2.0/src/front/img/usergif.gif';
+import download from '/workspaces/Liquiboxes_2.0/src/front/img/download.gif';
+import change from '/workspaces/Liquiboxes_2.0/src/front/img/change.gif';
 
 const AboutUs = () => {
   return (
     <div className="about-us-container">
-      <section className="company-info">
+      <section className="about-mission">
         <Fade triggerOnce>
-          <h2>Sobre Nosotros</h2>
-          <p>
-            Liquiboxes ha sido fundada por tres estudiantes apasionados de la programación: <strong>Miguel, Michell y Elis</strong>.
-            Nuestra misión es ayudar a los comercios a liquidar su stock de manera eficiente, conectándolos con clientes
-            que buscan productos de calidad a precios irresistibles. Lo hacemos a través de <strong>Mistery Boxes</strong>
-            que los usuarios pueden comprar, basadas en sus preferencias.
-          </p>
-        </Fade>
-      </section>
-
-      <section className="mission-section">
-        <Fade triggerOnce>
-          <h2>Nuestra Misión</h2>
-          <p>
-            Queremos transformar la manera en que los comercios gestionan su inventario y ofrecer a los clientes
-            una experiencia única de compra, donde la emoción de recibir una <strong>Mistery Box</strong> se combina
-            con la satisfacción de obtener productos que realmente desean.
-          </p>
+          <div className="about-content">
+            <div className="about-section">
+              <h2 className='section-title'>Sobre Nosotros</h2>
+              <p>
+                Liquiboxes fue fundada por <strong>Miguel, Michell y Elis</strong>, tres estudiantes apasionados de la programación. Nuestra misión es ayudar a los comercios a liquidar su stock de manera eficiente, conectándolos con clientes que buscan productos de calidad a precios irresistibles, a través de <strong>Mystery Boxes</strong> personalizadas.
+              </p>
+            </div>
+            <div className="mission-section">
+              <h2 className='section-title'>Nuestra Misión</h2>
+              <p>
+                Transformamos la forma en que los comercios gestionan su inventario y ofrecemos a los clientes una experiencia única de compra, combinando la emoción de recibir una <strong>Mystery Box</strong> con la satisfacción de encontrar productos deseados.
+              </p>
+            </div>
+          </div>
         </Fade>
       </section>
 
       <section className="how-it-works">
-        <Fade triggerOnce>
-          <h2>¿Cómo funciona Liquiboxes?</h2>
-          <p>
-            Las tiendas crean <strong>Mistery Boxes</strong> de diferentes tamaños y precios, seleccionando los productos posibles que pueden tocar en esa caja y el número de artículos que va a contener la Mystery Box.
-
-          </p>
-          <p>
-            Los clientes, al registrarse, eligen sus preferencias en términos de tallas, colores, tipos de productos y categorías con las que se sientan identificados.
-          </p>
-          <p>
-            Cuando un cliente compra una de las cajas a una tienda, Liquiboxes genera aleatoriamente los artículos que va a contener esa caja, entre los artículos disponibles. La tienda que vende esa caja recibe una notificación con las preferencias del usuario para que confirme el stock de los artículos que han sido seleccionados respecto a las preferencias del usuario.
-          </p>
-          <p>
-            Si la tienda no tuviera stock de los artículos seleccionados o no coincidiera su stock con las preferencias del usuario, tiene la opción de cambiar este artículo por cualquier otro, pero este cambio lo debe aprobar la administración.
-          </p>
-          <p>
-            Una vez todo ha sido confirmado al usario tienda se le descarga un PDF con la orden de envío, los artículos seleccionados y los datos del usuario.
-          </p>
-        </Fade>
+        <Zoom triggerOnce>
+          <h2 className='section-title'>¿Cómo funciona Liquiboxes?</h2>
+          <div className="steps-container">
+            <div className='step'>
+              <img src={createbox} alt='Crear caja' className='step-icon' />
+              <div className='step-text'>
+                <p><strong>1. Creación de Cajas:</strong> Las tiendas crean <strong>Mystery Boxes</strong> de diferentes tamaños y precios, seleccionando los productos y el número de artículos que contendrá la caja.</p>
+              </div>
+            </div>
+            <div className='step'>
+              <img src={clothes} alt='Preferencias' className='step-icon' />
+              <div className='step-text'>
+                <p><strong>2. Preferencias del Cliente:</strong> Los clientes especifican sus tallas, estilo, tipos de productos y categorías que les interesan.</p>
+              </div>
+            </div>
+            <div className='step'>
+              <img src={usergif} alt='Selección aleatoria' className='step-icon' />
+              <div className='step-text'>
+                <p><strong>3. Selección Aleatoria:</strong> Cuando un cliente compra una caja, Liquiboxes elige artículos aleatoriamente, y la tienda confirma la coincidencia de stock.</p>
+              </div>
+            </div>
+            <div className='step'>
+              <img src={change} alt='Cambio de productos' className='step-icon' />
+              <div className='step-text'>
+                <p><strong>4. Cambios:</strong> Si no hay stock de un artículo, la tienda puede cambiarlo por otro con la aprobación de la administración.</p>
+              </div>
+            </div>
+            <div className='step centered-step'>
+              <img src={download} alt='Descarga de PDF' className='step-icon' />
+              <div className='step-text'>
+                <p><strong>5. Descarga de Orden:</strong> Tras la confirmación, la tienda descarga un PDF con la orden de envío, artículos seleccionados y datos del cliente.</p>
+              </div>
+            </div>
+          </div>
+        </Zoom>
       </section>
 
-      <section className="team-section">
+      <section className="team-section my-4">
         <h2>Conoce a los Fundadores</h2>
         <div className="team-members">
           <Zoom>
@@ -76,7 +91,7 @@ const AboutUs = () => {
           <Zoom>
             <div className="team-member">
               <img src="https://res.cloudinary.com/dg7u2cizh/image/upload/v1727986307/fotoperfil_hh5zfp.jpg" alt="Michell" className="team-photo" />
-              <h3>Michell Denjoy</h3>
+              <h3>Michell D' Enjoy</h3>
               <p>Desarrolladora Full-Stack</p>
               <div className="social-links">
                 <a href="https://github.com/michelldenjoy" target="_blank" rel="noopener noreferrer">

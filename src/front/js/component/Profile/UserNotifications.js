@@ -216,8 +216,8 @@ const UserNotifications = () => {
     return (
         <>
             <div className="user-notifications container">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Notificaciones</h2>
+                <div className="d-flex justify-content-between align-items-center mb-4">                    
+                        <h2>Notificaciones</h2>                     
                     <div className="d-flex align-items-center">
                         <FontAwesomeIcon icon={faBell} className="mr-2 me-2" />
                         <span className="badge">

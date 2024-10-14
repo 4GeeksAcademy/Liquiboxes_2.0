@@ -126,7 +126,7 @@ export const Home = () => {
                     {store.userData && (
                         <div className="greeting-section">
                             <Slide triggerOnce>
-                                <h2 className="greeting-text">¡Hola, {store.userData.name}!</h2>
+                                <h2 className="greeting-text">¡Hola {store.userData.name}!</h2>
                             </Slide>
                         </div>
                     )}
